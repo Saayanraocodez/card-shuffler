@@ -1,0 +1,63 @@
+== feeder_deck
+== gate_block
+== roller
+== motor_bracket
+== motor_retainer
+== bushing_bracket
+== idler_arm
+== idler_wheel
+== lid
+== well_deck
+== well_sleeve
+== knife_bar_lower
+== knife_bar_upper
+== servo_bracket
+== column
+== carriage
+== platform
+== skirt_front
+== skirt_rear
+Compiling design (CSG Products normalization)...
+Normalized CSG tree has 457 elements
+Geometries in cache: 197
+Geometry cache size in bytes: 1259544
+CGAL Polyhedrons in cache: 8
+CGAL cache size in bytes: 360704
+Total rendering time: 0:00:01.377
+Compiling design (CSG Products normalization)...
+Normalized CSG tree has 457 elements
+Geometries in cache: 197
+Geometry cache size in bytes: 1259544
+CGAL Polyhedrons in cache: 8
+CGAL cache size in bytes: 360704
+Total rendering time: 0:00:01.497
+Compiling design (CSG Products normalization)...
+Normalized CSG tree has 375 elements
+Geometries in cache: 198
+Geometry cache size in bytes: 1260272
+CGAL Polyhedrons in cache: 8
+CGAL cache size in bytes: 360704
+Total rendering time: 0:00:02.796
+Compiling design (CSG Products normalization)...
+Normalized CSG tree has 187 elements
+Geometries in cache: 71
+Geometry cache size in bytes: 892200
+CGAL Polyhedrons in cache: 0
+CGAL cache size in bytes: 0
+Total rendering time: 0:00:00.725
+Compiling design (CSG Products normalization)...
+Normalized CSG tree has 209 elements
+Geometries in cache: 83
+Geometry cache size in bytes: 326824
+CGAL Polyhedrons in cache: 0
+CGAL cache size in bytes: 0
+Total rendering time: 0:00:00.613
+Compiling design (CSG Products normalization)...
+Normalized CSG tree has 209 elements
+Geometries in cache: 83
+Geometry cache size in bytes: 326824
+CGAL Polyhedrons in cache: 0
+CGAL cache size in bytes: 0
+Total rendering time: 0:00:00.632
+done
+exit 0
