@@ -2,4 +2,4 @@ firmware/.pio/
 firmware/test_host/test_core
 __pycache__/
 *.pyc
-cad/png/assembly_test.png
+archive/**/png/assembly_test.png

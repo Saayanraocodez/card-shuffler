@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" font-family="Helvetica, Arial, sans-serif" font-size="12">
+  <style>
+    .st { fill:#e8f0fe; stroke:#1a49a8; stroke-width:1.5; rx:8; }
+    .err { fill:#fdecea; stroke:#b3261e; stroke-width:1.5; }
+    .t { fill:#111; } .h { font-weight:bold; font-size:13px; }
+    .e { stroke:#333; stroke-width:1.3; fill:none; marker-end:url(#a); }
+    .lab { fill:#333; font-size:11px; }
+  </style>
+  <defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#333"/></marker></defs>
+  <text x="20" y="26" font-size="17" font-weight="bold">Firmware state machine (shuffler.ino)</text>
+
+  <rect x="40" y="60" width="150" height="60" class="st"/><text x="60" y="85" class="h">IDLE</text><text x="60" y="103" class="t">green; battery poll 5 s</text>
+  <rect x="300" y="60" width="200" height="120" class="st"/><text x="320" y="85" class="h">SHUFFLING</text>
+  <text x="320" y="103" class="t">seed → home → well empty?</text><text x="320" y="119" class="t">→ hopper probe → per-card loop</text>
+  <text x="320" y="135" class="t">(position, blades, drop, feed,</text><text x="320" y="151" class="t">close) → present deck</text><text x="320" y="167" class="t">blue LED</text>
+  <rect x="600" y="60" width="150" height="60" class="st"/><text x="620" y="85" class="h">DONE</text><text x="620" y="103" class="t">green + beep / amber if count ≠ expected</text>
+  <rect x="300" y="250" width="200" height="90" class="st err"/><text x="320" y="275" class="h">ERROR</text>
+  <text x="320" y="293" class="t">motors off, blades limp, red blink,</text><text x="320" y="309" class="t">3 beeps, code on serial:</text>
+  <text x="320" y="325" class="t">1 home 2 no deck 3 jam 4 well 5 rng 6 bat</text>
+  <rect x="600" y="250" width="180" height="70" class="st"/><text x="620" y="275" class="h">JAM ACCESS</text><text x="620" y="293" class="t">blades out, home, platform</text><text x="620" y="309" class="t">to Z_MIN, then IDLE</text>
+
+  <path d="M190,90 L300,90" class="e"/><text x="205" y="84" class="lab">button press</text>
+  <path d="M500,90 L600,90" class="e"/><text x="515" y="84" class="lab">all cards in</text>
+  <path d="M675,120 C675,200 200,200 115,120" class="e"/><text x="380" y="215" class="lab">button press: home, lower, IDLE (deck removed)</text>
+  <path d="M400,180 L400,250" class="e"/><text x="408" y="220" class="lab">any fault</text>
+  <path d="M300,295 C200,295 115,250 115,120" class="e"/><text x="130" y="230" class="lab">button press (ack)</text>
+  <path d="M500,300 L600,300" class="e"/><text x="510" y="294" class="lab">hold 3 s</text>
+  <path d="M690,250 C690,200 400,200 400,180" class="e" stroke-opacity="0"/>
+  <text x="40" y="380" class="t">Low battery: &lt; 9.9 V amber warning; &lt; 9.6 V a new shuffle is refused (ERROR 6); &lt; 9.3 V mid-shuffle the current card is finished, the deck presented, ERROR 6.</text>
+  <text x="40" y="400" class="t">Serial console (115200): calibration, jog, sensor readout, RNG dumps, fixed-seed shuffles for the predicted-vs-actual test. `help` lists everything.</text>
+  <text x="40" y="420" class="t">Stepper driver is disabled whenever idle (self-locking lead screw); servos are unpowered when idle (return springs hold the blades out).</text>
+</svg>

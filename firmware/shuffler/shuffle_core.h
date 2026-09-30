@@ -1,18 +1,21 @@
-// shuffle_core.h — the pure algorithm: gap sequence generation and permutation prediction.
-// No hardware dependencies, so it is unit-tested on the host (firmware/test_host).
+// shuffle_core.h — the pure algorithm for the WHEEL: random empty-slot assignment and output prediction.
+// No hardware dependencies; unit-tested on the host (firmware/test_host) against simulation/rng_reference.py.
 #pragma once
 #include <stdint.h>
 #include "rng.h"
 
 #define MAX_CARDS 60
+#define N_SLOTS   54
 
-// Draw the inside-out Fisher–Yates gap sequence: gaps[i] uniform in {0..i}.
-void gaps_draw(Drbg* d, uint8_t n, uint8_t gaps[MAX_CARDS]);
+// Assign card i (i = 0 .. n_cards-1, in feed order, 0 = bottom of the input deck) to a uniformly random
+// EMPTY slot.  Exactly the Fisher–Yates "draw from the remaining set" step:
+//   empty = [0..n_slots-1]; for i: idx = uniform(len); slot = empty[idx]; empty[idx] = empty[len-1]; len--.
+// Returns false if n_cards > n_slots.
+bool slots_assign(Drbg* d, uint8_t n_cards, uint8_t n_slots, uint8_t slot_of_card[MAX_CARDS]);
 
-// Predict the output order for a gap sequence: order[p] = index of the input card (0 = input bottom)
-// that ends at output position p (0 = output bottom).
-void predict_order(uint8_t n, const uint8_t gaps[MAX_CARDS], uint8_t order[MAX_CARDS]);
+// Output order after unloading slots 0,1,2,... in sequence onto the output pile (first out = bottom):
+// order[p] = input index of the card at output position p (0 = bottom).
+void predict_order_from_slots(uint8_t n_cards, const uint8_t slot_of_card[MAX_CARDS], uint8_t order[MAX_CARDS]);
 
-// Insertion geometry: platform Z (mm, card frame) that puts gap k of an n-card stack of mean
-// thickness t_mean (mm) at the blade mid-plane knife_z.
-static inline float gap_platform_z(float knife_z, uint8_t k, float t_mean) { return knife_z - (float)k * t_mean; }
+// Wheel angle (degrees, CCW from +X) that puts fin `fin` on the plane at `fin_angle_deg`.
+static inline float wheel_angle_for_fin(uint8_t fin, float fin_angle_deg, float pitch_deg) { return fin_angle_deg - (float)fin * pitch_deg; }

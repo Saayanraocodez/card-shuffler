@@ -1,0 +1,180 @@
+{
+ "n": 52,
+ "seed": 12345,
+ "bayer_diaconis_52": {
+  "k=1": 1.0,
+  "k=2": 1.0,
+  "k=3": 1.0,
+  "k=4": 0.9999995334313746,
+  "k=5": 0.9237329293962945,
+  "k=6": 0.6135495965656284,
+  "k=7": 0.33406099946815154,
+  "k=8": 0.16715864192695742,
+  "k=9": 0.08542019340906182,
+  "k=10": 0.042945548921035026,
+  "k=11": 0.021502375949235434,
+  "k=12": 0.010754893495669948
+ },
+ "wheel_neighbor_corrected {\"p\": 0.3, \"bias\": 1.0}": {
+  "position_frequency": {
+   "chi2": 14388.218520000002,
+   "df": 2601,
+   "p_value": 0.0,
+   "max_abs_z": 20.854521341717646,
+   "bottom_card_chi2_p": 0.0,
+   "top_card_chi2_p": 0.0,
+   "P(bottom output = bottom input)": 0.013335,
+   "P(top output = top input)": 0.014335,
+   "uniform value": 0.019230769230769232
+  },
+  "pairwise_precedence": {
+   "pairs": 1326,
+   "max_abs_dev": 0.009519999999999973,
+   "max_abs_z": 8.514946858319174,
+   "pairs_beyond_3sigma": 1278,
+   "expected_beyond_3sigma_if_uniform": 3.5802,
+   "mean_P(earlier input card below later input card)": 0.4944902413273002
+  },
+  "adjacency": {
+   "mean_original_successor_directly_above": 0.71341,
+   "expected_if_uniform": 0.9807692307692307,
+   "mean_original_neighbours_adjacent_either_way": 1.991245,
+   "expected_if_uniform_either_way": 1.9615384615384615,
+   "std_err": 0.002214462949305351
+  },
+  "rising_sequences": {
+   "mean": 26.777735,
+   "expected_if_uniform": 26.5,
+   "std": 2.1086994261333216,
+   "expected_std_if_uniform": 2.101586702153082,
+   "z_of_mean": 59.10147214908166,
+   "min": 18,
+   "max": 35,
+   "hist_1_to_n": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    12,
+    47,
+    179,
+    862,
+    2985,
+    7607,
+    15928,
+    26603,
+    35014,
+    37789,
+    31985,
+    21789,
+    11617,
+    5213,
+    1800,
+    459,
+    95,
+    16,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "serial_and_rank_correlation": {
+   "serial_corr_mean": -0.01938346459465658,
+   "serial_corr_expected_if_uniform": -0.0196078431372549,
+   "serial_corr_z": 0.7214346869771683,
+   "spearman_mean": -0.01098687099803637,
+   "spearman_std": 0.14008089933964346,
+   "spearman_expected_std_if_uniform": 0.14002800840280097,
+   "spearman_z": -35.0760032630339
+  },
+  "next_card_guessing": {
+   "correct_per_deck": 5.2921,
+   "expected_if_uniform": 4.538043950697447,
+   "test_decks": 10000
+  },
+  "_stats_seconds": 8.3,
+  "_B": 200000,
+  "_generate_seconds": 8.6
+ },
+ "small_n_tv": {
+  "fy": {
+   "tv": 0.010946222222222224,
+   "sampling_floor_uniform": 0.010731888888888892
+  },
+  "wheel {\"n_slots\": 8}": {
+   "tv": 0.010516444444444445,
+   "sampling_floor_uniform": 0.010412333333333332
+  },
+  "wheel_neighbor {\"p\": 0.05, \"bias\": 0.0, \"n_slots\": 8}": {
+   "tv": 0.013238000000000002,
+   "sampling_floor_uniform": 0.011307666666666664
+  },
+  "wheel_neighbor {\"p\": 0.05, \"bias\": 1.0, \"n_slots\": 8}": {
+   "tv": 0.016885333333333336,
+   "sampling_floor_uniform": 0.010861444444444446
+  },
+  "wheel_neighbor_corrected {\"p\": 0.05, \"bias\": 0.0, \"n_slots\": 8}": {
+   "tv": 0.010948555555555557,
+   "sampling_floor_uniform": 0.010573333333333332
+  },
+  "wheel_neighbor_corrected {\"p\": 0.05, \"bias\": 1.0, \"n_slots\": 8}": {
+   "tv": 0.02595888888888889,
+   "sampling_floor_uniform": 0.010222333333333335
+  },
+  "blade_rand {\"p_plus\": 0.05, \"p_minus\": 0.05}": {
+   "tv": 0.010290555555555556,
+   "sampling_floor_uniform": 0.011265777777777777
+  },
+  "blade_sys {\"p\": 0.1}": {
+   "tv": 0.06999844444444445,
+   "sampling_floor_uniform": 0.010260222222222223
+  },
+  "blade_sys {\"p\": 1.0}": {
+   "tv": 0.8333333333333333,
+   "sampling_floor_uniform": 0.010407222222222224
+  },
+  "blade_miss {\"p\": 0.02}": {
+   "tv": 0.032884333333333335,
+   "sampling_floor_uniform": 0.010377111111111111
+  },
+  "double_feed {\"p\": 0.02}": {
+   "tv": 0.03308688888888889,
+   "sampling_floor_uniform": 0.01058777777777778
+  },
+  "bins {\"nbins\": 8, \"passes\": 1}": {
+   "tv": 0.239084,
+   "sampling_floor_uniform": 0.01092488888888889
+  },
+  "bins {\"nbins\": 8, \"passes\": 3}": {
+   "tv": 0.01087411111111111,
+   "sampling_floor_uniform": 0.010995000000000001
+  }
+ }
+}

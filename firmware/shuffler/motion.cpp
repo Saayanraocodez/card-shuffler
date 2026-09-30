@@ -1,114 +1,97 @@
-// motion.cpp — elevator and feeder procedures.
+// motion.cpp
 #include "motion.h"
 #include "hardware.h"
 #include <math.h>
 
-// ============================================================ elevator
-static float s_z = Z_HOME_DEFAULT;     // current platform Z (mm) — tracked from steps
+static const float SPD = STEPS_PER_REV / 360.0f;   // steps per degree
+static float s_angle = 0;                          // deg, CCW positive, fin-0 reference
 
-float knife_z() { return Z_KNIFE_NOMINAL + cal.knife_offset; }
-float elevator_z() { return s_z; }
-void elevator_idle() { stepper_enable(false); }
+static float wrap360(float a) { while (a < 0) a += 360; while (a >= 360) a -= 360; return a; }
+float wheel_angle() { return s_angle; }
+void  wheel_idle() { stepper_enable(false); }
+static bool stop_on_index() { return index_active(); }
 
-static bool stop_on_endstop() { return endstop_hit(); }
-static bool stop_on_beam_s()  { return beam_blocked_now(BEAM_S); }
-
-bool elevator_home() {
-    // 1. if already on the switch, back off up 3 mm
-    if (endstop_hit()) { stepper_move((long)(3.0f * STEPS_PER_MM), ELEV_V_HOME, ELEV_ACC); if (endstop_hit()) return false; }
-    // 2. travel down until the switch trips (limit: full travel + margin)
-    long maxdown = (long)((Z_MAX - Z_MIN + 12.0f) * STEPS_PER_MM);
-    stepper_move(-maxdown, ELEV_V_HOME, ELEV_ACC, stop_on_endstop);
-    if (!endstop_hit()) return false;
-    // 3. back off 1.5 mm and re-approach slowly for repeatability
-    stepper_move((long)(1.5f * STEPS_PER_MM), ELEV_V_HOME, ELEV_ACC);
-    stepper_move(-(long)(3.0f * STEPS_PER_MM), 1.5f, ELEV_ACC, stop_on_endstop);
-    if (!endstop_hit()) return false;
+bool wheel_home() {
+    // leave the tab if we are on it, then rotate CCW until the tab enters the slot; approach slowly for repeatability
+    if (index_active()) stepper_move((long)(15 * SPD), WHEEL_V_HOME_DPS, WHEEL_ACC_DPS2);
+    stepper_move((long)(370 * SPD), WHEEL_V_HOME_DPS, WHEEL_ACC_DPS2, stop_on_index);
+    if (!index_active()) return false;
+    stepper_move(-(long)(4 * SPD), WHEEL_V_HOME_DPS, WHEEL_ACC_DPS2);
+    stepper_move((long)(8 * SPD), 15.0f, WHEEL_ACC_DPS2, stop_on_index);
+    if (!index_active()) return false;
     stepper_set_pos(0);
-    s_z = cal.z_home;
+    s_angle = wrap360(cal.home_offset_deg);
     return true;
 }
 
-void elevator_move_to(float z, float vmax) {
-    if (z > Z_MAX) z = Z_MAX; if (z < Z_MIN) z = Z_MIN;
-    long target = lroundf((z - cal.z_home) * STEPS_PER_MM);
-    long delta = target - stepper_pos();
-    stepper_move(delta, vmax, ELEV_ACC);
-    s_z = cal.z_home + stepper_pos() / STEPS_PER_MM;
+void wheel_goto(float target, float vmax) {
+    target = wrap360(target);
+    float d = target - s_angle;
+    if (d > 180) { d -= 360; }
+    if (d < -180) { d += 360; }          // shortest path
+    long steps = lroundf(d * SPD);
+    stepper_move(steps, vmax, WHEEL_ACC_DPS2);
+    s_angle = wrap360(s_angle + steps / SPD);
 }
+void wheel_fin_to_entry(uint8_t fin) { wheel_goto(ENTRY_FIN_DEG + cal.entry_trim_deg - fin * PITCH_DEG); }
+void wheel_fin_to_exit(uint8_t slot)  { wheel_goto(EXIT_FIN_DEG + cal.exit_trim_deg - (slot + 1) * PITCH_DEG); }
 
-float elevator_find_beam_s(float z_limit) {
-    if (beam_blocked_now(BEAM_S)) {
-        // already blocked: go down until clear, then approach upward
-        long down = (long)((s_z - Z_MIN) * STEPS_PER_MM);
-        stepper_move(-down, ELEV_V_HOME, ELEV_ACC, [](){ return !beam_blocked_now(BEAM_S); });
-        s_z = cal.z_home + stepper_pos() / STEPS_PER_MM;
-        stepper_move(-(long)(1.0f * STEPS_PER_MM), ELEV_V_HOME, ELEV_ACC);
-        s_z = cal.z_home + stepper_pos() / STEPS_PER_MM;
+int wheel_scan(bool occupied[N_SLOTS_HW]) {
+    // Put slot 0 at the entry, then step through all slots reading beam E at each.
+    int n = 0;
+    for (int s = 0; s < N_SLOTS_HW; s++) {
+        wheel_fin_to_entry((uint8_t)s);
+        delay(30);
+        occupied[s] = beam_blocked_now(BEAM_E);
+        n += occupied[s];
     }
-    long up = (long)((z_limit - s_z) * STEPS_PER_MM);
-    if (up <= 0) return NAN;
-    stepper_move(up, ELEV_V_MEASURE, ELEV_ACC, stop_on_beam_s);
-    s_z = cal.z_home + stepper_pos() / STEPS_PER_MM;
-    return beam_blocked_now(BEAM_S) ? s_z : NAN;
+    return n;
 }
 
 // ============================================================ feeder
-static uint32_t s_median_ms = 0;   // running estimate of the beam-B block time for a single card
-
+static uint32_t s_median_ms = 0;
 const char* feed_result_name(FeedResult r) {
     switch (r) { case FEED_OK: return "ok"; case FEED_NO_CARD: return "no card"; case FEED_JAM_PICK: return "jam: pickup";
-                 case FEED_JAM_GATE: return "jam: gate/nip"; case FEED_JAM_WELL: return "jam: well entry"; case FEED_JAM_CLEAR: return "jam: not clearing"; }
+        case FEED_JAM_ENTRY: return "jam: gate to wheel"; case FEED_JAM_CLEAR: return "jam: not clearing gate"; case FEED_NOT_SEATED: return "card not seen in slot"; }
     return "?";
 }
-void feeder_stop() { motor_run(M_FEED, 0); motor_run(M_TRANS, 0); }
-
+void feeder_stop() { motor_run(M_FEED, 0); motor_run(M_NIPE, 0); }
 static bool wait_beam(Beam b, bool want_blocked, uint32_t timeout_ms) {
-    uint32_t t0 = millis();
-    while (millis() - t0 < timeout_ms) { beams_poll(); if (beam_blocked(b) == want_blocked) return true; }
-    return false;
+    uint32_t t0 = millis(); while (millis() - t0 < timeout_ms) { beams_poll(); if (beam_blocked(b) == want_blocked) return true; } return false;
 }
-
 bool feeder_probe_hopper() {
-    motors_sleep(false);
-    beams_poll();
-    if (beam_blocked(BEAM_B)) return true;                 // a card is already pre-staged over the gate beam
-    motor_run(M_FEED, cal.feed_pwm);
-    bool got = wait_beam(BEAM_B, true, PROBE_MS);
-    motor_run(M_FEED, 0);
+    motors_sleep(false); beams_poll();
+    if (beam_blocked(BEAM_B)) return true;
+    motor_run(M_FEED, cal.feed_pwm); bool got = wait_beam(BEAM_B, true, PROBE_MS); motor_run(M_FEED, 0);
     return got;
 }
-
 FeedResult feeder_feed_one(FeedStats* st) {
     st->b_block_ms = 0; st->double_suspect = false;
     motors_sleep(false);
-    motor_run(M_TRANS, cal.trans_pwm);
-    motor_run(M_FEED, cal.feed_pwm);
-    // 1. pickup: beam B must be (or become) blocked
+    motor_run(M_NIPE, cal.nipe_pwm); motor_run(M_FEED, cal.feed_pwm);
     if (!wait_beam(BEAM_B, true, T_PICK_MS)) { feeder_stop(); return FEED_NO_CARD; }
     uint32_t t_block = millis();
-    // 2. leading edge reaches the well slot
-    if (!wait_beam(BEAM_W, true, T_W_BLOCK_MS)) { feeder_stop(); return FEED_JAM_GATE; }
-    // 3. trailing edge passes the gate beam → stop the feed roller (next card stays pre-staged)
-    if (!wait_beam(BEAM_B, false, T_B_CLEAR_MS)) { feeder_stop(); return FEED_JAM_CLEAR; }
+    if (!wait_beam(BEAM_E, true, T_E_BLOCK_MS)) { feeder_stop(); return FEED_JAM_ENTRY; }        // leading edge at the slot mouth
+    if (!wait_beam(BEAM_B, false, T_B_CLEAR_MS)) { feeder_stop(); return FEED_JAM_CLEAR; }      // trailing edge past the gate
     motor_run(M_FEED, 0);
     st->b_block_ms = millis() - t_block;
-    // 4. trailing edge enters the well
-    if (!wait_beam(BEAM_W, false, T_W_CLEAR_MS)) { feeder_stop(); return FEED_JAM_WELL; }
-    delay(T_COAST_MS);
-    motor_run(M_TRANS, 0);
-    // double-feed heuristic on the beam-B block duration (a second card riding along lengthens it)
+    delay(T_SEAT_MS);                                                                          // nip pushes the rest; card slides to the hub
+    motor_run(M_NIPE, 0);
     if (s_median_ms == 0) s_median_ms = st->b_block_ms;
-    else {
-        if (st->b_block_ms > (uint32_t)(s_median_ms * DOUBLE_FEED_RATIO)) st->double_suspect = true;
-        s_median_ms = (s_median_ms * 7 + st->b_block_ms) / 8;
-    }
+    else { if (st->b_block_ms > (uint32_t)(s_median_ms * DOUBLE_FEED_RATIO)) st->double_suspect = true; s_median_ms = (s_median_ms * 7 + st->b_block_ms) / 8; }
+    delay(40);
+    if (!beam_blocked_now(BEAM_E)) return FEED_NOT_SEATED;                                     // card should now sit in the slot at the entry
     return FEED_OK;
 }
+void feeder_reverse_pulse() { motors_sleep(false); motor_run(M_FEED, -cal.feed_pwm); motor_run(M_NIPE, -cal.nipe_pwm); delay(T_REVERSE_MS); feeder_stop(); delay(60); }
 
-void feeder_reverse_pulse() {
+// ============================================================ unload
+void eject_stop() { motor_run(M_NIPX, 0); }
+EjectResult eject_one() {
     motors_sleep(false);
-    motor_run(M_FEED, -cal.feed_pwm); motor_run(M_TRANS, -cal.trans_pwm);
-    delay(T_REVERSE_MS);
-    feeder_stop(); delay(60);
+    motor_run(M_NIPX, cal.nipx_pwm);
+    if (!wait_beam(BEAM_X, true, T_X_BLOCK_MS)) { eject_stop(); return EJECT_NO_CARD; }
+    if (!wait_beam(BEAM_X, false, T_X_CLEAR_MS)) { eject_stop(); return EJECT_JAM; }
+    delay(60); eject_stop();
+    return EJECT_OK;
 }

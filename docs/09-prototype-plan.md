@@ -1,80 +1,69 @@
 # 9. Staged prototype plan
 
-The design's two risks are feeding exactly one card and placing a blade in
-the intended gap. Each stage tests one of them before the next investment.
+The wheel's risks, in order: single-card feeding, card entry into a slot,
+card slide-out at the exit, and unload throughput. Each stage tests one
+before the next print job.
 
-## Stage 0 — parts on the bench (1 evening, ~$25 of parts)
+## Stage 0 — electronics on the bench (1 evening, ≈ $30)
 
-Buy the ESP32, the DRV8833, two N20 motors, the IR pairs and the O-rings.
-Print the two rollers. Wire the DRV8833 and one beam on a breadboard; flash
-the firmware; confirm `feed`-related commands drive the motors and the
-beam reads. Purpose: firmware toolchain and sensor readings work.
+ESP32, two DRV8833, three N20, IR pairs, index module on a breadboard.
+Flash; `beams`, `feed` (motors spinning free), `test ref`. Purpose: the
+toolchain and sensors work; `test ref` matches the Python reference.
 
-## Stage 1 — feeder module only (1 weekend, ~$40 cumulative)
+## Stage 1 — feeder module (1 weekend, ≈ $45 cumulative)
 
-Print: feeder_deck, gate_block, motor_bracket, motor_retainer ×2,
-bushing_bracket, idler_arm, idler_wheel ×2, lid. Assemble steps 1–13 of
-`06-assembly.md`. Clamp the deck to a board tilted 10° with a box catching
-cards.
+Print feeder_deck, gate_block, roller_feed, one roller_nip, the two feeder
+brackets, retainers, one idler_arm, two idler_wheels, lid. Assemble steps
+1–12. Clamp the deck at 50° with a box under the tip.
 
-Tests:
-* `feed` × 100 with a standard deck: goal 0 double, 0 miss.
-* Vary the gate: find the gap window where single feeds succeed (expect
-  0.40–0.50 mm for 0.30 mm cards). Record it.
-* Thin and thick decks; worn deck.
-* Measure the card exit speed (B-block time and card length give it) and
-  confirm the card would coast ≥ 18 mm on a 10° slope: place a card on the
-  transport plate extension and see where it stops.
+Tests: 100 single feeds; gate window (expect 0.40–0.50 mm for 0.30 mm
+cards); thin/thick/worn decks; card exit speed from the B-block time;
+confirm a card leaving the nip at 50° slides ≥ 20 mm on a PETG surface.
+Exit criterion: 300 single feeds in a row across three deck types.
+Fallback: cork retard strip on the gate lip.
 
-Exit criterion: 300 single feeds in a row across three deck types. If the
-gate alone cannot separate cards for a deck type, add a cork strip to the
-gate lip's front face (retard pad) before moving on.
+## Stage 2 — wheel + towers, hand feeding (1 weekend, ≈ $75 cumulative)
 
-## Stage 2 — well and elevator, no feeder (1 weekend, ~$75 cumulative)
+Print wheel, both towers, shroud_A/B, shutter, index_bracket, servo
+bracket; buy the stepper, driver, rod, bearings, coupler, servo. Assemble
+steps 13–22 on the joined base boxes (print them now or use a plywood
+board with the tower foot holes).
 
-Print: well_deck, well_sleeve, knife bars ×4, servo_bracket ×2, column,
-carriage, platform. Buy the stepper, driver, lead screw, rods, bearings,
-servos, brass.
+Tests: homing repeatability (10 homes, `entry 0`, mark the rim: spread
+< 0.5 mm); `entry k` for 10 random k then a hand-pushed card: beam E
+blocked 50/50; rotate the loaded wheel 20 revolutions each way: no card
+lost, none touching the shroud in the upper half; the shutter opens and a
+card at `exit k` slides out into a hand-held box 50/50. Measure the index
+time for 90° (target ≤ 0.3 s) and the stall margin (increase
+`WHEEL_ACC_DPS2` until it skips, then back off 30 %).
+Exit criterion: 50/50 entries, 50/50 slide-outs, no lost cards.
 
-Tests:
-* Elevator travel, homing repeatability (10 homes → `z 0` → measure the
-  platform height with a depth gauge: spread < 0.05 mm).
-* `cal home`; beam-S repeatability (10 measurements of a 30-card stack:
-  spread < 0.1 mm).
-* Blade entry: `cal knifetest k` for k = 0, 5, 10, 20, 30 with 30 cards,
-  10 times each. Count clean entries. Goal: 100 %. If not: polish the
-  bevel; check the stack sits against the back wall; check bar height
-  equality (both blades within 0.1 mm — measure with the platform as a
-  reference).
-* Hand-insertion test: with the gap open, push a card in by hand through
-  the slot, close the gap. Repeat 50 times; the card must always end up
-  exactly in the intended gap (check by numbering the cards).
+## Stage 3 — feeder on the wheel (1 evening)
 
-Exit criterion: 50/50 clean blade entries at random k and 50/50 correct
-hand insertions.
+Mount the feeder deck (step 23). `feed` with `entry k`: 100 cards, 0
+corrections, 0 lost; `scan` confirms the map. Tune `cal entry`.
+Exit criterion: 200 feeds, ≤ 1 correction, all in the intended slot after
+correction.
 
-## Stage 3 — integration (1 weekend, ~$120 cumulative)
+## Stage 4 — exit module and full cycle (1 weekend, ≈ $115 cumulative)
 
-Join the modules, add the skirts, battery and panel. Run the predicted-
-vs-actual test (§2.8 step 4) for 20 fixed-seed shuffles. Tune timeouts and
-`SERVO_SETTLE_MS`. Record the shuffle time.
+Print chute, second idler_arm, wheels; buy the rest. Steps 25–37. 20
+fixed-seed shuffles with predicted-vs-actual comparison; tune timeouts,
+PWMs, `cal exit`. Record the cycle time.
+Exit criterion: section E of `08-verification-checklist.md`.
 
-Exit criterion: the acceptance targets in `08-verification-checklist.md`
-section E.
+## Stage 5 — endurance and statistics
 
-## Stage 4 — endurance and statistics
+200 shuffles over weeks of play; `cal show` statistics; output statistics;
+card wear inspection; battery life measurement.
 
-200 shuffles over a few weeks with real play; log `cal show` statistics;
-run the physical output statistics; inspect cards for wear.
-
-## What to do if a stage fails
+## Fallbacks
 
 | Failure | Fallback within this design |
 |---|---|
-| Double feeds persist | Cork retard strip on the gate; smaller lid ballast; second gate stage (print a second, higher lip 5 mm downstream) |
-| Cards do not coast to the pad | Increase `TILT` to 12° in params.scad and reprint the skirts; raise transport PWM |
-| Blades push cards | Thinner blades (0.4 mm feeler stock); sharper symmetric bevel; increase `GAP_DROP`; add 0.5 mm foam under the platform's card area so the lower stack yields |
-| Blade heights unequal | Shim one bar with tape under the lower half; or print both bars again in the same job |
-| Stack top measurement noisy | Move beam S to a 1.0 mm aperture (drill a printed plug) |
-| Elevator too slow | 3S pack and 0.8 A Vref; `ELEV_VMAX` 40; T8×8 already the fastest common lead |
-| Servo too slow | Digital MG90D-class servo (0.06 s/60°) |
+| Cards stop in the slot mouth | polish the fin faces (600 grit); raise `cal pwm nipe`; steepen `entry_slot_ang` to 55° (reprint feeder arms via params) |
+| Cards catch on the shroud | shim the shroud outward 0.5 mm; felt strip inside the shroud; smaller `r_shroud_in` clearance not needed |
+| Cards do not slide out at the exit | steepen `exit_slot_ang` to 210°; shorten the shutter/nip distance; raise `cal pwm nipx` |
+| Wheel too heavy for the index time | bigger fin windows in params; 0.8 A Vref; NEMA 17 high-torque (60 N·cm) |
+| Double feeds | cork retard on the gate; lighter lid |
+| Index unreliable | bare TCST2103 interrupter in the index bracket instead of the module |

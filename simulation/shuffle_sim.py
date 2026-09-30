@@ -3,8 +3,11 @@
 shuffle_sim.py — Monte-Carlo models and statistical tests for the card shuffler.
 
 Models
-  fy            exact inside-out Fisher–Yates (what the machine executes when every
-                gap index is uniform and the mechanism does what it is told)
+  wheel         exact random empty-slot assignment (what the WHEEL machine executes: card i goes
+                to a uniformly random empty slot; output = slot order) — this is Fisher–Yates
+  wheel_neighbor card lands one slot above/below the intended slot with prob p (bias 0 = symmetric,
+                bias 1 = always upward) when that slot is empty
+  fy            exact inside-out Fisher–Yates (the archived v1 elevator-insertion machine)
   blade_rand    blade lands one gap above/below the intended gap with prob p+/p-
   blade_sys     blade lands one gap ABOVE the intended gap with prob p (calibration bias)
   thick_scale   accumulated thickness-estimate error: gap k is realised as round(k*(1+d))
@@ -122,6 +125,77 @@ def model_double_feed(B, n, rng, p=0.02, **kw):
     return build_order(j)
 
 
+def _wheel_build(B, n, rng, n_slots=54, p_neighbor=0.0, bias=0.0, count_jams=None):
+    """Wheel: the firmware assigns card i to a uniformly random slot among the slots it BELIEVES empty.
+    Physical fault: with prob p_neighbor the card lands one slot above (prob (1+bias)/2) or below the
+    intended slot if that slot is actually empty; the firmware does not know.  If a later card is sent
+    to a slot that is actually occupied, it deflects to the nearest actually-empty neighbour (a jam if
+    none; counted in count_jams[0]).  Output order = actual slot order.  bias 0 = symmetric, 1 = always +1."""
+    actual = np.zeros((B, n_slots), dtype=bool)
+    believed = np.zeros((B, n_slots), dtype=bool)
+    slot = np.full((B, n), -1, dtype=np.int64)
+    rows = np.arange(B)
+    jams = 0
+    for i in range(n):
+        empties = np.argsort(believed, axis=1, kind="stable")[:, : n_slots - i]
+        idx = rng.integers(0, n_slots - i, size=B)
+        s = empties[rows, idx]
+        believed[rows, s] = True
+        land = s.copy()
+        # belief wrong: intended slot actually occupied → deflect to a free neighbour
+        wrong = actual[rows, s]
+        if wrong.any():
+            for delta in (1, -1, 2, -2):
+                cand = np.clip(s + delta, 0, n_slots - 1)
+                free = wrong & (land == s) & ~actual[rows, cand] & (s + delta >= 0) & (s + delta < n_slots)
+                land = np.where(free, cand, land)
+            still = wrong & (land == s)
+            jams += int(still.sum())
+            if still.any():   # unrecoverable: park in any free slot (sim only; the machine would stop)
+                free_any = np.argmax(~actual, axis=1)
+                land = np.where(still, free_any, land)
+        # neighbour error on a correctly targeted card
+        if p_neighbor > 0:
+            err = (rng.random(B) < p_neighbor) & ~wrong
+            up = rng.random(B) < (1 + bias) / 2
+            cand = s + np.where(up, 1, -1)
+            valid = err & (cand >= 0) & (cand < n_slots) & ~actual[rows, np.clip(cand, 0, n_slots - 1)]
+            land = np.where(valid, cand, land)
+        slot[:, i] = land
+        actual[rows, land] = True
+    if count_jams is not None:
+        count_jams[0] = jams
+    return np.argsort(slot, axis=1, kind="stable")
+
+
+def model_wheel(B, n, rng, n_slots=54, **kw):
+    return _wheel_build(B, n, rng, n_slots=n_slots)
+
+
+def model_wheel_neighbor(B, n, rng, p=0.05, bias=0.0, n_slots=54, **kw):
+    return _wheel_build(B, n, rng, n_slots=n_slots, p_neighbor=p, bias=bias)
+
+
+def model_wheel_neighbor_corrected(B, n, rng, p=0.05, bias=0.0, n_slots=54, **kw):
+    """Same fault, but the firmware detects each misplaced card with the entry beam and corrects its
+    occupancy map (VERIFY_AFTER_INSERT), so later draws are uniform over the TRUE empty slots."""
+    slot = np.full((B, n), -1, dtype=np.int64)
+    occ = np.zeros((B, n_slots), dtype=bool)
+    rows = np.arange(B)
+    for i in range(n):
+        empties = np.argsort(occ, axis=1, kind="stable")[:, : n_slots - i]
+        s = empties[rows, rng.integers(0, n_slots - i, size=B)]
+        if p > 0:
+            err = rng.random(B) < p
+            up = rng.random(B) < (1 + bias) / 2
+            cand = s + np.where(up, 1, -1)
+            valid = err & (cand >= 0) & (cand < n_slots) & ~occ[rows, np.clip(cand, 0, n_slots - 1)]
+            s = np.where(valid, cand, s)
+        slot[:, i] = s
+        occ[rows, s] = True
+    return np.argsort(slot, axis=1, kind="stable")
+
+
 def gsr_riffle_once(deck, rng):
     n = len(deck)
     c = rng.binomial(n, 0.5)
@@ -194,6 +268,9 @@ MODELS = {
     "thick_scale": model_thick_scale,
     "blade_miss": model_blade_miss,
     "double_feed": model_double_feed,
+    "wheel": model_wheel,
+    "wheel_neighbor": model_wheel_neighbor,
+    "wheel_neighbor_corrected": model_wheel_neighbor_corrected,
     "gsr": model_gsr,
     "mech_riffle": model_mech_riffle,
     "bins": model_bins,
@@ -452,6 +529,13 @@ def main():
         Bfast = 20000 if args.quick else 200000
         Bslow = 3000 if args.quick else 20000
         suite = [
+            ("wheel", {}, Bfast),
+            ("wheel_neighbor", {"p": 0.05, "bias": 0.0}, Bfast),
+            ("wheel_neighbor", {"p": 0.05, "bias": 1.0}, Bfast),
+            ("wheel_neighbor", {"p": 0.30, "bias": 0.0}, Bfast),
+            ("wheel_neighbor_corrected", {"p": 0.05, "bias": 0.0}, Bfast),
+            ("wheel_neighbor_corrected", {"p": 0.05, "bias": 1.0}, Bfast),
+            ("wheel_neighbor_corrected", {"p": 0.30, "bias": 1.0}, Bfast),
             ("fy", {}, Bfast),
             ("blade_rand", {"p_plus": 0.05, "p_minus": 0.05}, Bfast),
             ("blade_rand", {"p_plus": 0.25, "p_minus": 0.25}, Bfast),
@@ -485,10 +569,12 @@ def main():
 
     # small-n exact TV for the physical fault models
     print("=" * 78)
-    print("Empirical total-variation distance, n=6 (720 permutations), B=1,000,000")
+    print("Empirical total-variation distance, n=6 (720 permutations), B=1,000,000  (wheel models: 6 cards in 8 slots)")
     Bs = 200000 if args.quick else 1000000
     tvres = {}
-    for name, kw in [("fy", {}), ("blade_rand", {"p_plus": 0.05, "p_minus": 0.05}),
+    for name, kw in [("fy", {}), ("wheel", {"n_slots": 8}), ("wheel_neighbor", {"p": 0.05, "bias": 0.0, "n_slots": 8}), ("wheel_neighbor", {"p": 0.05, "bias": 1.0, "n_slots": 8}),
+                     ("wheel_neighbor_corrected", {"p": 0.05, "bias": 0.0, "n_slots": 8}), ("wheel_neighbor_corrected", {"p": 0.05, "bias": 1.0, "n_slots": 8}),
+                     ("blade_rand", {"p_plus": 0.05, "p_minus": 0.05}),
                      ("blade_sys", {"p": 0.10}), ("blade_sys", {"p": 1.0}), ("blade_miss", {"p": 0.02}),
                      ("double_feed", {"p": 0.02}), ("bins", {"nbins": 8, "passes": 1}),
                      ("bins", {"nbins": 8, "passes": 3})]:

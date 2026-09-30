@@ -1,37 +1,36 @@
 id,item,qty,specification,compatible_alternatives,est_unit_usd,est_total_usd,example_sources,price_status
 E1,ESP32 DevKitC V4 (WROOM-32 30-pin),1,"ESP32-WROOM-32, CP2102/CH340 USB, 30-pin",ESP32-S3 DevKitC (pin remap),6.00,6.00,"eBay ~$5, LCSC $8.7, Mouser $10",verified 2026-09 (range)
-E2,TMC2208 stepper driver stepstick,1,"TMC2208 V1.2 or V3, standalone mode, with heatsink",A4988 (>=8 V only) or DRV8825,5.00,5.00,"UK £3.25-4.45, US $6-20",verified (range)
-E3,NEMA 17 stepper motor,1,"42 mm, 1.0-1.7 A, 4-wire, 5 mm shaft; e.g. 17HS4401 or 17HS4023",Integrated lead-screw NEMA 17 (LDO 42STH25-1004CL200ET $33 incl. screw),10.00,10.00,"StepperOnline, Amazon, AliExpress",unverified (typical)
-E4,T8x8 lead screw 100 mm with brass nut,1,"Tr8x8 (4-start, 8 mm lead), 100-150 mm, flanged brass nut",T8x2 (slower; firmware STEPS_PER_MM changes),6.00,6.00,"eBay $4.4-7 (kits incl. coupler)",verified (range)
-E5,Shaft coupler 5 mm to 8 mm,1,"Flexible aluminium coupler 19 x 25 mm",Rigid coupler,2.50,2.50,"included in some E4 kits",unverified
-E6,Linear rod 8 mm x 100 mm,2,"Hardened steel shaft 8 mm",304 stainless rod,2.50,5.00,"Amazon/AliExpress",unverified
-E7,LM8UU linear bearing,2,"8 x 15 x 24 mm",Printed PETG bushing (drill/ream to 8.05 mm),1.00,2.00,"Amazon 10-pack ~$8",unverified
-E8,MG90S micro servo,2,"Metal gear, 180 deg, with horns and screws",SG90,3.00,6.00,"Waveshare $2.59, eBay 4-pack $13.95",verified
-E9,N20 micro gearmotor 6 V 300 rpm,2,"N20 metal gearbox, 3 mm D-shaft",N20 200-500 rpm,4.00,8.00,"Robu.in ~$3, Amazon 2-packs ~$9",partly verified
-E10,DRV8833 dual H-bridge module,1,"DRV8833 breakout, 2.7-10.8 V",TB6612FNG module,3.00,3.00,"Pololu $4.95, generic $2-3",verified (range)
-E11,3S Li-ion battery pack with BMS,1,"11.1 V 2200-2600 mAh 18650 3S1P, integrated protection board >=5 A, XT30 or JST-XH",Any protected 3S pack that fits 75 x 60 x 22 mm,18.00,18.00,"Amazon, robotics suppliers (Orange 3S 2200 mAh)",unverified (typical)
-E12,12.6 V 1 A Li-ion charger,1,"CC/CV, 5.5x2.1 mm barrel plug, wall adapter",12.6 V 1.5-2 A,6.00,6.00,"eBay £3-4 to $19",verified (range)
-E13,DC barrel jack panel mount 5.5x2.1 mm,1,"Panel mount with nut",PCB mount jack,1.00,1.00,"any",unverified
-E14,Buck converter module 5 V 3 A,1,"MP1584EN or LM2596 adjustable, set to 5.00 V",Fixed 5 V 3 A module,2.00,2.00,"any",unverified
-E15,Toggle switch SPST,1,"Panel mount, >=3 A DC, 6 mm bushing",Rocker switch,1.50,1.50,"any",unverified
-E16,Push button momentary,1,"12 mm panel mount, optionally with LED ring",30 mm arcade button,2.00,2.00,"any",unverified
-E17,WS2812B RGB pixel breakout,1,"Single NeoPixel-compatible pixel on a small board",3 discrete LEDs + resistors,1.00,1.00,"any",unverified
-E18,Passive piezo buzzer,1,"5 V passive (needs PWM tone)",Active buzzer (firmware flag),1.00,1.00,"any",unverified
-E19,IR LED 940 nm 3 mm,3,"e.g. Vishay TSAL4400 or IR204",5 mm parts (enlarge holes to 5.3 mm),0.35,1.05,"DigiKey/RS $0.25-0.45",verified (range)
-E20,IR phototransistor 3 mm,3,"e.g. Vishay TEFT4300 or PT204-6B",5 mm PT334,0.40,1.20,"DigiKey/RS ~$0.30",verified (range)
-E21,Lever microswitch,1,"KW11/KW12 with lever, NC contact used",Optical endstop module,0.50,0.50,"any",unverified
-E22,NPN transistor 2N2222 / BC547,1,"TO-92",Logic-level N-MOSFET,0.20,0.20,"any",unverified
-E23,Resistor set,1,"150 ohm x3, 1 k, 10 k x4, 100 k, 33 k, 330, 100 (1/4 W)",—,1.00,1.00,"any",unverified
-E24,Capacitors,1,"100 uF 25 V x2, 470 uF 10 V, 100 nF x3",—,1.00,1.00,"any",unverified
-E25,Perfboard 70 x 50 mm + headers + JST-XH kit + wire,1,"Female headers for ESP32/drivers, JST-XH 2.54 crimp kit, 22-24 AWG wire, heat shrink",Dupont connectors,8.00,8.00,"any",unverified
-E26,Polyfuse 3 A,1,"Resettable 3 A hold (or blade fuse holder + 3 A)",Blade fuse,1.00,1.00,"any",unverified
-M1,O-rings ID 20 x CS 3.5 mm nitrile,6,"NBR 70 Shore A (2 spare)",Silicone O-rings (grippier)",0.40,2.40,"O-ring assortment kit ~$8 covers M1+M2",unverified
-M2,O-rings 9 x 2 mm,2,"For idler wheels",Plain printed wheels (no ring),0.20,0.40,"assortment",unverified
-M3,Brass sheet 0.5 mm 100 x 100 mm,1,"K&S 0.020 in brass, cut two 40 x 30 mm blades",Feeler gauge set (use 0.45-0.55 mm blades, 2 per side) ~$7,6.00,6.00,"hobby shops, Amazon",partly verified
-M4,Self-adhesive felt sheet 1.5 mm,1,"For well back pad and lid pressure pad",EVA foam 1.5-2 mm,3.00,3.00,"any",unverified
-M5,M3 screw assortment,1,"M3 x 6/8/10/12/16/20 (approx 60 pcs), M3 x 50 x1, M3 x 60 x1 (hinge), M3 nuts, M3 grub x4",Heat-set inserts optional,7.00,7.00,"any",unverified
-M6,M2 x 8 screws,4,"For servos (usually included) and endstop",—,0.10,0.40,"any",unverified
-M7,Compression springs from ballpoint pens,2,"~5 mm OD, 15 mm long",Rubber band,0.00,0.00,"scrap",—
-M8,AA cells (dead) for lid ballast,2,"any",Coins/washers,0.00,0.00,"scrap",—
-M9,Velcro strap 20 x 300 mm + foam pad,1,"Battery retention",Zip ties,2.00,2.00,"any",unverified
-O1,TCRT5000 reflective sensor module (optional),1,"Deck-loaded indicator",—,1.00,1.00,"any",unverified
+E2,TMC2208 stepper driver stepstick,1,"standalone mode, with heatsink",A4988 or DRV8825 (3S pack only),5.00,5.00,"UK £3.25-4.45, US $6-20",verified (range)
+E3,NEMA 17 stepper motor,1,"42 mm, 1.5-1.7 A, 4-wire, 5 mm shaft (17HS4401 class)",17HS4023 (1 A) with Vref 0.7 V,10.00,10.00,"StepperOnline, Amazon, AliExpress",unverified (typical)
+E4,Shaft coupler 5 mm to 8 mm,1,"flexible aluminium 19 x 25 mm",rigid coupler,2.50,2.50,"Ender-3 Z-axis kits include one",unverified
+E5,M8 threaded rod 200 mm + 4 nyloc nuts + 6 washers,1,"zinc plated, cut to 165 mm",8 mm smooth rod with a filed flat and set screws,2.00,2.00,"hardware store",unverified
+E6,608ZZ bearing,2,"8 x 22 x 7 mm",608-2RS,0.75,1.50,"skate bearings, Amazon 10-pack ~$7",unverified
+E7,MG90S micro servo,1,"metal gear, 180 deg, with horns",SG90,3.00,3.00,"Waveshare $2.59, eBay 4-pack $13.95",verified
+E8,N20 micro gearmotor 6 V 300 rpm,3,"N20 metal gearbox, 3 mm D-shaft",N20 200-500 rpm,4.00,12.00,"Robu.in ~$3, Amazon 2-packs ~$9",partly verified
+E9,DRV8833 dual H-bridge module,2,"2.7-10.8 V, 1.5 A/ch",TB6612FNG module,3.00,6.00,"Pololu $4.95, generic $2-3",verified (range)
+E10,3S Li-ion battery pack with BMS,1,"11.1 V 2200-2600 mAh 18650 3S1P, BMS >= 5 A, XT30 or JST-XH",any protected 3S pack <= 75 x 60 x 22 mm,18.00,18.00,"Amazon, robotics suppliers",unverified (typical)
+E11,12.6 V 1 A Li-ion charger,1,"CC/CV, 5.5x2.1 barrel",12.6 V 1.5-2 A,6.00,6.00,"eBay £3-4 to $19",verified (range)
+E12,DC barrel jack panel mount 5.5x2.1,1,"with nut",—,1.00,1.00,"any",unverified
+E13,Buck converter 5 V 3 A,1,"MP1584EN or LM2596 adjustable",fixed 5 V 3 A module,2.00,2.00,"any",unverified
+E14,Toggle switch SPST,1,">= 3 A DC, 6 mm bushing",rocker,1.50,1.50,"any",unverified
+E15,Push button momentary 12 mm,1,"panel mount",arcade button,2.00,2.00,"any",unverified
+E16,WS2812B pixel breakout,1,"single pixel",3 LEDs,1.00,1.00,"any",unverified
+E17,Passive piezo buzzer,1,"5 V passive",active buzzer,1.00,1.00,"any",unverified
+E18,IR LED 940 nm 3 mm,3,"TSAL4400 / IR204",5 mm (enlarge holes),0.35,1.05,"DigiKey/RS $0.25-0.45",verified (range)
+E19,IR phototransistor 3 mm,3,"TEFT4300 / PT204-6B",5 mm PT334,0.40,1.20,"DigiKey/RS ~$0.30",verified (range)
+E20,Slotted optical sensor module (index),1,"LM393 comparator module, 5 mm slot, digital out","bare TCST2103 + 10 k pull-up on GPIO32",1.00,1.00,"'IR speed sensor module' listings",unverified
+E21,NPN transistor 2N2222 / BC547,1,"TO-92",logic-level N-MOSFET,0.20,0.20,"any",unverified
+E22,Resistor set,1,"150 x3, 1 k, 10 k x4, 100 k, 33 k, 330, 100 ohm",—,1.00,1.00,"any",unverified
+E23,Capacitors,1,"100 uF 25 V x3, 470 uF 10 V, 100 nF x3",—,1.00,1.00,"any",unverified
+E24,Perfboard 70x50 + headers + JST-XH kit + wire,1,"female headers, JST-XH 2.54 crimp kit, 22-24 AWG",Dupont,8.00,8.00,"any",unverified
+E25,Polyfuse 3 A,1,"resettable, or blade fuse holder + 3 A",—,1.00,1.00,"any",unverified
+M1,O-rings ID 20 x CS 3.5 mm nitrile,5,"feed roller (4 + spare)",silicone,0.40,2.00,"metric O-ring assortment ~$8 covers M1-M3",unverified
+M2,O-rings ID 10 x CS 3.0 mm nitrile,9,"two nip rollers (8 + spare)",—,0.25,2.25,"assortment",unverified
+M3,O-rings 9 x 2 mm,4,"idler wheels",plain printed wheels,0.20,0.80,"assortment",unverified
+M4,Self-adhesive felt sheet 1.5 mm,1,"chute end wall, lid pad, optional shroud lining",EVA foam,3.00,3.00,"any",unverified
+M5,M3 screw assortment,1,"M3 x 6/8/10/12/16/20 (~80 pcs), M3 x 50 x2, M3 x 60 x1, nuts, 2 grub",heat-set inserts optional,8.00,8.00,"any",unverified
+M6,M2 x 8 screws,6,"servo tabs, index module, horn pin",—,0.10,0.60,"any",unverified
+M7,Compression springs from ballpoint pens,4,"~5 mm OD, 15 mm",rubber bands,0.00,0.00,"scrap",—
+M8,AA cells (dead) for lid ballast,2,"any",coins/washers,0.00,0.00,"scrap",—
+M9,Velcro strap + foam pad,1,"battery retention",zip ties,2.00,2.00,"any",unverified
+O1,TCRT5000 module (optional deck-loaded sensor),1,"",—,1.00,1.00,"any",unverified

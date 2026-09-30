@@ -1,504 +1,700 @@
 ==============================================================================
-MODEL fy   B=200000   n=52
+MODEL wheel   B=200000   n=52
 position_frequency:
-  chi2: 2614.91
+  chi2: 2559.39
   df: 2601
-  p_value: 0.420054
-  max_abs_z: 3.88885
-  bottom_card_chi2_p: 0.0243749
-  top_card_chi2_p: 0.992559
-  P(bottom output = bottom input): 0.018905
-  P(top output = top input): 0.01935
+  p_value: 0.715918
+  max_abs_z: 3.4004
+  bottom_card_chi2_p: 0.903898
+  top_card_chi2_p: 0.962115
+  P(bottom output = bottom input): 0.018925
+  P(top output = top input): 0.01923
   uniform value: 0.0192308
 pairwise_precedence:
   pairs: 1326
-  max_abs_dev: 0.003355
-  max_abs_z: 3.0008
-  pairs_beyond_3sigma: 1
+  max_abs_dev: 0.003645
+  max_abs_z: 3.26019
+  pairs_beyond_3sigma: 2
   expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.499835
+  mean_P(earlier input card below later input card): 0.500047
 adjacency:
-  mean_original_successor_directly_above: 0.978815
+  mean_original_successor_directly_above: 0.979605
   expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 1.95769
+  mean_original_neighbours_adjacent_either_way: 1.95955
   expected_if_uniform_either_way: 1.96154
   std_err: 0.00221446
 rising_sequences:
   mean: 26.5113
   expected_if_uniform: 26.5
-  std: 2.10445
+  std: 2.09862
   expected_std_if_uniform: 2.10159
-  z_of_mean: 2.40994
-  min: 17
+  z_of_mean: 2.39823
+  min: 18
   max: 36
   hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
 serial_and_rank_correlation:
-  serial_corr_mean: -0.0195237
+  serial_corr_mean: -0.0196822
   serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 0.271022
-  spearman_mean: -0.000454184
-  spearman_std: 0.139906
+  serial_corr_z: -0.239239
+  spearman_mean: 0.000163927
+  spearman_std: 0.140123
   spearman_expected_std_if_uniform: 0.140028
-  spearman_z: -1.45181
+  spearman_z: 0.523187
 next_card_guessing:
-  correct_per_deck: 4.5625
+  correct_per_deck: 4.5458
   expected_if_uniform: 4.53804
   test_decks: 10000
-_stats_seconds: 8.7
+_stats_seconds: 8.3
 _B: 200000
-_generate_seconds: 4.7
+_generate_seconds: 9
 ==============================================================================
-MODEL blade_rand {"p_plus": 0.05, "p_minus": 0.05}   B=200000   n=52
+MODEL wheel_neighbor {"p": 0.05, "bias": 0.0}   B=200000   n=52
 position_frequency:
-  chi2: 2669
+  chi2: 2954.72
   df: 2601
-  p_value: 0.172599
-  max_abs_z: 4.06795
-  bottom_card_chi2_p: 0.921537
-  top_card_chi2_p: 0.566219
-  P(bottom output = bottom input): 0.01989
-  P(top output = top input): 0.01904
+  p_value: 1.25521e-06
+  max_abs_z: 3.61707
+  bottom_card_chi2_p: 0.123405
+  top_card_chi2_p: 0.116933
+  P(bottom output = bottom input): 0.01888
+  P(top output = top input): 0.018665
   uniform value: 0.0192308
 pairwise_precedence:
   pairs: 1326
-  max_abs_dev: 0.004195
-  max_abs_z: 3.75212
-  pairs_beyond_3sigma: 7
+  max_abs_dev: 0.005415
+  max_abs_z: 4.84332
+  pairs_beyond_3sigma: 48
   expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.499927
+  mean_P(earlier input card below later input card): 0.499397
 adjacency:
-  mean_original_successor_directly_above: 0.97987
+  mean_original_successor_directly_above: 1.0051
   expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 1.96042
+  mean_original_neighbours_adjacent_either_way: 1.9747
   expected_if_uniform_either_way: 1.96154
   std_err: 0.00221446
 rising_sequences:
-  mean: 26.4967
+  mean: 26.4816
   expected_if_uniform: 26.5
-  std: 2.09754
+  std: 2.10282
   expected_std_if_uniform: 2.10159
-  z_of_mean: -0.693722
-  min: 17
+  z_of_mean: -3.91868
+  min: 18
   max: 36
   hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
 serial_and_rank_correlation:
-  serial_corr_mean: -0.0195242
+  serial_corr_mean: -0.0194288
   serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 0.269775
-  spearman_mean: -0.00023031
-  spearman_std: 0.139975
+  serial_corr_z: 0.577647
+  spearman_mean: -0.00199589
+  spearman_std: 0.140298
   spearman_expected_std_if_uniform: 0.140028
-  spearman_z: -0.735831
+  spearman_z: -6.36207
 next_card_guessing:
-  correct_per_deck: 4.5204
+  correct_per_deck: 4.571
   expected_if_uniform: 4.53804
   test_decks: 10000
 _stats_seconds: 7.9
 _B: 200000
-_generate_seconds: 4.7
+_generate_seconds: 10.8
 ==============================================================================
-MODEL blade_rand {"p_plus": 0.25, "p_minus": 0.25}   B=200000   n=52
+MODEL wheel_neighbor {"p": 0.05, "bias": 1.0}   B=200000   n=52
 position_frequency:
-  chi2: 2667.75
+  chi2: 3675.37
   df: 2601
-  p_value: 0.176981
-  max_abs_z: 3.77989
-  bottom_card_chi2_p: 0.851364
-  top_card_chi2_p: 0.51073
-  P(bottom output = bottom input): 0.01925
-  P(top output = top input): 0.01893
+  p_value: 2.58635e-40
+  max_abs_z: 6.47766
+  bottom_card_chi2_p: 2.99155e-61
+  top_card_chi2_p: 1.3189e-37
+  P(bottom output = bottom input): 0.01815
+  P(top output = top input): 0.01765
   uniform value: 0.0192308
 pairwise_precedence:
   pairs: 1326
-  max_abs_dev: 0.004385
-  max_abs_z: 3.92206
-  pairs_beyond_3sigma: 4
+  max_abs_dev: 0.00843
+  max_abs_z: 7.54002
+  pairs_beyond_3sigma: 308
   expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.50019
+  mean_P(earlier input card below later input card): 0.498034
 adjacency:
-  mean_original_successor_directly_above: 0.98383
+  mean_original_successor_directly_above: 0.98
   expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 1.96456
+  mean_original_neighbours_adjacent_either_way: 1.98183
   expected_if_uniform_either_way: 1.96154
   std_err: 0.00221446
 rising_sequences:
-  mean: 26.4919
+  mean: 26.5106
   expected_if_uniform: 26.5
-  std: 2.09757
+  std: 2.09889
   expected_std_if_uniform: 2.10159
-  z_of_mean: -1.73218
+  z_of_mean: 2.26204
+  min: 18
+  max: 36
+  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
+serial_and_rank_correlation:
+  serial_corr_mean: -0.0195564
+  serial_corr_expected_if_uniform: -0.0196078
+  serial_corr_z: 0.165698
+  spearman_mean: -0.00543011
+  spearman_std: 0.140069
+  spearman_expected_std_if_uniform: 0.140028
+  spearman_z: -17.3374
+next_card_guessing:
+  correct_per_deck: 4.5315
+  expected_if_uniform: 4.53804
+  test_decks: 10000
+_stats_seconds: 7.7
+_B: 200000
+_generate_seconds: 10.1
+==============================================================================
+MODEL wheel_neighbor {"p": 0.3, "bias": 0.0}   B=200000   n=52
+position_frequency:
+  chi2: 10475.3
+  df: 2601
+  p_value: 0
+  max_abs_z: 14.2491
+  bottom_card_chi2_p: 7.9188e-145
+  top_card_chi2_p: 1.53429e-21
+  P(bottom output = bottom input): 0.019085
+  P(top output = top input): 0.017595
+  uniform value: 0.0192308
+pairwise_precedence:
+  pairs: 1326
+  max_abs_dev: 0.0296
+  max_abs_z: 26.475
+  pairs_beyond_3sigma: 613
+  expected_beyond_3sigma_if_uniform: 3.5802
+  mean_P(earlier input card below later input card): 0.496421
+adjacency:
+  mean_original_successor_directly_above: 1.13626
+  expected_if_uniform: 0.980769
+  mean_original_neighbours_adjacent_either_way: 2.04793
+  expected_if_uniform_either_way: 1.96154
+  std_err: 0.00221446
+rising_sequences:
+  mean: 26.3584
+  expected_if_uniform: 26.5
+  std: 2.112
+  expected_std_if_uniform: 2.10159
+  z_of_mean: -30.1354
   min: 16
   max: 35
   hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
 serial_and_rank_correlation:
-  serial_corr_mean: -0.0197509
+  serial_corr_mean: -0.0175897
   serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: -0.460761
-  spearman_mean: 0.000519921
-  spearman_std: 0.140082
+  serial_corr_z: 6.49165
+  spearman_mean: -0.0123344
+  spearman_std: 0.140572
   spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 1.65985
+  spearman_z: -39.2402
 next_card_guessing:
-  correct_per_deck: 4.5357
+  correct_per_deck: 4.8093
   expected_if_uniform: 4.53804
   test_decks: 10000
-_stats_seconds: 7.9
+_stats_seconds: 7.8
 _B: 200000
-_generate_seconds: 6.3
+_generate_seconds: 11.1
 ==============================================================================
-MODEL blade_sys {"p": 0.1}   B=200000   n=52
+MODEL fy   B=200000   n=52
 position_frequency:
-  chi2: 13121.4
+  chi2: 2649.86
   df: 2601
-  p_value: 0
-  max_abs_z: 35.7198
-  bottom_card_chi2_p: 0
-  top_card_chi2_p: 0
-  P(bottom output = bottom input): 0.0302
-  P(top output = top input): 0.02135
+  p_value: 0.247475
+  max_abs_z: 4.08924
+  bottom_card_chi2_p: 0.6667
+  top_card_chi2_p: 0.316955
+  P(bottom output = bottom input): 0.019745
+  P(top output = top input): 0.019415
   uniform value: 0.0192308
 pairwise_precedence:
   pairs: 1326
-  max_abs_dev: 0.052615
-  max_abs_z: 47.0603
-  pairs_beyond_3sigma: 248
+  max_abs_dev: 0.004355
+  max_abs_z: 3.89523
+  pairs_beyond_3sigma: 17
   expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.503519
+  mean_P(earlier input card below later input card): 0.500191
 adjacency:
-  mean_original_successor_directly_above: 0.99113
+  mean_original_successor_directly_above: 0.980305
   expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 1.96599
+  mean_original_neighbours_adjacent_either_way: 1.95946
   expected_if_uniform_either_way: 1.96154
   std_err: 0.00221446
 rising_sequences:
-  mean: 26.4055
+  mean: 26.4917
   expected_if_uniform: 26.5
-  std: 2.09617
+  std: 2.09976
   expected_std_if_uniform: 2.10159
-  z_of_mean: -20.1062
-  min: 17
-  max: 35
+  z_of_mean: -1.76516
+  min: 18
+  max: 36
   hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
 serial_and_rank_correlation:
-  serial_corr_mean: -0.0193342
+  serial_corr_mean: -0.0201798
   serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 0.880503
-  spearman_mean: 0.00997109
-  spearman_std: 0.139875
+  serial_corr_z: -1.8384
+  spearman_mean: 0.000550522
+  spearman_std: 0.140011
   spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 31.8799
+  spearman_z: 1.75844
 next_card_guessing:
-  correct_per_deck: 4.5472
+  correct_per_deck: 4.5553
   expected_if_uniform: 4.53804
   test_decks: 10000
-_stats_seconds: 8.1
+_stats_seconds: 7.4
 _B: 200000
-_generate_seconds: 5.1
+_generate_seconds: 4.3
+==============================================================================
+MODEL blade_rand {"p_plus": 0.05, "p_minus": 0.05}   B=200000   n=52
+position_frequency:
+  chi2: 2537.14
+  df: 2601
+  p_value: 0.811521
+  max_abs_z: 3.19374
+  bottom_card_chi2_p: 0.717932
+  top_card_chi2_p: 0.389125
+  P(bottom output = bottom input): 0.019565
+  P(top output = top input): 0.0193
+  uniform value: 0.0192308
+pairwise_precedence:
+  pairs: 1326
+  max_abs_dev: 0.00378
+  max_abs_z: 3.38093
+  pairs_beyond_3sigma: 4
+  expected_beyond_3sigma_if_uniform: 3.5802
+  mean_P(earlier input card below later input card): 0.499991
+adjacency:
+  mean_original_successor_directly_above: 0.97937
+  expected_if_uniform: 0.980769
+  mean_original_neighbours_adjacent_either_way: 1.95815
+  expected_if_uniform_either_way: 1.96154
+  std_err: 0.00221446
+rising_sequences:
+  mean: 26.5014
+  expected_if_uniform: 26.5
+  std: 2.09475
+  expected_std_if_uniform: 2.10159
+  z_of_mean: 0.290469
+  min: 17
+  max: 36
+  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
+serial_and_rank_correlation:
+  serial_corr_mean: -0.0193088
+  serial_corr_expected_if_uniform: -0.0196078
+  serial_corr_z: 0.961965
+  spearman_mean: -8.66674e-05
+  spearman_std: 0.140198
+  spearman_expected_std_if_uniform: 0.140028
+  spearman_z: -0.276458
+next_card_guessing:
+  correct_per_deck: 4.5362
+  expected_if_uniform: 4.53804
+  test_decks: 10000
+_stats_seconds: 6.7
+_B: 200000
+_generate_seconds: 4.9
+==============================================================================
+MODEL blade_rand {"p_plus": 0.25, "p_minus": 0.25}   B=200000   n=52
+position_frequency:
+  chi2: 2713.19
+  df: 2601
+  p_value: 0.0614358
+  max_abs_z: 3.9377
+  bottom_card_chi2_p: 0.745492
+  top_card_chi2_p: 0.5435
+  P(bottom output = bottom input): 0.01931
+  P(top output = top input): 0.0196
+  uniform value: 0.0192308
+pairwise_precedence:
+  pairs: 1326
+  max_abs_dev: 0.003965
+  max_abs_z: 3.5464
+  pairs_beyond_3sigma: 5
+  expected_beyond_3sigma_if_uniform: 3.5802
+  mean_P(earlier input card below later input card): 0.499846
+adjacency:
+  mean_original_successor_directly_above: 0.98371
+  expected_if_uniform: 0.980769
+  mean_original_neighbours_adjacent_either_way: 1.96575
+  expected_if_uniform_either_way: 1.96154
+  std_err: 0.00221446
+rising_sequences:
+  mean: 26.5045
+  expected_if_uniform: 26.5
+  std: 2.1032
+  expected_std_if_uniform: 2.10159
+  z_of_mean: 0.961847
+  min: 16
+  max: 36
+  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
+serial_and_rank_correlation:
+  serial_corr_mean: -0.0198381
+  serial_corr_expected_if_uniform: -0.0196078
+  serial_corr_z: -0.742142
+  spearman_mean: -0.000469815
+  spearman_std: 0.140006
+  spearman_expected_std_if_uniform: 0.140028
+  spearman_z: -1.50071
+next_card_guessing:
+  correct_per_deck: 4.5525
+  expected_if_uniform: 4.53804
+  test_decks: 10000
+_stats_seconds: 6.9
+_B: 200000
+_generate_seconds: 4.6
+==============================================================================
+MODEL blade_sys {"p": 0.1}   B=200000   n=52
+position_frequency:
+  chi2: 13006
+  df: 2601
+  p_value: 0
+  max_abs_z: 34.9057
+  bottom_card_chi2_p: 0
+  top_card_chi2_p: 0
+  P(bottom output = bottom input): 0.02995
+  P(top output = top input): 0.021395
+  uniform value: 0.0192308
+pairwise_precedence:
+  pairs: 1326
+  max_abs_dev: 0.053425
+  max_abs_z: 47.7848
+  pairs_beyond_3sigma: 245
+  expected_beyond_3sigma_if_uniform: 3.5802
+  mean_P(earlier input card below later input card): 0.503543
+adjacency:
+  mean_original_successor_directly_above: 0.990845
+  expected_if_uniform: 0.980769
+  mean_original_neighbours_adjacent_either_way: 1.9654
+  expected_if_uniform_either_way: 1.96154
+  std_err: 0.00221446
+rising_sequences:
+  mean: 26.3955
+  expected_if_uniform: 26.5
+  std: 2.1017
+  expected_std_if_uniform: 2.10159
+  z_of_mean: -22.2353
+  min: 17
+  max: 36
+  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
+serial_and_rank_correlation:
+  serial_corr_mean: -0.0192832
+  serial_corr_expected_if_uniform: -0.0196078
+  serial_corr_z: 1.04823
+  spearman_mean: 0.0100134
+  spearman_std: 0.139818
+  spearman_expected_std_if_uniform: 0.140028
+  spearman_z: 32.0283
+next_card_guessing:
+  correct_per_deck: 4.565
+  expected_if_uniform: 4.53804
+  test_decks: 10000
+_stats_seconds: 7.6
+_B: 200000
+_generate_seconds: 4.3
 ==============================================================================
 MODEL blade_sys {"p": 1.0}   B=200000   n=52
 position_frequency:
-  chi2: 1.06094e+07
+  chi2: 1.06116e+07
   df: 2601
   p_value: 0
   max_abs_z: 3193.74
   bottom_card_chi2_p: 0
   top_card_chi2_p: 0
   P(bottom output = bottom input): 1
-  P(top output = top input): 0.038545
+  P(top output = top input): 0.03889
   uniform value: 0.0192308
 pairwise_precedence:
   pairs: 1326
   max_abs_dev: 0.5
   max_abs_z: 447.214
-  pairs_beyond_3sigma: 778
+  pairs_beyond_3sigma: 680
   expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.535753
+  mean_P(earlier input card below later input card): 0.535929
 adjacency:
-  mean_original_successor_directly_above: 1.13495
+  mean_original_successor_directly_above: 1.13691
   expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 2.09307
+  mean_original_neighbours_adjacent_either_way: 2.09544
   expected_if_uniform_either_way: 1.96154
   std_err: 0.00221446
 rising_sequences:
-  mean: 25.5168
+  mean: 25.5172
   expected_if_uniform: 26.5
-  std: 2.1044
+  std: 2.1046
   expected_std_if_uniform: 2.10159
-  z_of_mean: -209.227
+  z_of_mean: -209.149
   min: 16
   max: 35
   hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
 serial_and_rank_correlation:
-  serial_corr_mean: 0.0117904
+  serial_corr_mean: 0.0114497
   serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 99.3028
-  spearman_mean: 0.101424
-  spearman_std: 0.136498
+  serial_corr_z: 98.2248
+  spearman_mean: 0.101936
+  spearman_std: 0.136715
   spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 332.298
+  spearman_z: 333.446
 next_card_guessing:
-  correct_per_deck: 5.6437
+  correct_per_deck: 5.6256
   expected_if_uniform: 4.53804
   test_decks: 10000
-_stats_seconds: 7.9
+_stats_seconds: 7
 _B: 200000
-_generate_seconds: 5
+_generate_seconds: 4.6
 ==============================================================================
 MODEL thick_scale {"d": 0.03}   B=200000   n=52
 position_frequency:
-  chi2: 148216
+  chi2: 148685
   df: 2601
   p_value: 0
   max_abs_z: 62.6224
-  bottom_card_chi2_p: 0.679628
+  bottom_card_chi2_p: 0.765545
   top_card_chi2_p: 0
-  P(bottom output = bottom input): 0.019335
-  P(top output = top input): 0.037725
+  P(bottom output = bottom input): 0.01896
+  P(top output = top input): 0.038385
   uniform value: 0.0192308
 pairwise_precedence:
   pairs: 1326
-  max_abs_dev: 0.02661
-  max_abs_z: 23.8007
-  pairs_beyond_3sigma: 974
+  max_abs_dev: 0.02698
+  max_abs_z: 24.1316
+  pairs_beyond_3sigma: 975
   expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.51159
+  mean_P(earlier input card below later input card): 0.511363
 adjacency:
-  mean_original_successor_directly_above: 1.01755
+  mean_original_successor_directly_above: 1.0199
   expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 2.01667
+  mean_original_neighbours_adjacent_either_way: 2.02591
   expected_if_uniform_either_way: 1.96154
   std_err: 0.00221446
 rising_sequences:
-  mean: 26.4697
+  mean: 26.4645
   expected_if_uniform: 26.5
-  std: 2.09991
+  std: 2.09697
   expected_std_if_uniform: 2.10159
-  z_of_mean: -6.43927
-  min: 18
-  max: 36
-  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
-serial_and_rank_correlation:
-  serial_corr_mean: -0.0164838
-  serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 10.0026
-  spearman_mean: 0.0338589
-  spearman_std: 0.144381
-  spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 104.876
-next_card_guessing:
-  correct_per_deck: 4.5773
-  expected_if_uniform: 4.53804
-  test_decks: 10000
-_stats_seconds: 8.7
-_B: 200000
-_generate_seconds: 4
-==============================================================================
-MODEL blade_miss {"p": 0.02}   B=200000   n=52
-position_frequency:
-  chi2: 67543.4
-  df: 2601
-  p_value: 0
-  max_abs_z: 63.0082
-  bottom_card_chi2_p: 7.52341e-08
-  top_card_chi2_p: 0
-  P(bottom output = bottom input): 0.020695
-  P(top output = top input): 0.03858
-  uniform value: 0.0192308
-pairwise_precedence:
-  pairs: 1326
-  max_abs_dev: 0.038495
-  max_abs_z: 34.431
-  pairs_beyond_3sigma: 1020
-  expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.509921
-adjacency:
-  mean_original_successor_directly_above: 1.01111
-  expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 1.99066
-  expected_if_uniform_either_way: 1.96154
-  std_err: 0.00221446
-rising_sequences:
-  mean: 26.422
-  expected_if_uniform: 26.5
-  std: 2.10326
-  expected_std_if_uniform: 2.10159
-  z_of_mean: -16.5982
-  min: 17
-  max: 36
-  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
-serial_and_rank_correlation:
-  serial_corr_mean: -0.0165344
-  serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 9.83016
-  spearman_mean: 0.0285052
-  spearman_std: 0.142944
-  spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 89.181
-next_card_guessing:
-  correct_per_deck: 4.5839
-  expected_if_uniform: 4.53804
-  test_decks: 10000
-_stats_seconds: 7.8
-_B: 200000
-_generate_seconds: 5.6
-==============================================================================
-MODEL double_feed {"p": 0.02}   B=200000   n=52
-position_frequency:
-  chi2: 2953.83
-  df: 2601
-  p_value: 1.32749e-06
-  max_abs_z: 5.43563
-  bottom_card_chi2_p: 7.98611e-11
-  top_card_chi2_p: 7.63187e-06
-  P(bottom output = bottom input): 0.0209
-  P(top output = top input): 0.019445
-  uniform value: 0.0192308
-pairwise_precedence:
-  pairs: 1326
-  max_abs_dev: 0.012555
-  max_abs_z: 11.2295
-  pairs_beyond_3sigma: 97
-  expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.500459
-adjacency:
-  mean_original_successor_directly_above: 1.51479
-  expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 2.47216
-  expected_if_uniform_either_way: 1.96154
-  std_err: 0.00221446
-rising_sequences:
-  mean: 26.0137
-  expected_if_uniform: 26.5
-  std: 2.13009
-  expected_std_if_uniform: 2.10159
-  z_of_mean: -103.486
-  min: 16
-  max: 36
-  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
-serial_and_rank_correlation:
-  serial_corr_mean: -0.00164281
-  serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 57.3159
-  spearman_mean: 0.000277685
-  spearman_std: 0.142703
-  spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 0.870232
-next_card_guessing:
-  correct_per_deck: 4.9864
-  expected_if_uniform: 4.53804
-  test_decks: 10000
-_stats_seconds: 8
-_B: 200000
-_generate_seconds: 4.7
-==============================================================================
-MODEL bins {"nbins": 8, "passes": 1}   B=200000   n=52
-position_frequency:
-  chi2: 1.60133e+06
-  df: 2601
-  p_value: 0
-  max_abs_z: 344.44
-  bottom_card_chi2_p: 0
-  top_card_chi2_p: 0
-  P(bottom output = bottom input): 0.125005
-  P(top output = top input): 0.12472
-  uniform value: 0.0192308
-pairwise_precedence:
-  pairs: 1326
-  max_abs_dev: 0.066305
-  max_abs_z: 59.305
-  pairs_beyond_3sigma: 1326
-  expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.562382
-adjacency:
-  mean_original_successor_directly_above: 6.38333
-  expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 6.39035
-  expected_if_uniform_either_way: 1.96154
-  std_err: 0.00221446
-rising_sequences:
-  mean: 23.3143
-  expected_if_uniform: 26.5
-  std: 2.08348
-  expected_std_if_uniform: 2.10159
-  z_of_mean: -677.915
-  min: 13
-  max: 33
-  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
-serial_and_rank_correlation:
-  serial_corr_mean: -0.0043909
-  serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 48.2515
-  spearman_mean: 0.124673
-  spearman_std: 0.138445
-  spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 402.725
-next_card_guessing:
-  correct_per_deck: 17.1485
-  expected_if_uniform: 4.53804
-  test_decks: 10000
-_stats_seconds: 8
-_B: 200000
-_generate_seconds: 2
-==============================================================================
-MODEL bins {"nbins": 8, "passes": 4}   B=200000   n=52
-position_frequency:
-  chi2: 2836.09
-  df: 2601
-  p_value: 0.000748489
-  max_abs_z: 3.60079
-  bottom_card_chi2_p: 0.0331944
-  top_card_chi2_p: 0.212913
-  P(bottom output = bottom input): 0.01889
-  P(top output = top input): 0.01863
-  uniform value: 0.0192308
-pairwise_precedence:
-  pairs: 1326
-  max_abs_dev: 0.003375
-  max_abs_z: 3.01869
-  pairs_beyond_3sigma: 1
-  expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.500147
-adjacency:
-  mean_original_successor_directly_above: 0.987845
-  expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 1.96472
-  expected_if_uniform_either_way: 1.96154
-  std_err: 0.00221446
-rising_sequences:
-  mean: 26.4991
-  expected_if_uniform: 26.5
-  std: 2.09975
-  expected_std_if_uniform: 2.10159
-  z_of_mean: -0.188326
+  z_of_mean: -7.54688
   min: 17
   max: 35
   hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
 serial_and_rank_correlation:
-  serial_corr_mean: -0.0192005
+  serial_corr_mean: -0.0160855
   serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 1.31314
-  spearman_mean: 0.000366499
-  spearman_std: 0.140137
+  serial_corr_z: 11.257
+  spearman_mean: 0.0331556
+  spearman_std: 0.144358
   spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 1.16959
+  spearman_z: 102.714
 next_card_guessing:
-  correct_per_deck: 4.5831
+  correct_per_deck: 4.601
   expected_if_uniform: 4.53804
   test_decks: 10000
-_stats_seconds: 8.4
+_stats_seconds: 7.1
 _B: 200000
-_generate_seconds: 3.3
+_generate_seconds: 4.8
+==============================================================================
+MODEL blade_miss {"p": 0.02}   B=200000   n=52
+position_frequency:
+  chi2: 67123.2
+  df: 2601
+  p_value: 0
+  max_abs_z: 63.5618
+  bottom_card_chi2_p: 2.75102e-09
+  top_card_chi2_p: 0
+  P(bottom output = bottom input): 0.02102
+  P(top output = top input): 0.03875
+  uniform value: 0.0192308
+pairwise_precedence:
+  pairs: 1326
+  max_abs_dev: 0.039235
+  max_abs_z: 35.0929
+  pairs_beyond_3sigma: 1028
+  expected_beyond_3sigma_if_uniform: 3.5802
+  mean_P(earlier input card below later input card): 0.510035
+adjacency:
+  mean_original_successor_directly_above: 1.01001
+  expected_if_uniform: 0.980769
+  mean_original_neighbours_adjacent_either_way: 1.98737
+  expected_if_uniform_either_way: 1.96154
+  std_err: 0.00221446
+rising_sequences:
+  mean: 26.424
+  expected_if_uniform: 26.5
+  std: 2.10116
+  expected_std_if_uniform: 2.10159
+  z_of_mean: -16.1822
+  min: 16
+  max: 36
+  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
+serial_and_rank_correlation:
+  serial_corr_mean: -0.0163533
+  serial_corr_expected_if_uniform: -0.0196078
+  serial_corr_z: 10.414
+  spearman_mean: 0.0288316
+  spearman_std: 0.142267
+  spearman_expected_std_if_uniform: 0.140028
+  spearman_z: 90.632
+next_card_guessing:
+  correct_per_deck: 4.5628
+  expected_if_uniform: 4.53804
+  test_decks: 10000
+_stats_seconds: 7.5
+_B: 200000
+_generate_seconds: 4.4
+==============================================================================
+MODEL double_feed {"p": 0.02}   B=200000   n=52
+position_frequency:
+  chi2: 2966.96
+  df: 2601
+  p_value: 5.78171e-07
+  max_abs_z: 5.87524
+  bottom_card_chi2_p: 2.35708e-10
+  top_card_chi2_p: 3.19068e-07
+  P(bottom output = bottom input): 0.021035
+  P(top output = top input): 0.01983
+  uniform value: 0.0192308
+pairwise_precedence:
+  pairs: 1326
+  max_abs_dev: 0.01219
+  max_abs_z: 10.9031
+  pairs_beyond_3sigma: 85
+  expected_beyond_3sigma_if_uniform: 3.5802
+  mean_P(earlier input card below later input card): 0.500492
+adjacency:
+  mean_original_successor_directly_above: 1.51546
+  expected_if_uniform: 0.980769
+  mean_original_neighbours_adjacent_either_way: 2.4723
+  expected_if_uniform_either_way: 1.96154
+  std_err: 0.00221446
+rising_sequences:
+  mean: 26.0094
+  expected_if_uniform: 26.5
+  std: 2.1318
+  expected_std_if_uniform: 2.10159
+  z_of_mean: -104.408
+  min: 17
+  max: 35
+  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
+serial_and_rank_correlation:
+  serial_corr_mean: -0.00222657
+  serial_corr_expected_if_uniform: -0.0196078
+  serial_corr_z: 55.6399
+  spearman_mean: 0.000448571
+  spearman_std: 0.142425
+  spearman_expected_std_if_uniform: 0.140028
+  spearman_z: 1.40851
+next_card_guessing:
+  correct_per_deck: 5.0105
+  expected_if_uniform: 4.53804
+  test_decks: 10000
+_stats_seconds: 7.3
+_B: 200000
+_generate_seconds: 4.8
+==============================================================================
+MODEL bins {"nbins": 8, "passes": 1}   B=200000   n=52
+position_frequency:
+  chi2: 1.59975e+06
+  df: 2601
+  p_value: 0
+  max_abs_z: 346.947
+  bottom_card_chi2_p: 0
+  top_card_chi2_p: 0
+  P(bottom output = bottom input): 0.125775
+  P(top output = top input): 0.125305
+  uniform value: 0.0192308
+pairwise_precedence:
+  pairs: 1326
+  max_abs_dev: 0.06668
+  max_abs_z: 59.6404
+  pairs_beyond_3sigma: 1326
+  expected_beyond_3sigma_if_uniform: 3.5802
+  mean_P(earlier input card below later input card): 0.562525
+adjacency:
+  mean_original_successor_directly_above: 6.38523
+  expected_if_uniform: 0.980769
+  mean_original_neighbours_adjacent_either_way: 6.39217
+  expected_if_uniform_either_way: 1.96154
+  std_err: 0.00221446
+rising_sequences:
+  mean: 23.311
+  expected_if_uniform: 26.5
+  std: 2.08447
+  expected_std_if_uniform: 2.10159
+  z_of_mean: -678.616
+  min: 14
+  max: 32
+  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
+serial_and_rank_correlation:
+  serial_corr_mean: -0.00414593
+  serial_corr_expected_if_uniform: -0.0196078
+  serial_corr_z: 49.0506
+  spearman_mean: 0.125097
+  spearman_std: 0.138682
+  spearman_expected_std_if_uniform: 0.140028
+  spearman_z: 403.408
+next_card_guessing:
+  correct_per_deck: 17.0931
+  expected_if_uniform: 4.53804
+  test_decks: 10000
+_stats_seconds: 7.3
+_B: 200000
+_generate_seconds: 1.9
+==============================================================================
+MODEL bins {"nbins": 8, "passes": 4}   B=200000   n=52
+position_frequency:
+  chi2: 2618.23
+  df: 2601
+  p_value: 0.402233
+  max_abs_z: 3.25386
+  bottom_card_chi2_p: 0.321242
+  top_card_chi2_p: 0.0829062
+  P(bottom output = bottom input): 0.01956
+  P(top output = top input): 0.019185
+  uniform value: 0.0192308
+pairwise_precedence:
+  pairs: 1326
+  max_abs_dev: 0.003705
+  max_abs_z: 3.31385
+  pairs_beyond_3sigma: 3
+  expected_beyond_3sigma_if_uniform: 3.5802
+  mean_P(earlier input card below later input card): 0.49999
+adjacency:
+  mean_original_successor_directly_above: 0.989335
+  expected_if_uniform: 0.980769
+  mean_original_neighbours_adjacent_either_way: 1.96341
+  expected_if_uniform_either_way: 1.96154
+  std_err: 0.00221446
+rising_sequences:
+  mean: 26.4856
+  expected_if_uniform: 26.5
+  std: 2.10543
+  expected_std_if_uniform: 2.10159
+  z_of_mean: -3.07387
+  min: 17
+  max: 36
+  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
+serial_and_rank_correlation:
+  serial_corr_mean: -0.0198045
+  serial_corr_expected_if_uniform: -0.0196078
+  serial_corr_z: -0.633947
+  spearman_mean: -0.000183418
+  spearman_std: 0.140202
+  spearman_expected_std_if_uniform: 0.140028
+  spearman_z: -0.585061
+next_card_guessing:
+  correct_per_deck: 4.5529
+  expected_if_uniform: 4.53804
+  test_decks: 10000
+_stats_seconds: 7.3
+_B: 200000
+_generate_seconds: 2.7
 ==============================================================================
 MODEL gsr {"k": 1}   B=20000   n=52
 position_frequency:
-  chi2: 3.19039e+06
+  chi2: 3.18356e+06
   df: 2601
   p_value: 0
-  max_abs_z: 502.488
+  max_abs_z: 499.811
   bottom_card_chi2_p: 0
   top_card_chi2_p: 0
-  P(bottom output = bottom input): 0.4945
-  P(top output = top input): 0.5072
+  P(bottom output = bottom input): 0.5046
+  P(top output = top input): 0.4988
   uniform value: 0.0192308
 pairwise_precedence:
   pairs: 1326
@@ -506,11 +702,11 @@ pairwise_precedence:
   max_abs_z: 141.421
   pairs_beyond_3sigma: 1315
   expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.749737
+  mean_P(earlier input card below later input card): 0.750254
 adjacency:
-  mean_original_successor_directly_above: 25.4706
+  mean_original_successor_directly_above: 25.4766
   expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 25.4706
+  mean_original_neighbours_adjacent_either_way: 25.4766
   expected_if_uniform_either_way: 1.96154
   std_err: 0.00700275
 rising_sequences:
@@ -523,129 +719,129 @@ rising_sequences:
   max: 2
   hist_1_to_n: [0, 20000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
 serial_and_rank_correlation:
-  serial_corr_mean: 0.880871
+  serial_corr_mean: 0.881009
   serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 14654.6
-  spearman_mean: 0.49927
-  spearman_std: 0.120263
+  serial_corr_z: 14385.1
+  spearman_mean: 0.500711
+  spearman_std: 0.121265
   spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 587.11
+  spearman_z: 583.94
 next_card_guessing:
-  correct_per_deck: 26.7108
+  correct_per_deck: 26.7091
+  expected_if_uniform: 4.53804
+  test_decks: 10000
+_stats_seconds: 2.5
+_B: 20000
+_generate_seconds: 0.7
+==============================================================================
+MODEL gsr {"k": 7}   B=20000   n=52
+position_frequency:
+  chi2: 3142.92
+  df: 2601
+  p_value: 8.54727e-13
+  max_abs_z: 5.94089
+  bottom_card_chi2_p: 0.00445212
+  top_card_chi2_p: 0.00404084
+  P(bottom output = bottom input): 0.02415
+  P(top output = top input): 0.02335
+  uniform value: 0.0192308
+pairwise_precedence:
+  pairs: 1326
+  max_abs_dev: 0.0708
+  max_abs_z: 20.0253
+  pairs_beyond_3sigma: 151
+  expected_beyond_3sigma_if_uniform: 3.5802
+  mean_P(earlier input card below later input card): 0.503797
+adjacency:
+  mean_original_successor_directly_above: 1.19675
+  expected_if_uniform: 0.980769
+  mean_original_neighbours_adjacent_either_way: 1.979
+  expected_if_uniform_either_way: 1.96154
+  std_err: 0.00700275
+rising_sequences:
+  mean: 24.7002
+  expected_if_uniform: 26.5
+  std: 2.08236
+  expected_std_if_uniform: 2.10159
+  z_of_mean: -121.117
+  min: 17
+  max: 34
+  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
+serial_and_rank_correlation:
+  serial_corr_mean: -0.0173236
+  serial_corr_expected_if_uniform: -0.0196078
+  serial_corr_z: 2.33881
+  spearman_mean: 0.00745791
+  spearman_std: 0.140084
+  spearman_expected_std_if_uniform: 0.140028
+  spearman_z: 7.52911
+next_card_guessing:
+  correct_per_deck: 4.6448
+  expected_if_uniform: 4.53804
+  test_decks: 10000
+_stats_seconds: 2.7
+_B: 20000
+_generate_seconds: 4.8
+==============================================================================
+MODEL gsr {"k": 12}   B=20000   n=52
+position_frequency:
+  chi2: 2474.75
+  df: 2601
+  p_value: 0.961659
+  max_abs_z: 3.21204
+  bottom_card_chi2_p: 0.860424
+  top_card_chi2_p: 0.773759
+  P(bottom output = bottom input): 0.01965
+  P(top output = top input): 0.01945
+  uniform value: 0.0192308
+pairwise_precedence:
+  pairs: 1326
+  max_abs_dev: 0.0143
+  max_abs_z: 4.04465
+  pairs_beyond_3sigma: 5
+  expected_beyond_3sigma_if_uniform: 3.5802
+  mean_P(earlier input card below later input card): 0.500514
+adjacency:
+  mean_original_successor_directly_above: 0.9811
+  expected_if_uniform: 0.980769
+  mean_original_neighbours_adjacent_either_way: 1.95775
+  expected_if_uniform_either_way: 1.96154
+  std_err: 0.00700275
+rising_sequences:
+  mean: 26.4647
+  expected_if_uniform: 26.5
+  std: 2.0962
+  expected_std_if_uniform: 2.10159
+  z_of_mean: -2.37207
+  min: 19
+  max: 34
+  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
+serial_and_rank_correlation:
+  serial_corr_mean: -0.0196733
+  serial_corr_expected_if_uniform: -0.0196078
+  serial_corr_z: -0.0668921
+  spearman_mean: 0.00126034
+  spearman_std: 0.141111
+  spearman_expected_std_if_uniform: 0.140028
+  spearman_z: 1.26311
+next_card_guessing:
+  correct_per_deck: 4.5434
   expected_if_uniform: 4.53804
   test_decks: 10000
 _stats_seconds: 2.8
 _B: 20000
-_generate_seconds: 1.1
-==============================================================================
-MODEL gsr {"k": 7}   B=20000   n=52
-position_frequency:
-  chi2: 3126.18
-  df: 2601
-  p_value: 3.65972e-12
-  max_abs_z: 5.23194
-  bottom_card_chi2_p: 0.00494549
-  top_card_chi2_p: 0.268945
-  P(bottom output = bottom input): 0.02415
-  P(top output = top input): 0.02285
-  uniform value: 0.0192308
-pairwise_precedence:
-  pairs: 1326
-  max_abs_dev: 0.06625
-  max_abs_z: 18.7383
-  pairs_beyond_3sigma: 150
-  expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.503796
-adjacency:
-  mean_original_successor_directly_above: 1.1848
-  expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 1.98975
-  expected_if_uniform_either_way: 1.96154
-  std_err: 0.00700275
-rising_sequences:
-  mean: 24.7151
-  expected_if_uniform: 26.5
-  std: 2.07498
-  expected_std_if_uniform: 2.10159
-  z_of_mean: -120.111
-  min: 17
-  max: 34
-  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
-serial_and_rank_correlation:
-  serial_corr_mean: -0.0153807
-  serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 4.34011
-  spearman_mean: 0.00758305
-  spearman_std: 0.139799
-  spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 7.67104
-next_card_guessing:
-  correct_per_deck: 4.6225
-  expected_if_uniform: 4.53804
-  test_decks: 10000
-_stats_seconds: 3.1
-_B: 20000
-_generate_seconds: 5.3
-==============================================================================
-MODEL gsr {"k": 12}   B=20000   n=52
-position_frequency:
-  chi2: 2777.79
-  df: 2601
-  p_value: 0.00804433
-  max_abs_z: 4.03584
-  bottom_card_chi2_p: 0.69238
-  top_card_chi2_p: 0.73337
-  P(bottom output = bottom input): 0.01835
-  P(top output = top input): 0.0192
-  uniform value: 0.0192308
-pairwise_precedence:
-  pairs: 1326
-  max_abs_dev: 0.01225
-  max_abs_z: 3.46482
-  pairs_beyond_3sigma: 4
-  expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.500172
-adjacency:
-  mean_original_successor_directly_above: 0.9764
-  expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 1.953
-  expected_if_uniform_either_way: 1.96154
-  std_err: 0.00700275
-rising_sequences:
-  mean: 26.442
-  expected_if_uniform: 26.5
-  std: 2.09015
-  expected_std_if_uniform: 2.10159
-  z_of_mean: -3.89961
-  min: 17
-  max: 34
-  hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
-serial_and_rank_correlation:
-  serial_corr_mean: -0.0202785
-  serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: -0.683527
-  spearman_mean: 0.000320904
-  spearman_std: 0.138943
-  spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 0.326628
-next_card_guessing:
-  correct_per_deck: 4.5479
-  expected_if_uniform: 4.53804
-  test_decks: 10000
-_stats_seconds: 2.9
-_B: 20000
-_generate_seconds: 9.3
+_generate_seconds: 8.3
 ==============================================================================
 MODEL mech_riffle {"k": 1}   B=20000   n=52
 position_frequency:
-  chi2: 5.97148e+06
+  chi2: 5.96297e+06
   df: 2601
   p_value: 0
-  max_abs_z: 495.486
+  max_abs_z: 496.258
   bottom_card_chi2_p: 0
   top_card_chi2_p: 0
-  P(bottom output = bottom input): 0.5004
-  P(top output = top input): 0.49885
+  P(bottom output = bottom input): 0.50115
+  P(top output = top input): 0.4994
   uniform value: 0.0192308
 pairwise_precedence:
   pairs: 1326
@@ -653,11 +849,11 @@ pairwise_precedence:
   max_abs_z: 141.421
   pairs_beyond_3sigma: 1304
   expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.746013
+  mean_P(earlier input card below later input card): 0.745979
 adjacency:
-  mean_original_successor_directly_above: 10.0267
+  mean_original_successor_directly_above: 10.0579
   expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 10.0267
+  mean_original_neighbours_adjacent_either_way: 10.0579
   expected_if_uniform_either_way: 1.96154
   std_err: 0.00700275
 rising_sequences:
@@ -670,77 +866,81 @@ rising_sequences:
   max: 2
   hist_1_to_n: [0, 20000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
 serial_and_rank_correlation:
-  serial_corr_mean: 0.886714
+  serial_corr_mean: 0.88675
   serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 11014.8
-  spearman_mean: 0.495541
-  spearman_std: 0.122684
+  serial_corr_z: 10976.9
+  spearman_mean: 0.495404
+  spearman_std: 0.123053
   spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 571.222
+  spearman_z: 569.355
 next_card_guessing:
-  correct_per_deck: 12.2885
+  correct_per_deck: 12.6492
   expected_if_uniform: 4.53804
   test_decks: 10000
-_stats_seconds: 3
+_stats_seconds: 2.9
 _B: 20000
-_generate_seconds: 16.3
+_generate_seconds: 14.6
 ==============================================================================
 MODEL mech_riffle {"k": 7}   B=20000   n=52
 position_frequency:
-  chi2: 3074.1
+  chi2: 3051.37
   df: 2601
-  p_value: 2.67697e-10
-  max_abs_z: 7.07361
-  bottom_card_chi2_p: 0.481155
-  top_card_chi2_p: 2.30132e-05
-  P(bottom output = bottom input): 0.0226
-  P(top output = top input): 0.0261
+  p_value: 1.55627e-09
+  max_abs_z: 7.22808
+  bottom_card_chi2_p: 0.0614163
+  top_card_chi2_p: 1.89935e-06
+  P(bottom output = bottom input): 0.02405
+  P(top output = top input): 0.02625
   uniform value: 0.0192308
 pairwise_precedence:
   pairs: 1326
-  max_abs_dev: 0.05865
-  max_abs_z: 16.5887
-  pairs_beyond_3sigma: 105
+  max_abs_dev: 0.059
+  max_abs_z: 16.6877
+  pairs_beyond_3sigma: 116
   expected_beyond_3sigma_if_uniform: 3.5802
-  mean_P(earlier input card below later input card): 0.502439
+  mean_P(earlier input card below later input card): 0.502224
 adjacency:
-  mean_original_successor_directly_above: 1.04215
+  mean_original_successor_directly_above: 1.0489
   expected_if_uniform: 0.980769
-  mean_original_neighbours_adjacent_either_way: 2.0802
+  mean_original_neighbours_adjacent_either_way: 2.08745
   expected_if_uniform_either_way: 1.96154
   std_err: 0.00700275
 rising_sequences:
-  mean: 26.2934
+  mean: 26.2612
   expected_if_uniform: 26.5
-  std: 2.15063
+  std: 2.1468
   expected_std_if_uniform: 2.10159
-  z_of_mean: -13.906
+  z_of_mean: -16.0729
   min: 18
-  max: 34
+  max: 35
   hist_1_to_n: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]
 serial_and_rank_correlation:
-  serial_corr_mean: -0.0115439
+  serial_corr_mean: -0.012086
   serial_corr_expected_if_uniform: -0.0196078
-  serial_corr_z: 8.00701
-  spearman_mean: 0.00705368
-  spearman_std: 0.143276
+  serial_corr_z: 7.54813
+  spearman_mean: 0.00618211
+  spearman_std: 0.143304
   spearman_expected_std_if_uniform: 0.140028
-  spearman_z: 6.96235
+  spearman_z: 6.10091
 next_card_guessing:
-  correct_per_deck: 4.5903
+  correct_per_deck: 4.6252
   expected_if_uniform: 4.53804
   test_decks: 10000
-_stats_seconds: 3.1
+_stats_seconds: 2.7
 _B: 20000
-_generate_seconds: 116.6
+_generate_seconds: 105.9
 ==============================================================================
-Empirical total-variation distance, n=6 (720 permutations), B=1,000,000
-  fy                                            TV=0.0108   (uniform source with same B: 0.0110)
-  blade_rand {"p_plus": 0.05, "p_minus": 0.05}  TV=0.0102   (uniform source with same B: 0.0109)
-  blade_sys {"p": 0.1}                          TV=0.0700   (uniform source with same B: 0.0106)
-  blade_sys {"p": 1.0}                          TV=0.8333   (uniform source with same B: 0.0107)
-  blade_miss {"p": 0.02}                        TV=0.0328   (uniform source with same B: 0.0108)
-  double_feed {"p": 0.02}                       TV=0.0316   (uniform source with same B: 0.0107)
-  bins {"nbins": 8, "passes": 1}                TV=0.2401   (uniform source with same B: 0.0106)
-  bins {"nbins": 8, "passes": 3}                TV=0.0116   (uniform source with same B: 0.0104)
-wrote results/full_results.json
+Empirical total-variation distance, n=6 (720 permutations), B=1,000,000  (wheel models: 6 cards in 8 slots)
+  fy                                            TV=0.0107   (uniform source with same B: 0.0103)
+  wheel {"n_slots": 8}                          TV=0.0103   (uniform source with same B: 0.0110)
+  wheel_neighbor {"p": 0.05, "bias": 0.0, "n_slots": 8} TV=0.0134   (uniform source with same B: 0.0109)
+  wheel_neighbor {"p": 0.05, "bias": 1.0, "n_slots": 8} TV=0.0166   (uniform source with same B: 0.0111)
+  blade_rand {"p_plus": 0.05, "p_minus": 0.05}  TV=0.0104   (uniform source with same B: 0.0113)
+  blade_sys {"p": 0.1}                          TV=0.0694   (uniform source with same B: 0.0108)
+  blade_sys {"p": 1.0}                          TV=0.8333   (uniform source with same B: 0.0110)
+  blade_miss {"p": 0.02}                        TV=0.0332   (uniform source with same B: 0.0105)
+  double_feed {"p": 0.02}                       TV=0.0327   (uniform source with same B: 0.0110)
+  bins {"nbins": 8, "passes": 1}                TV=0.2403   (uniform source with same B: 0.0108)
+  bins {"nbins": 8, "passes": 3}                TV=0.0106   (uniform source with same B: 0.0109)
+wrote /home/user/card-shuffler/simulation/results/full_results.json
+exit 0

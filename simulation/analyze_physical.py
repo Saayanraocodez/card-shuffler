@@ -7,7 +7,8 @@ Three uses:
 1. Predicted-vs-actual (the strongest physical test; see docs/02-mathematics.md §2.8 step 4)
      python3 analyze_physical.py --compare predicted.txt actual.txt
    predicted.txt: the `PLAN order(...)` or `LAST order(...)` line from the serial console
-                  (input indices bottom→top, 0 = bottom card of the input deck).
+                  (input indices bottom→top, 0 = bottom card of the input deck; the wheel and the
+                  archived v1 firmware print the same format).
    actual.txt:    the order you read off the output deck, bottom→top, as input indices.
    Reports every discrepancy and classifies it (off-by-one up/down, landed on top = blade miss,
    pair moved together = double feed, other).
@@ -16,8 +17,14 @@ Three uses:
      python3 analyze_physical.py --decks decks.csv
    decks.csv: one line per shuffle, 52 comma-separated input indices in output order bottom→top.
 
-3. RNG statistics on gap sequences dumped by the firmware (`test rng 100000 > gaps.csv`)
-     python3 analyze_physical.py --gaps gaps.csv
+3. RNG statistics on slot assignments dumped by the wheel firmware (`test rng 100000 > slots.csv`)
+     python3 analyze_physical.py --slots slots.csv
+   (--gaps does the same for the archived v1 gap sequences)
+
+4. Insertion-accuracy tally from the firmware's own logs: paste the `LAST intended slots:` and
+   `LAST realised slots:` lines of several shuffles into a file and run
+     python3 analyze_physical.py --log last_lines.txt
+   Reports the correction rate and a two-sided binomial test on the up/down direction.
 
 Helper to type in a deck: --enter  (prompts for the 52 cards; use a marked deck or write the input
 index on each card's face with a pencil before the test).
@@ -85,6 +92,8 @@ def main():
     ap.add_argument("--compare", nargs=2, metavar=("PREDICTED", "ACTUAL"))
     ap.add_argument("--decks")
     ap.add_argument("--gaps")
+    ap.add_argument("--slots")
+    ap.add_argument("--log")
     ap.add_argument("--enter", action="store_true")
     ap.add_argument("--n", type=int, default=52)
     a = ap.parse_args()
@@ -111,6 +120,40 @@ def main():
         print("\n--- uniform reference at the same sample size ---")
         print(fmt(ref))
         print("\nNote: with a few hundred decks only gross faults are detectable; the predicted-vs-actual test is far stronger.")
+        return
+    if a.slots:
+        rows = [[int(v) for v in line.replace(",", " ").split()] for line in open(a.slots) if line.strip() and not line.startswith("#")]
+        sl = np.array(rows, dtype=np.int64)
+        print(f"{sl.shape[0]} slot assignments of {sl.shape[1]} cards")
+        bad = sum(1 for r in rows if len(set(r)) != len(r) or max(r) > 53 or min(r) < 0)
+        print(f"invalid (repeated or out-of-range slots): {bad}")
+        order = np.argsort(sl, axis=1, kind="stable")
+        print(fmt(run_all_stats(order, rng, do_guess=True)))
+        return
+    if a.log:
+        intended, realised = [], []
+        for line in open(a.log):
+            if "intended slots:" in line:
+                intended.append([int(v) for v in line.split(":", 1)[1].split()])
+            elif "realised slots:" in line:
+                realised.append([int(v) for v in line.split(":", 1)[1].split()])
+        n_ins = sum(len(r) for r in intended)
+        ups = downs = other = 0
+        for i_row, r_row in zip(intended, realised):
+            for i_s, r_s in zip(i_row, r_row):
+                if r_s == i_s: continue
+                d = (r_s - i_s) % 54
+                if d == 1: ups += 1
+                elif d == 53: downs += 1
+                else: other += 1
+        errs = ups + downs + other
+        print(f"{len(intended)} shuffles, {n_ins} insertions, {errs} corrections ({100*errs/max(1,n_ins):.2f} %): up={ups} down={downs} other={other}")
+        if ups + downs:
+            from math import comb
+            k, m = max(ups, downs), ups + downs
+            p = min(1.0, 2 * sum(comb(m, x) for x in range(k, m + 1)) / 2 ** m)
+            print(f"direction bias (two-sided binomial): p = {p:.3f} → " + ("BIAS: adjust `cal entry` toward " + ("-" if ups > downs else "+") if p < 0.05 else "no significant direction bias"))
+        print("acceptance target (docs/02 §2.8): ≤ 1 % corrections, p > 0.05, 0 lost cards")
         return
     if a.gaps:
         rows = [[int(v) for v in line.replace(",", " ").split()] for line in open(a.gaps) if line.strip() and not line.startswith("#")]

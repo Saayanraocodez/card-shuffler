@@ -1,21 +1,19 @@
 #!/bin/bash
-# Renders every printable part to STL and the documentation views to PNG.
-# Usage: ./render.sh            (all)     ./render.sh stl     ./render.sh png
+# Renders every printable part to STL and the documentation views to PNG (OpenSCAD 2021.01).
 set -e
 cd "$(dirname "$0")"
-PARTS="feeder_deck gate_block roller motor_bracket motor_retainer bushing_bracket idler_arm idler_wheel lid well_deck well_sleeve knife_bar_lower knife_bar_upper servo_bracket column carriage platform skirt_front skirt_rear"
+PARTS="wheel tower_R tower_L shroud_A shroud_B shutter shutter_servo_bracket index_bracket feeder_deck gate_block roller_feed roller_nip feeder_motor_bracket feeder_bushing_bracket motor_retainer idler_arm idler_wheel lid chute base_front base_rear base_cover_front base_cover_rear"
 if [ "${1:-all}" != "png" ]; then
-  for p in $PARTS; do
-    echo "== $p"; openscad -q -D "part=\"$p\"" -o "stl/$p.stl" shuffler.scad 2>&1 | grep -E "WARNING|ERROR" || true
-  done
+  for p in $PARTS; do echo "== $p"; openscad -q -D "part=\"$p\"" -o "stl/$p.stl" shuffler.scad 2>&1 | grep -E "WARNING|ERROR" || true; done
 fi
 if [ "${1:-all}" != "stl" ]; then
   R="xvfb-run -a openscad --projection=p --imgsize=1800,1200 --colorscheme=Tomorrow"
-  $R -D 'part="assembly"' -D explode=0  --camera=40,0,80,62,0,32,720  -o png/assembly.png shuffler.scad
-  $R -D 'part="assembly"' -D explode=35 --camera=40,0,110,62,0,32,900 -o png/exploded.png shuffler.scad
-  $R -D 'part="assembly"' -D section=1  --camera=40,0,80,90,0,0,620   -o png/section.png shuffler.scad
-  $R -D 'part="feeder_module"' -D explode=25 --camera=-20,0,20,60,0,30,420 -o png/feeder_exploded.png shuffler.scad
-  $R -D 'part="well_module"'   -D explode=25 --camera=110,0,20,60,0,30,480 -o png/well_exploded.png shuffler.scad
-  $R -D 'part="well_module"'   -D explode=0  --camera=110,0,10,90,0,0,330  -o png/well_section_front.png shuffler.scad
+  $R -D 'part="assembly"' -D explode=0  --camera=-20,0,120,60,0,30,900  -o png/assembly.png shuffler.scad
+  $R -D 'part="assembly"' -D explode=30 --camera=-20,0,120,60,0,30,1100 -o png/exploded.png shuffler.scad
+  $R -D 'part="assembly"' -D section=1  --camera=-20,0,110,90,0,0,760   -o png/section.png shuffler.scad
+  $R -D 'part="wheel_module"'  -D explode=25 --camera=0,0,0,60,0,40,700    -o png/wheel_exploded.png shuffler.scad
+  $R -D 'part="feeder_module"' -D explode=20 --camera=90,0,100,60,0,20,420 -o png/feeder_exploded.png shuffler.scad
+  $R -D 'part="exit_module"'   -D explode=20 --camera=-110,0,-60,60,0,40,420 -o png/exit_exploded.png shuffler.scad
+  $R -D 'part="assembly"' --camera=-20,0,110,90,0,90,760 -o png/front.png shuffler.scad
 fi
 echo done

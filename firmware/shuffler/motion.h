@@ -1,23 +1,29 @@
-// motion.h — elevator (Z in mm, card frame) and feeder procedures built on hardware.h.
+// motion.h — wheel positioning, feeding into a slot, unloading from a slot, occupancy scanning.
 #pragma once
 #include <Arduino.h>
 #include "config.h"
 
-// ---- elevator ----
-bool  elevator_home();                       // false if the endstop never trips
-float elevator_z();
-void  elevator_move_to(float z, float vmax = ELEV_VMAX);
-// Raises the platform slowly until beam S blocks. Returns the platform Z at the trigger, or NAN if the
-// beam did not block before z_limit.
-float elevator_find_beam_s(float z_limit);
-float knife_z();                             // Z_KNIFE_NOMINAL + cal.knife_offset
-void  elevator_idle();                       // disable the driver (lead screw is self-locking)
+// ---- wheel ----
+bool  wheel_home();                          // find the index tab; false if not found in one revolution
+float wheel_angle();                         // current wheel angle (deg, CCW, fin 0 reference)
+void  wheel_goto(float angle_deg, float vmax = WHEEL_VMAX_DPS);   // shortest path, wrap-around
+void  wheel_fin_to_entry(uint8_t fin);       // fin k → entry plane (card enters slot k)
+void  wheel_fin_to_exit(uint8_t fin);        // fin k+1 → exit plane (card leaves slot k): pass k
+void  wheel_idle();
+// Rotate one revolution at scan speed sampling beam E; occupied[s] = card seen in slot s.
+// Returns the number of occupied slots.
+int   wheel_scan(bool occupied[N_SLOTS_HW]);
 
 // ---- feeder ----
-enum FeedResult { FEED_OK = 0, FEED_NO_CARD, FEED_JAM_PICK, FEED_JAM_GATE, FEED_JAM_WELL, FEED_JAM_CLEAR };
+enum FeedResult { FEED_OK = 0, FEED_NO_CARD, FEED_JAM_PICK, FEED_JAM_ENTRY, FEED_JAM_CLEAR, FEED_NOT_SEATED };
 struct FeedStats { uint32_t b_block_ms; bool double_suspect; };
-bool       feeder_probe_hopper();            // true if a card is present (pre-stages it at the gate)
-FeedResult feeder_feed_one(FeedStats* st);   // full sequence with sensor timeouts (no retries)
-void       feeder_reverse_pulse();           // both motors backwards briefly (jam clearing)
-void       feeder_stop();
+bool        feeder_probe_hopper();
+FeedResult  feeder_feed_one(FeedStats* st);  // wheel must already present the target slot at the entry
+void        feeder_reverse_pulse();
+void        feeder_stop();
 const char* feed_result_name(FeedResult r);
+
+// ---- unload ----
+enum EjectResult { EJECT_OK = 0, EJECT_NO_CARD, EJECT_JAM };
+EjectResult eject_one();                     // wheel must already present the slot at the exit; shutter open
+void        eject_stop();

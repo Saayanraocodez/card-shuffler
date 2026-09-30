@@ -1,226 +1,189 @@
 # 6. Assembly instructions
 
-Build order is chosen so that the feeder can be tested on its own before the
-well module exists (see `09-prototype-plan.md`). Part names refer to
-`cad/stl/`; dimensions to `cad/params.scad`; views to `cad/png/` and
-`docs/img/`.
+Build order lets the feeder be tested on the bench first, then the wheel,
+then the rest (`09-prototype-plan.md`). Part names refer to `cad/stl/`;
+dimensions to `cad/params.scad`; views to `cad/png/` and `docs/img/`.
 
 ## 6.1 Tools
 
-* 3D printer (0.4 mm nozzle), calipers, feeler gauge set (0.30–0.60 mm)
-* Hex/Phillips drivers for M3 and M2, small needle-nose pliers, side cutters
-* Soldering iron, wire strippers, JST-XH crimper (or pre-crimped leads)
-* Files (flat, needle), 400/600-grit paper, tin snips or a hacksaw for brass
-* Multimeter, USB cable for the ESP32
-* Optional: M3 tap, 8 mm reamer or a spare 8 mm rod, heat-set insert tip
+3D printer (0.4 mm nozzle), calipers, feeler gauge set, hex/Phillips
+drivers (M3, M2), pliers, side cutters, soldering iron, JST-XH crimper or
+pre-crimped leads, files and 600-grit paper, hacksaw (M8 rod), multimeter,
+USB cable. Optional: M3 tap, 8 mm drill for reaming, heat-set insert tip.
 
 ## 6.2 Fasteners
 
 | Use | Fastener | Qty |
 |---|---|---|
-| Brackets, sleeve, servo brackets, column flange, bar halves, platform | M3 × 8 self-tapping into 2.6 mm holes | ≈ 36 |
+| Brackets, chute, deck, shroud tabs, base covers | M3 × 8 self-tapping (2.6 mm holes) | ≈ 50 |
+| Tower feet to base | M3 × 10 | 12 |
+| Feeder deck / chute to tower arms | M3 × 10 | 8 |
+| NEMA 17 | M3 × 8 | 4 |
 | Gate clamp | M3 × 12 | 2 |
-| Deck-to-deck flange | M3 × 12 + nut | 4 |
-| Column flange | M3 × 10 + nut | 4 |
-| NEMA 17 | M3 × 8 (through the 4 mm top plate) | 4 |
-| T8 nut | M3 × 8 | 4 |
-| Rod grub screws | M3 × 6 grub (or M3 × 8) | 4 |
-| Idler axle | M3 × 50 + nyloc | 1 |
-| Idler pivot | M3 × 10 | 2 |
-| Bushing bracket cross screws | M3 × 20 | 2 |
-| Lid hinge | M3 × 60 (or 3 mm rod 70 mm) | 1 |
-| Roller set screws | M3 × 5 grub | 2 |
-| Skirt mounting | M3 × 10 | 8 |
-| Servo tabs, endstop | M2 × 8 | 6 |
+| Idler axles | M3 × 50 + nyloc | 2 |
+| Idler pivots | M3 × 10 | 4 |
+| Bushing cross screws | M3 × 20 | 3 |
+| Lid hinge | M3 × 60 (or 3 mm rod) | 1 |
+| Roller set screws | M3 × 5 grub | 3 |
+| Wheel on the rod | M8 nyloc nuts + washers | 4 + 6 |
+| Servo tabs, index module, horn pin | M2 × 8 | 6 |
 
-## 6.3 Stage A — feeder module (steps 1–13)
+## 6.3 Stage A — feeder module (steps 1–12)
 
-1. **Post-process the feeder deck.** Run an M3 screw through every 2.6 mm
-   hole. Sand the hopper floor and the guide plate between gate and flange
-   smooth (cards slide on them). Check the gate window is clear.
-2. **Gate block.** Round the lower inner edge of the gate block with 600-grit
-   until it is a smooth R1 radius (this edge touches the second card).
-   Fit it into the window from the outside, insert the two M3 × 12 clamp
-   screws through the slots into the bosses, finger-tight.
-3. **Rollers.** Fit three O-rings (ID 20 × 3.5) into each roller's grooves.
-   Screw an M3 × 5 grub screw into the radial hole of the D-bore end so its
-   tip is just below the bore. Check the stub axle is straight.
-4. **Bushing bracket (−Y side).** Drop the two rollers' stub axles into the
-   U-slots, then close each U with its M3 × 20 cross screw (the screw passes
-   under the axle). Do not tighten the bracket to the deck yet.
-5. **Motor bracket (+Y side).** Slide each N20 motor into its pocket from
-   the outside with the shaft toward the rollers, wires outward. Hold the
-   bracket against the plate's underside so the shafts enter the rollers'
-   D-bores (rotate the rollers to align the flats), then screw both brackets
-   to the plate's underside (4 × M3 × 8 each). Tighten the roller grub
-   screws onto the shaft flats. Fit the motor retainer plates (2 × M3 × 8
-   each).
-6. **Check:** each roller turns freely by hand with the motor's gearbox
-   resistance only, no wobble > 0.3 mm at the crown, crowns protrude
-   0.7 (feed) and 0.5 mm (transport) above the plate — measure with a
-   straight edge and feeler gauge across the slot.
-7. **Beam B emitter.** Push a 3 mm IR LED into the vertical pocket at
-   X = 19 from below (anode/cathode leads down), dome up, until it seats
-   against the 2 mm aperture. Secure with a drop of hot glue on the leads
-   under the plate. Solder 150 mm leads.
-8. **Idler arm.** Fit an O-ring (9 × 2) on each idler wheel. Place the
-   wheels in the forks with the M3 × 50 axle through the arm and wheels,
-   nyloc on the end. Push the 3 mm phototransistor into the sensor boss from
-   above (leads up), seating on the 2 mm aperture; hot-glue the leads.
-   Mount the arm on the pivot blocks with 2 × M3 × 10 (arm must pivot
-   freely). Drop a pen spring into each spring pocket; the springs bear
-   against the underside of the lid bridge (added in step 12) — for now the
-   arm rests by its own weight.
-9. **Gate setting.** Loosen the clamp screws, lay a 0.45 mm feeler blade
-   on the floor under the gate, press the block down onto it, tighten,
-   remove the blade. Check with 0.40 (passes) and 0.55 (does not pass).
-10. **Hinge and lid.** Line up the lid's two knuckles between the deck's
-    three, push the M3 × 60 through (or a 3 mm rod). Stick a felt pad
-    (30 × 50 mm) under the lid's boss. Put two dead AA cells in the troughs
-    and tape them.
-11. **Skirt (front).** Install the panel parts in the front skirt: start
-    button (12 mm hole), status LED (6 mm), power switch (6.5 mm), charge
-    jack (8.5 mm). Do not mount the deck on the skirt yet — the feeder is
-    tested on the bench first.
-12. **Idler spring bridge.** With the lid closed, the lid bridge sits over
-    the idler arm; the springs should be compressed ~3 mm. If not, add a
-    washer under each spring.
-13. **Bench test of the feeder** (Stage 1 of the prototype plan): with the
-    electronics on a breadboard (§6.5), run `feed` from the serial console
-    with a deck loaded and a box catching the cards. Tune `cal pwm feed`,
-    `cal pwm trans` and the gate until 100 consecutive single feeds succeed.
+1. Post-process `feeder_deck`: run an M3 through every 2.6 mm hole; sand
+   the hopper floor and the plate between the gate and the tip; check the
+   gate window and the beam-E bridge aperture are clear.
+2. `gate_block`: round the lip (the lower edge on the hopper side) to R1
+   with 600-grit; fit into the window from the wheel side; two M3 × 12
+   through the slots into the bosses, finger-tight.
+3. Rollers: 4 O-rings 20 × 3.5 on `roller_feed`, 4 O-rings 10 × 3 on each
+   `roller_nip`. Grub screw in each D-bore end.
+4. `feeder_bushing_bracket` (−Y): drop the feed roller's and the entry
+   nip's stub axles into the U-slots; close each with its M3 × 20.
+5. `feeder_motor_bracket` (+Y): slide two N20 motors into the pockets from
+   the outside, shafts toward the rollers; hold the bracket under the plate
+   so the shafts enter the D-bores, screw both brackets to the plate's
+   underside (4 × M3 × 8 each); tighten the roller grub screws onto the
+   flats; fit the retainer plates.
+6. Check: rollers turn freely, crowns 0.7 (feed) and 0.5 mm (nip) above
+   the plate, no wobble > 0.3 mm.
+7. Beam B: 3 mm IR LED into the pocket at r 105 from below (dome up to the
+   aperture), hot-glue. Beam E: LED into the pocket at r 84.5 from below;
+   phototransistor into the bridge from above (leads up); hot-glue both.
+8. `idler_arm` (entry): O-rings on two `idler_wheel`s; M3 × 50 axle with a
+   nyloc; phototransistor for beam B into the arm's sensor boss (leads
+   up); mount on the pivot blocks (2 × M3 × 10); pen springs in the
+   pockets.
+9. Gate: 0.45 mm feeler under the block, press down, tighten; verify 0.40
+   passes and 0.55 does not.
+10. `lid`: hinge with the M3 × 60; felt pad under the boss; two dead AA
+    cells in the troughs, taped.
+11. Bench test (Stage 1): with the electronics on a breadboard (§6.6),
+    clamp the deck at 50° with a box below the tip; `feed` ×100 with a
+    deck loaded; tune `cal pwm feed`, `cal pwm nipe` and the gate until
+    100 consecutive single feeds succeed. (Beam E will not see a card on
+    the bench; expect "card not seen in slot" — the B-beam timing is what
+    you are tuning.)
+12. Hot-glue the beam leads to the plate's underside and route them toward
+    the tower side.
 
-## 6.4 Stage B — well module (steps 14–27)
+## 6.4 Stage B — wheel module (steps 13–24)
 
-14. **Blades.** Cut two 40 × 22 mm pieces of 0.5 mm brass. File a symmetric
-    bevel ≈ 1.5 mm long on both faces of one 40 mm edge (the entry edge),
-    round the two corners R1, polish the bevel and both faces to 600 grit.
-    Drill/punch two 3.2 mm holes 17.5 mm from the entry edge, 30 mm apart
-    (the bar halves are the template: clamp a half to the brass and mark).
-    Wipe with alcohol.
-15. **Bars.** Lay a blade on a lower bar half with the entry edge toward
-    the well side (the side with the pin slot away from you), 10.5 mm of
-    blade overhanging the bar's inner face, screw the upper half on
-    (2 × M3 × 10). Repeat for the second side (mirror). Check: blade flat,
-    no rock, overhang 10.5 ± 0.3 mm on both.
-16. **Well deck.** Deburr the two blade slots with a 1 mm feeler blade.
-    Ream the beam-S apertures with a 1.6 mm drill. Slide each bar through
-    its two guide loops from the outside; it must slide 8 mm freely and the
-    blade tip must stop 1 mm inside the wall's inner face when the bar is
-    fully out (adjust by loosening the clamp screws and sliding the blade).
-    Loop a small rubber band from the bar's hook hole to the post.
-17. **Servos.** Set each MG90S to its centre (1500 µs) using the console
-    (`cal servo L ret 1500`, etc.) before fitting horns. Press a single-arm
-    horn on pointing along +X (toward the column) and screw it. Fit an
-    M2 × 8 screw through the horn's hole at r ≈ 8 mm from below so ~4 mm
-    protrudes upward (this is the pin). Drop each servo into its bracket
-    pocket (shaft up), secure with 2 × M2 tab screws.
-18. **Servo brackets.** Slide the pin into the bar's underside slot through
-    the plate's horn window while screwing the bracket to the plate's
-    underside (4 × M3 × 8). Command `blades in` / `blades out`; adjust the
-    endpoints with `cal servo` so that "in" gives 7 mm protrusion and "out"
-    gives 1 mm inside the wall. Save.
-19. **Beam S.** IR LED into one tube, phototransistor into the other
-    (leads outward), hot-glue. **Beam W.** Phototransistor into the vertical
-    hole above the slot from the top (leads up). The emitter goes into the
-    sleeve (next step).
-20. **Well sleeve.** Push the beam-W IR LED up the vertical hole in the
-    sleeve's front wall until it seats under the 2 mm aperture; hot-glue.
-    Stick 1.5 mm felt strips on both sides of the arm slot on the sleeve's
-    and deck's inner back wall (recess provided). Screw the sleeve to the
-    plate's underside (4 × M3 × 8), aligning the interior with the deck's.
-21. **Column.** Push the two 8 mm rods up through the bottom plate holes
-    into the top plate's blind holes; fix with grub screws top and bottom.
-    Screw the microswitch to the inside of the back plate at the bottom
-    (2 × M2), lever pointing up and toward the front.
-22. **Carriage.** Press two LM8UU into the rear beam. Fit the T8 nut into
-    the flange recess (flange up), 4 × M3 × 8. Screw the platform to the
-    arm's spine from above (2 × M3 × 8, countersunk holes).
-23. **Marry carriage and column.** Slide the carriage's bearings onto the
-    rods from the top before the motor is fitted. Thread the lead screw
-    down through the nut until it passes through the bottom clearance
-    hole. Fit the coupler on the screw's top, then the NEMA 17 on the top
-    plate (4 × M3 × 8) with its shaft in the coupler; tighten both coupler
-    clamps.
-24. **Column to deck.** From below the well deck, guide the carriage arm
-    through the back wall's slot (deck + sleeve) while lowering the column
-    flange onto the plate; 4 × M3 × 10 + nuts. Turn the coupler by hand:
-    the platform must travel the full range without touching the walls.
-25. **Bench test of the elevator and blades** (Stage 2): `home`, `z 0`,
-    `z 20`, `cal home`, `blades in/out`. Then `cal knifetest` with a deck
-    in the well (see §6.9).
-26. **Join the modules.** Bolt the feeder deck's flange tabs to the well
-    deck's (4 × M3 × 12 + nuts). The guide plate and the well slot bottom
-    must be flush ±0.2 mm (shim with tape under a tab if not).
-27. **Skirts.** Mount the rear skirt (4 × M3 × 10 into the bosses), then
-    the front skirt; the column bottom must clear the rear skirt floor by
-    ≥ 2 mm.
+13. `wheel`: clean the slot mouths of stringing with a 1.5 mm feeler blade
+    run down each slot; check every slot with a card: it must slide to the
+    hub and back out freely in all 54 slots. Ream the bore to 8.6 mm if
+    the rod does not pass.
+14. Cut the M8 rod to 165 mm; deburr. Slide a washer and nyloc onto one
+    end 8 mm from the end; slide the rod through the wheel; washer + nyloc
+    on the other side; tighten both nuts against the hub bosses so the
+    wheel is centred with the +Y disc (the one with the index tab) on the
+    long end of the rod (the end that gets the coupler).
+15. Towers: press a 608ZZ into each bearing pocket (inner face). Run M3s
+    through the arm holes. Screw `index_bracket` to the +Y tower's inner
+    face at 12 o'clock with its slot at r ≈ 82; fit an IR LED and
+    phototransistor in its pockets facing each other across the slot
+    (or the slotted module, if its slot fits the tab: 3 mm thick,
+    r 72–84).
+16. `shroud_A` (window) and `shroud_B`: fit the `shutter` between the
+    guide flanges of shroud_A; it must slide 15° freely.
+17. Base boxes: join `base_front` and `base_rear` on a flat surface. Stand
+    the −Y tower on its foot holes (6 × M3 × 10). Stand the +Y tower
+    loosely.
+18. Slide the wheel's rod through the −Y bearing (short end), then bring
+    the +Y tower onto the long end and screw its foot down. The wheel must
+    spin freely by hand with no axial play > 0.5 mm (adjust the nuts).
+19. Fit the shroud segments between the towers (4 tabs each, M3 × 8 into
+    the tower crossbar/seats). Rotate the wheel: no card edge may touch the
+    shroud with cards seated (load a few cards by hand at 12 o'clock and
+    rotate through the bottom: they should slide out ≤ 1.5 mm and ride
+    on the shroud).
+20. Coupler on the rod's long end; NEMA 17 on the standoff (4 × M3 × 8)
+    with its shaft in the coupler; tighten both coupler clamps through the
+    access windows.
+21. `shutter_servo_bracket` with the MG90S on the −Y tower's outer face at
+    the exit; M2 × 8 pin through the horn's outer hole at r ≈ 15 pointing
+    inward through the tower's slot into the shutter's tongue slot.
+    Command `shutter open` / `shutter close`; set `cal shutter` endpoints
+    so "closed" is flush with the shroud and "open" clears the window.
+22. Bench test (Stage 2): `home`; `entry 0` → look from above: fin 0's
+    upper face should be coplanar with where the feeder plate will sit
+    (use a straight edge against the tower arm); adjust `cal home`.
+    `entry 10`, `entry 40`: the wheel goes the short way. `scan` with
+    a few cards placed by hand: reported slots match.
+23. Feeder deck onto the tower arms (4 × M3 × 10 from below through the
+    arms). Push a card by hand through the nip into the slot at the entry:
+    it must slide down and stop on the hub with beam E blocked
+    (`beams`). Fine-tune `cal entry` (±0.2°) until a card enters cleanly
+    in slots 0, 13, 27, 40.
+24. Load 20 cards with `feed` (wheel indexed by `entry k` each time), then
+    `scan`: 20 occupied, all at the intended slots.
 
-## 6.5 Stage C — electronics (steps 28–36)
+## 6.5 Stage C — exit module (steps 25–29)
 
-28. **Perfboard.** Solder female headers for the ESP32, TMC2208 and DRV8833;
-    the buck module on standoffs; the NPN with its 1 kΩ base resistor and
-    three 150 Ω LED resistors; three 10 kΩ pull-downs; the 100 kΩ/33 kΩ
-    divider with 100 nF; 100 µF across TMC2208 VM/GND and across DRV8833
-    VM/GND; 470 µF on the 5 V rail; JST-XH headers J1–J16 (wiring diagram).
-29. **Set the buck to 5.00 V** with nothing but the meter connected.
-30. **Set TMC2208 Vref** to 0.9 V (≈ 0.65 A RMS) with the motor unplugged;
-    tie MS1 and MS2 to 3V3 for 1/16 microstepping (or leave the module's
-    default and set `STEPS_PER_MM` accordingly).
-31. **Wire the harness**: stepper (4-pin JST), N20 motors (2-pin each),
-    servos (3-pin each, 5 V + GND + signal), beams (4-pin each: LED+, LED−,
-    PT collector 3V3, PT emitter → GPIO/10 kΩ), endstop (NC + COM), button,
-    pixel (5 V via 1N4001, GND, data via 330 Ω), buzzer. Label every cable.
-32. **Battery**: fuse holder in the positive lead, then the switch, then
-    the perfboard's VBAT input; the charge jack directly across the pack's
-    protected terminals (upstream of the switch). Velcro the pack to the
-    front skirt's floor on a foam pad.
-33. **Flash the firmware** (`pio run -t upload` or the Arduino IDE) with
-    the battery disconnected; the ESP32 runs from USB.
-34. **First power-up on battery**, USB connected, motors' JSTs unplugged:
-    check `bat` reads within 0.2 V of the meter, `cal vbat <volts>`.
-35. Plug in the sensors; `beams`; `cal beams`. Plug in the servos, N20s,
-    stepper (power off when plugging the stepper).
-36. Route cables away from the rollers and the elevator; zip-tie to the
-    skirt walls; close the skirts (the decks are the lids).
+25. `chute`: exit `roller_nip` with O-rings into the nip housing (stub in
+    the −Y U-slot, M3 × 20 cross screw; N20 into the +Y pocket, retainer).
+    Beam X LED into the floor pocket from below, phototransistor into the
+    bridge from above. Second `idler_arm` on the pivot blocks with its
+    wheels, springs, axle.
+26. Felt strip on the chute end wall (inside face).
+27. Chute onto the tower arms (4 × M3 × 10 from below).
+28. Bench test (Stage 3): with cards in the wheel, `shutter open`,
+    `exit 5`, `eject`: the card slides out, is pulled through, beam X
+    blocks then clears, the card lands in the chute. Adjust `cal exit`
+    and `cal pwm nipx`. Repeat for slots 0, 27, 53.
+29. Run `test fixed 1`, press the button: full shuffle. Compare with
+    `analyze_physical.py --compare`.
 
-## 6.6 Wiring diagram
+## 6.6 Stage D — electronics (steps 30–37)
 
-`electronics/wiring-diagram.svg` — pinout table in `04-electronics.md` §4.3.
+30. Perfboard per `electronics/wiring-diagram.svg`: ESP32, TMC2208, two
+    DRV8833 on female headers; buck; NPN + 1 kΩ; three 150 Ω; three 10 kΩ
+    pull-downs; 100 kΩ/33 kΩ + 100 nF; 100 µF ×3, 470 µF; JST-XH J1–J16.
+31. Buck to 5.00 V (nothing connected). TMC Vref 1.0 V (motor unplugged);
+    MS1/MS2 to 3V3.
+32. Harness: stepper (4-pin), three N20 (2-pin each), servo (3-pin), beams
+    B/E/X (4-pin each), index module (3-pin), button, pixel, buzzer. Label.
+33. Battery: fuse in the positive lead, then the switch, then VBAT in; the
+    charge jack across the pack's protected terminals. Velcro the pack in
+    the front base box on a foam pad.
+34. Flash the firmware with the battery disconnected (USB power).
+35. First power-up on battery with the motor connectors unplugged:
+    `bat` → `cal vbat <meter>`; `beams` → `cal beams`.
+36. Plug in the sensors, servo, N20s, stepper (power off for the stepper).
+37. Route cables along the towers; close the base covers.
 
 ## 6.7 Calibration (first use)
 
-Do these in order, with the serial console open.
-
-| Step | Command | What it does / target |
+| Step | Command | Target |
 |---|---|---|
-| C1 | `cal vbat 12.30` (your meter reading) | battery gain |
-| C2 | `cal beams` (machine empty) | thresholds = half of the clear signal; "WEAK" means realign the LED/PT |
-| C3 | `home` | endstop found; platform at Z ≈ −26 |
-| C4 | `cal home` (well empty) | platform finds beam S → Z origin defined |
-| C5 | `blades in` / `blades out`, `cal servo …` | 7 mm in / 1 mm out, both sides equal ±0.3 |
-| C6 | load a deck in the hopper; `probe`, `feed` ×20 | every feed "ok", B-block time steady ±10 %; adjust gate/PWM |
-| C7 | put 30 cards in the well, `cal knifetest 15` | look through the finger notch: both blades in a card boundary, no card pushed in; if the blade lands consistently above the intended boundary use `cal knife -0.05`, below → `+0.05`; repeat with `cal knifetest 5` and `25` |
-| C8 | `blades out`, `home`; remove the cards | |
-| C9 | `test fixed 1`, deck in the hopper, press the button | machine prints PLAN; after the shuffle compare with `analyze_physical.py --compare` |
+| C1 | `cal vbat 12.30` (meter) | battery gain |
+| C2 | `cal beams` (machine empty) | thresholds; "WEAK" → realign |
+| C3 | `home` | index found |
+| C4 | `entry 0` + straight edge; `cal home <deg>` | fin 0 face coplanar with the feeder plate |
+| C5 | `cal shutter closed/open` | flush / clear |
+| C6 | deck in hopper; `feed` ×20 with `entry k` | 20 × "ok", no double-feed suspects |
+| C7 | `cal entry ±0.2` if beam E is not blocked after feeds | card seen in the slot every time |
+| C8 | cards in the wheel; `shutter open`; `exit k`; `eject` | pulled out cleanly; `cal exit` |
+| C9 | `test fixed 1`, button | `last` shows 0 corrections; compare the deck |
 
 ## 6.8 First-use checks
 
-* Blades never move while the elevator moves (watch one full shuffle).
-* Each card seats against the felt pad (look through the finger notch).
-* No card is visible through the entry slot when the machine is idle.
-* The stepper is cold to the touch after a shuffle; the servos are warm at
-  most.
-* Battery voltage after 5 shuffles has dropped by less than 0.15 V.
-* `last` shows zero retries and zero double-feed suspects for a good deck.
+* Wheel never moves while a card is in the nip (watch a shuffle).
+* No card is visible outside the shroud during loading.
+* Every card lands flat in the chute and slides to the end wall.
+* Stepper cool after a shuffle; N20s warm at most.
+* `last`: zero corrections, zero retries, zero double-feed suspects on a
+  good deck.
+* Battery drop after 5 shuffles < 0.1 V.
 
 ## 6.9 Adjustments summary
 
 | Symptom | Adjust |
 |---|---|
-| Two cards fed together | gate down 0.05 mm; less lid ballast; check the lip is smooth |
-| Card not picked (FEED no card with a deck loaded) | gate up 0.05 mm; more ballast; clean O-rings with alcohol; raise `cal pwm feed` |
-| Card stops before the pad (jam: well entry) | raise `cal pwm trans`; check the felt pad thickness; check the idler springs |
-| Blade pushes a card instead of entering | `cal knife` by ±0.05; re-polish the bevel; check the well's stack is against the back wall (tilt, felt) |
-| Cards hang on the blades after retract | more `GAP_CLOSE` (2.2 → 2.4) in `firmware/shuffler/config.h`; check bar travel returns fully |
-| Stack measure fails | beam S LED/PT alignment, `cal beams` |
+| Two cards fed together | gate −0.05; less lid ballast; smooth the lip |
+| Card not picked | gate +0.05; more ballast; clean O-rings; `cal pwm feed` up |
+| Card stops in the mouth (not seated) | `cal entry`; check the fin face is clean; `cal pwm nipe` up |
+| Corrections logged, all in one direction | `cal entry` by ±0.1° in that direction |
+| Card does not slide out at the exit | `cal exit`; check the shutter opens fully; wipe the shroud |
+| Eject jams | `cal pwm nipx`; idler springs |
+| Index not found | sensor alignment with the tab; `cal home` |

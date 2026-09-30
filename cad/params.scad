@@ -1,110 +1,91 @@
-// params.scad — every dimension of the card shuffler in one place (mm).
-// Coordinate frame ("card frame"): X = card travel (+X toward the well), Y = across the card
-// (0 = machine centreline), Z = normal to the cards (+Z = up). The card path plane is Z = 0.
-// The whole card frame is tilted TILT degrees (well end low) when mounted on the skirts.
+// params.scad — every dimension of the WHEEL card shuffler (mm).
+//
+// Frame: the wheel axis is the Y axis, horizontal.  X is horizontal, Z is up, origin on the axis.
+// Angles are measured in the XZ plane from +X (3 o'clock) counter-clockwise: 90° = 12 o'clock,
+// 180° = 9 o'clock, 270° = 6 o'clock.  "Fin k" is a radial plate whose counter-clockwise face lies
+// exactly on the radial plane at angle (wheel_angle + k*pitch_deg); slot k is the space between
+// fin k and fin k+1.  A card in slot k lies on fin k at the entry (upper right) and on fin k+1 at
+// the exit (lower left).  Cards enter and leave radially, lying flat on a fin.
 
-// ---- cards -----------------------------------------------------------------
-card_w       = 63.5;   // poker width
-card_l       = 88.9;   // poker length
-card_t_nom   = 0.30;
-card_t_max   = 0.42;
-n_cards_max  = 54;
-stack_max    = n_cards_max * card_t_max;   // 22.7
+// ---- cards -------------------------------------------------------------------
+card_w      = 63.5;   // radial extent in the wheel (short edge)
+card_l      = 88.9;   // axial extent (long edge, along Y)
+card_t_max  = 0.42;
+n_slots     = 54;
+pitch_deg   = 360 / n_slots;    // 6.667°
 
-// ---- global ----------------------------------------------------------------
-TILT         = 10;     // degrees, card path descends toward the well
-wall         = 3;      // default wall thickness
-plate_t      = 3;      // deck plate thickness (plate occupies Z = -plate_t .. 0)
-clr          = 0.30;   // sliding clearance for printed-on-printed fits
-hole_m3      = 2.6;    // M3 self-tapping in PLA/PETG
-hole_m3_free = 3.4;    // M3 clearance
-hole_m2      = 1.7;    // M2 self-tapping (servo tabs, endstop)
-$fn          = 48;
-H0           = 90;     // world height (mm above the table) of the card plane at X = 0
+// ---- wheel (cage) ----------------------------------------------------------------
+r_hub       = 22;      // outer radius of the hub tube = card inner-edge stop
+hub_wall    = 2;
+r_seat_out  = r_hub + card_w;          // 85.5 outer edge of a seated card
+r_tip       = r_seat_out - 8;          // 77.5 fin tips and disc radius (cards overhang 8 mm)
+fin_t       = 1.4;                     // constant fin thickness (slot at hub = 2.56 - 1.4 = 1.16)
+cage_w      = card_l + 3.1;            // 92 clear width between the discs
+disc_t      = 3;
+disc_ring_in= 62;                      // spoked disc: ring from here to r_tip
+n_spokes    = 6;
+hub_boss_r  = 15;  hub_boss_len = 6;   // bosses outside the discs (nuts clamp against them)
+bore_d      = 8.6;                     // M8 threaded rod
+index_ang   = 90;  index_r0 = 72; index_r1 = 84; index_w = 3;   // home tab on the +Y disc
 
-// ---- hopper / feeder -------------------------------------------------------
-hop_in_w     = card_w + 1.5;      // 65.0 interior width
-hop_in_l     = card_l + 2.1;      // 91.0 interior length
-gate_x       = 10;                // inner face of the gate (front) wall
-hop_back_x   = gate_x - hop_in_l; // -81 inner face of back wall
-hop_h        = 50;                // hopper wall height above the floor
-gate_gap_nom = 0.45;              // set with a feeler gauge; 0.30 .. 0.60
-gate_win_h   = 16;                // window in front wall for the gate block
-gate_block_t = 3;
+// ---- shroud (retains cards in the lower half) ------------------------------------
+r_shroud_in = r_seat_out + 3;          // 88.5
+shroud_t    = 3;
+shroud_w    = 100;                     // axial width (covers card edges and disc rims)
+shroud_a0   = 172;  shroud_a1 = 368;   // arc covered (two segments split at 270°)
+win_a0      = 202;  win_a1 = 214;      // exit window
+shutter_r0  = r_shroud_in + shroud_t + 0.5;   // 92.0 shutter slides over the shroud
+shutter_t   = 3;   shutter_span = 15;  // degrees
+shutter_open_deg = 14;                 // servo moves it this far counter-clockwise to open (≈23 mm)
+shutter_servo_r  = 108;  shutter_servo_ang = win_a0 + shutter_span/2 + shutter_open_deg/2;   // 216.5°, on the -Y tower
+shutter_horn_r   = 15;                 // horn pin radius; ±50° swing = 23 mm
 
-roller_d     = 27;     // O-ring crown diameter (ID20 x CS3.5 O-rings on a hub)
-roller_hub_d = 24;
-oring_root_d = 20;
-oring_cs     = 3.5;
-oring_y      = [-18, 0, 18];
-roller_len   = 64;     // hub length (Y -32..+32)
-roller_stub  = 8;      // stub axle length on the -Y end
-feed_x       = -4;     // feed roller axis X
-feed_protr   = 0.7;    // crown above hopper floor
-trans_x      = 32;     // transport roller axis X
-trans_protr  = 0.5;
-n20_w        = 12; n20_h = 10; n20_len = 24; n20_shaft_d = 3; n20_shaft_l = 9;
+// ---- entry (feeder) --------------------------------------------------------------
+entry_slot_ang = 50;
+entry_fin_ang  = entry_slot_ang - pitch_deg/2;   // 46.667° fin k's CCW face = feeder plate plane
+deck_tip_r     = r_tip + 4.5;          // 82 inner end of the feeder plate
+beamE_r        = 84.5;                 // occupancy beam (perpendicular through the plate)
+nipE_r         = r_seat_out + 1 + 8;   // 94.5 entry nip roller axis (Ø16 rollers)
+beamB_r        = nipE_r + 10.5;        // 105 gate beam
+gate_r         = nipE_r + 15;          // 109.5 gate lip (inner face of gate wall)
+feed_r         = gate_r + 11.5;        // 121 feed roller axis (Ø27)
+hop_len        = card_w + 1.5;         // 65 hopper interior along the radius
+hop_w          = card_l + 2.1;         // 91 hopper interior across (Y)
+hop_h          = 50;
+wall           = 3;  plate_t = 3;
+gate_gap_nom   = 0.45;  gate_win_h = 16;  gate_block_t = 3;
+feed_roller_d  = 27;  feed_hub_d = 24;  oring_root_d = 20;  oring_cs = 3.5;
+nip_roller_d   = 16;  nip_hub_d = 13;   nip_oring_root = 10;  nip_oring_cs = 3.0;
+roller_len     = 90;  roller_stub = 8;
+oring_y        = [-33, -11, 11, 33];
+feed_protr     = 0.7;  nip_protr = 0.5;
+n20_w = 12; n20_h = 10; n20_len = 24;
+idler_d = 12; idler_w = 6; idler_y = [-28, 28];
+rail_h = 6;
 
-rail_h       = 6;      // side rails guiding the card between gate and well
-beamB_x      = 19;     // vertical gate beam (emitter in plate, detector in idler arm)
-idler_pivot_x= 22;
-idler_x      = trans_x;
-idler_d      = 12; idler_w = 6; idler_y = [-20, 20];
+// ---- exit (chute) ----------------------------------------------------------------
+exit_slot_ang = 205;
+exit_fin_ang  = exit_slot_ang + pitch_deg/2;    // 208.333° fin k+1; card lies on its CW face
+nipX_r        = shutter_r0 + shutter_t + 1 + 8;  // 104 exit nip roller axis
+beamX_r       = nipX_r + 10;                     // 114
+chute_r0      = nipX_r + 9;                      // 113 chute floor starts
+chute_len     = card_w + 16;                     // 79.5
+chute_drop    = 20;                              // floor below the exit plane
+chute_wall_h  = 30;
 
-// ---- well ------------------------------------------------------------------
-well_front_x = trans_x + roller_d/2 + 1.5;   // 47.0 outer face of well front wall
-well_wall    = 3;
-well_in_w    = card_w + 1.5;                 // 65
-well_in_l    = card_l + 2.1;                 // 91.0 (incl. 1.5 mm back pad)
-well_x0      = well_front_x + well_wall;     // 50 inner front face
-well_x1      = well_x0 + well_in_l;          // 141 inner back face
-well_back_x  = well_x1 + well_wall;          // 144 outer back face
-well_h       = 38;                           // rim height above Z=0
-well_floor_z = -30;                          // sleeve bottom
-slot_z0      = -1.0; slot_z1 = 3.5;          // card entry slot in the front wall
-knife_z      = 2.5;                          // blade mid-plane
-knife_t      = 0.5;
-knife_slot_h = 1.6;
-knife_len_x  = 40;                           // blade width along X
-knife_cx     = (well_x0 + well_x1)/2;        // 95.5
-knife_entry  = 7;                            // protrusion into the well when extended
-knife_travel = 8;
-bar_len_y    = 12; bar_h = 6;                // knife bar section (Y x Z)
-bar_len      = 70;                           // along X
-blade_w_y    = 22;                           // blade extent along Y
-finger_w     = 22; finger_d = 22;            // finger notches at the top of the well side walls
-beamS_z      = 14; beamS_x = knife_cx + 22;  // stack-top beam (horizontal, through side walls)
-beamW_y      = 12;                           // vertical beam through the entry slot, at this Y
-back_pad_t   = 1.5;
-arm_slot_w   = 7;                            // slot in back wall for carriage arm
-arm_w        = 6;
+// ---- towers / frame --------------------------------------------------------------
+tower_y_in    = 58;     // inner faces of the two towers
+tower_t       = 12;
+tower_x0      = -117; tower_x1 = 100;   // foot extent (plate fits a 220 mm bed)
+tower_z_bot   = -100;   // base top (world Z of the wheel axis above the base = 100)
+bearing_d     = 22.2;  bearing_t = 7;           // 608ZZ
+nema_w = 42.3; nema_bolt = 31; nema_boss_d = 22.5; nema_len = 40;
+coupler_d = 19; coupler_len = 25;
+motor_standoff = 28;    // tower outer face → motor mounting face (coupler lives inside the standoff)
+rod_len = 200;          // M8 threaded rod
+servo_body = [22.8, 12.2, 22.5]; servo_flange = [32.5, 12.2, 2.5]; servo_hole_sp = 28;
+hole_m3 = 2.6; hole_m3_free = 3.4; hole_m2 = 1.7; hole_m4_free = 4.4;
+$fn = 64;
 
-// ---- elevator column (behind the well) -------------------------------------
-col_x0       = well_back_x + 2;   // 146 column front face
-col_depth    = 26;                // X extent (146..172)
-col_hw       = 33;                // inner half width
-screw_x      = col_x0 + 12;       // 158 lead screw axis
-screw_y      = 0;
-rod_y        = [-22, 22];
-rod_d        = 8; rod_len = 120;
-col_bot_z    = -58;               // bottom plate lower face
-col_top_z    = 61;                // top plate upper face (motor sits here)
-bush_d       = 15; bush_len = 24; // LM8UU
-nema_w       = 42.3; nema_bolt = 31; nema_boss_d = 22.5; nema_len = 40;
-coupler_d    = 19; coupler_len = 25;
-t8nut_flange_d = 22; t8nut_body_d = 10.2; t8nut_pcd = 16; t8nut_h = 15;
-endstop_z    = -47;               // microswitch mounting height (lever tip ≈ -40)
-
-// platform (inside the well, on the carriage)
-plat_w       = 45;  plat_l = 86; plat_t = 4;
-plat_x0      = well_x0 + 2;       // 52
-z_travel_min = -25; z_travel_max = 22;
-
-// ---- servos (one per side, MG90S, shaft up, body under the plate) -----------
-servo_body   = [22.8, 12.2, 22.5];   // X, Y, Z
-servo_flange = [32.5, 12.2, 2.5];
-servo_hole_sp= 28;
-horn_r       = 8;      // pin radius on the servo horn; ±30° swing gives 8 mm travel
-
-// ---- skirts (world frame) --------------------------------------------------
-skirt_hw     = 63;     // half width of both skirts
+// ---- base ------------------------------------------------------------------------
+base_x0 = -185; base_x1 = 135; base_hw = 105; base_h = 45;

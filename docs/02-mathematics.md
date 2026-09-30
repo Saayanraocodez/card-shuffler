@@ -1,318 +1,226 @@
 # 2. Mathematics of the shuffle
 
-This document separates four kinds of statements and labels each:
-
-* **[PROOF]** — a mathematical statement that holds for the idealised model.
-* **[SIM]** — a Monte-Carlo result from `simulation/shuffle_sim.py`
-  (results in `simulation/results/full_results.txt`).
-* **[EST]** — an engineering estimate.
-* **[PHYS]** — a physical measurement. **There are none yet; the machine has
-  not been built.** The validation plan in §2.8 says how to get them.
+Statements are labelled **[PROOF]** (holds for the idealised model), **[SIM]**
+(Monte-Carlo, `simulation/shuffle_sim.py`, results in `simulation/results/`),
+**[EST]** (engineering estimate) or **[PHYS]** (measured on hardware —
+**none yet; the machine has not been built**).
 
 ## 2.1 What "random" has to mean here
 
-A shuffle produces an element π of S_n, the set of all n! orderings of the
-deck (n = 52: 52! ≈ 8.07 × 10^67). The goal is:
+The output is an ordering π of the deck, one of n! (52! ≈ 8.07 × 10⁶⁷).
+The goal is **uniformity**: P(output = π) = 1/n! for every π, independent of
+the input order and of anything a player can observe. Three different
+things are needed and must not be confused:
 
-> **Uniformity.** For every ordering π, P(output = π) = 1/n!, and the
-> output is independent of the input order and of everything a player can
-> observe (previous outputs, timing, sounds).
+1. **Physical entropy** — unpredictable bits (≥ log₂ 52! = 225.6 per deck).
+2. **Pseudorandom control** — a deterministic generator expanding a seed
+   into the slot choices. Without a fresh physical seed it repeats.
+3. **A uniform output law** — a property of algorithm + mechanism. Random
+   motor timings do not create it; only an algorithm whose output law is
+   provably uniform, executed faithfully, does.
 
-This needs three different things that are often conflated:
+## 2.2 The algorithm the wheel executes: random empty-slot assignment
 
-1. **Physical entropy.** Unpredictable bits from a physical process. This is
-   what makes the outcome unknowable in advance. Bits needed per shuffle:
-   log₂(52!) = **225.6 bits** minimum. We draw far more (≈1700 bits).
-2. **Pseudorandom control.** A deterministic algorithm (here a ChaCha20-based
-   generator) expands a seed into the gap indices the machine executes. A
-   PRNG alone, without physical entropy, produces the *same* sequence every
-   time it is seeded the same way; that is not random, however chaotic the
-   motor timings look.
-3. **A uniform output law.** A property of the *mechanism and algorithm*,
-   not of the entropy. "Random motor timings" or "random-looking" behaviour
-   does not give uniformity; only an algorithm whose output law is provably
-   uniform, executed faithfully, does.
+The wheel has N = 54 slots. Cards are fed in input order c₀ (bottom) …
+c₅₁. For card i the firmware draws a uniformly random slot among the slots
+it knows to be empty and places the card there. At the end the slots are
+emptied in increasing slot number into the output chute, first out at the
+bottom.
 
-## 2.2 The algorithm the machine executes: inside-out Fisher–Yates
+**[PROOF] Every ordering is reachable and equiprobable.** The assignment
+is an injective map from the n cards to the N slots. At step i there are
+N − i empty slots, each chosen with probability 1/(N − i), so every
+injective map has probability 1/(N(N−1)…(N−n+1)) = (N−n)!/N!. Each output
+ordering π corresponds to exactly C(N, n) injective maps (choose which n
+slots are used; the ordering then fixes which card goes to which of them).
+Hence P(π) = C(N, n) · (N−n)!/N! = 1/n!. ∎ (For N = n this is Fisher–Yates
+in its original "draw from the remaining set" form; Fisher & Yates 1938,
+Durstenfeld 1964, Knuth TAOCP vol. 2 §3.4.2.)
 
-Cards are fed from the input deck bottom up; call them c₀ (input bottom)
-… c₅₁ (input top). The output well starts empty. For i = 0 … n−1:
+Conditions the machine must satisfy:
 
-* the stack holds i cards and has i+1 gaps (below the bottom card, between
-  any two cards, above the top card), numbered j = 0 … i from the bottom;
-* draw j_i uniformly from {0, …, i}, independently of everything else;
-* insert cᵢ into gap j_i.
+* **(C1)** each draw is uniform on the currently empty set and independent
+  of everything else (the RNG's job, §2.3);
+* **(C2)** the card ends up in the chosen slot, and the unload delivers the
+  slots in order (the mechanism's job, §2.4).
 
-This is the "inside-out" form of the Fisher–Yates shuffle (Fisher & Yates
-1938; Durstenfeld 1964; Knuth TAOCP vol. 2, Algorithm P is the in-place
-form). The insertion form is what casino elevator shufflers execute.
+Corollaries: **[PROOF]** the law is uniform for *any* input order, so a
+restart after a jam is as good as a fresh deck; one pass suffices; the two
+unused slots may be anywhere.
 
-**[PROOF] Every permutation is reachable and equiprobable.** By induction
-on i. After 0 cards the (single) empty arrangement has probability 1 = 1/0!.
-Suppose that after i cards every one of the i! arrangements of {c₀…cᵢ₋₁}
-has probability 1/i!. Any arrangement of i+1 cards is obtained from exactly
-one arrangement of i cards (remove cᵢ) by exactly one gap choice (where cᵢ
-sat), so its probability is (1/i!) × (1/(i+1)) = 1/(i+1)!. At i = n every
-one of the n! orderings has probability 1/n!. ∎
+## 2.3 Random numbers
 
-Two conditions must hold for the proof to apply to the machine:
+Pipeline (`firmware/shuffler/rng.cpp`; bit-exact reference in
+`simulation/rng_reference.py`; host test in `firmware/test_host`):
 
-* **(C1)** each j_i is uniform on {0…i} and independent of the other j's
-  and of the input (the RNG's job, §2.3);
-* **(C2)** the mechanism inserts cᵢ into gap j_i, not into some other gap
-  (the mechanism's job, §2.4).
+| Stage | What |
+|---|---|
+| Entropy | ESP32 hardware RNG with `bootloader_random_enable()` (SAR-ADC noise source) enabled during seeding; Espressif documents the output as true-random only while RF or this source is enabled. Plus timing jitter of sensor edges and button presses, ADC noise, boot and shuffle counters. |
+| Health test | Repetition-count test on the raw 32-bit samples (4 identical in a row → abort with ERROR 5). Simplified NIST SP 800-90B §4.4. |
+| Conditioning | key = SHA-256(64 B hardware ‖ 32 B jitter ‖ boot counter ‖ shuffle counter). |
+| Generator | ChaCha20 keystream (RFC 8439); nonce = "SHF\x01" ‖ shuffle counter; block counter from 1. Reseeded per shuffle; no keystream reuse. |
+| Sampling | `uniform(m)`: draw a 32-bit word x, accept iff x < 2³² − (2³² mod m), return x mod m. **[PROOF]** exact, no modulo bias; rejection probability ≤ 54/2³². (Lemire 2019 gives a faster variant, unnecessary here.) |
+| Assignment | `slots_assign`: empty = [0..53]; for each card idx = uniform(len), slot = empty[idx], swap-remove. The swap changes the list order, not the uniformity of the choice. |
 
-Two useful corollaries:
+`test ref` on the ESP32 must print the same 52 slots as
+`rng_reference.py --selftest`; `firmware/test_host` verifies the same
+sequence and the predicted output order on the host.
 
-* **[PROOF] Input independence.** The proof never uses the input order, so
-  the output law is uniform for any input, including a sorted deck, a
-  previously shuffled deck, or a deck disturbed by a jam. Therefore the safe
-  response to any interrupted shuffle is simply to re-run it from the start.
-* **[PROOF] No repeated riffles needed.** One pass suffices; there is no
-  "number of passes" parameter and no mixing-time argument.
+## 2.4 What the mechanism can get wrong (condition C2)
 
-## 2.3 Random numbers: entropy, generator, sampling
-
-Pipeline (firmware `firmware/shuffler/rng.cpp`, reference `simulation/rng_reference.py`):
-
-| Stage | What | Why |
-|---|---|---|
-| Entropy source | ESP32 hardware RNG register, with `bootloader_random_enable()` called so the SAR-ADC noise source feeds it while Wi-Fi/BT are off. Espressif's documentation states the output is true-random only while the RF subsystem or this ADC source is enabled; otherwise it must be treated as pseudo-random. | The seed must be unpredictable. |
-| Extra entropy | Microsecond timestamps of button presses and beam-sensor edges, ADC noise of the battery divider, boot counter, shuffle counter | Defence in depth: cheap independent noise mixed into the seed. |
-| Health test | Repetition-count test on the raw hardware samples (any 32-bit value repeated 4× in a row aborts the shuffle with an error code) | Detects a stuck or disabled hardware source. This is a simplified NIST SP 800-90B style check, not a full one. |
-| Conditioning | key = SHA-256(64 B hardware ‖ 32 B jitter pool ‖ boot ctr ‖ shuffle ctr) | Compresses ≥ 256 bits of raw material into a 256-bit key; small biases in the raw source do not survive hashing (assumes ≥ 256 bits of min-entropy in the material). |
-| Generator | ChaCha20 keystream (RFC 8439), nonce = "SHF\x01" ‖ shuffle counter, block counter from 1 | Cryptographic-quality, fast, tiny code, identical output on host and firmware. Reseeded for every shuffle; nonce guarantees no keystream reuse even if the same key recurred. |
-| Sampling | `uniform(m)`: draw a 32-bit word x; accept iff x < 2³² − (2³² mod m); return x mod m | **[PROOF]** The accepted x are uniform on a multiple of m values, so x mod m is exactly uniform. No modulo bias. Expected rejection probability ≤ 54/2³² ≈ 1.3 × 10⁻⁸ per draw. (Lemire 2019 gives a faster nearly-divisionless variant; not needed at 52 draws per shuffle.) |
-| Gap sequence | j_i = uniform(i+1), i = 0…n−1 | Condition (C1). |
-
-What this does **not** guarantee: if the ESP32's hardware source were
-silently broken *and* the jitter sources were predictable, the seed would be
-predictable and the sequence, though still uniform-looking, could be
-reproduced by an attacker who knows the firmware. That is why the health
-test exists and why the entropy is mixed from several sources. For home
-poker the practical adversary is a player trying to learn something about
-the next deck from the previous one; the reseeding and nonce scheme mean no
-two shuffles share any generator state.
-
-## 2.4 What the physical mechanism can get wrong (condition C2)
-
-Each card's intended gap j_i is realised by (a) positioning the elevator so
-the boundary below card j_i is level with the blades, (b) driving the
-blades in, (c) dropping the lower stack 3 mm, (d) feeding the card,
-(e) closing. Deviations:
-
-| Fault | Physical cause | Effect on the gap actually used | Detectable by |
+| Fault | Cause | Effect on the realised assignment | Detection |
 |---|---|---|---|
-| **F1 blade one gap off, symmetric** | ±0.15 mm positioning noise; the bevelled blade tip self-centres into the nearest boundary, equally likely above or below | j' = j ± 1 with equal probabilities p, clipped to [0, i] | Not directly; see below (harmless) |
-| **F2 blade one gap off, systematic** | Calibration offset: blade plane consistently above/below the commanded boundary | j' = j + 1 with probability p (one direction) | Calibration routine; predicted-vs-actual test (§2.8) |
-| **F3 thickness-estimate error** | Stack height measured wrongly, or card thickness not uniform; error grows with j | j' = round(j · (1 + d)) | Stack-top beam re-measure every 4 cards; predicted-vs-actual test |
-| **F4 blades miss** | Blade hits a card edge and pushes it instead of entering; lower stack drops, card lands on top | j' = i with probability p | Front-slot beam jam timeout catches most; a clean miss is silent → predicted-vs-actual test |
-| **F5 double feed** | Two cards pass the gate together | cᵢ₊₁ enters the same gap directly above cᵢ | Card count at end of shuffle (51 counted, hopper empty) → firmware flags it |
-| **F6 missed feed / retry** | Roller slips; card does not arrive; firmware retries | Same card into the same still-open gap: **no effect on the law** [PROOF: the gap index is unchanged, or a fresh uniform draw is used] | — |
-| **F7 jam with manual intervention** | User clears cards | Order disturbed; firmware requires a full restart, which is uniform by input independence | — |
-| **F8 lost stepper steps** | Elevator stalls | Systematic offset from then on (like F2/F3) | Re-homing each shuffle; stack-top re-measure detects a drift > 0.3 mm |
+| **W1 neighbour slot, symmetric** | card enters the slot one above or below the target, equally likely (wheel index noise ±1 mm at the mouth, card tilt) | realised slot = intended ± 1 when that slot is empty | Beam E at the entry: after each feed the card must be seen in the target slot; if not, the firmware looks at both neighbours, finds the card and **corrects its occupancy map** (`VERIFY_AFTER_INSERT`), logging the direction |
+| **W2 neighbour slot, biased** | entry plane trim wrong (always the same side) | realised = intended + 1 always when empty | As W1; the *direction statistics* of the corrections reveal it; `cal entry` trim |
+| **W3 uncorrected W1/W2** | firmware not verifying | later card sent to an actually occupied slot: collision (jam) or deflection to a free neighbour | Only by the final count or a jam |
+| **W4 double feed** | two cards through the gate | both cards in one slot, original order kept → adjacent in the output | Beam-B block-time heuristic; end count (52 loaded); the slot holds two cards, the exit pulls them together |
+| **W5 card lost / not seated** | card stops in the mouth, falls back | beam E clear after the feed and not found in the neighbours → ERROR 8 | Sensor |
+| **W6 eject failure** | card does not come out of a slot | beam X never blocks → retry, then ERROR 9; the deck is short | Sensor + count |
+| **W7 missed feed / retry** | roller slips | same card into the same (still empty, still chosen) slot: **no effect on the law** [PROOF] | — |
+| **W8 lost steps / wrong home** | stepper stall, index misread | all subsequent slots offset by a constant → still an injective assignment: the *output order* is unchanged (slot k+1 for all cards is the same order) unless the offset crosses the two empty slots or the wheel end; unload uses the same offset | Homing before every shuffle; the start-of-run scan |
 
-**[PROOF] Symmetric independent ±1 errors preserve exact uniformity.**
-Let the realised gap be j' = clip(j + ε, 0, i) with ε ∈ {−1, 0, +1},
-P(ε = +1) = P(ε = −1) = p, independent of j and of other cards. For an
-interior gap m (0 < m < i): P(j' = m) = P(j = m)(1 − 2p) + P(j = m−1)p +
-P(j = m+1)p = 1/(i+1). For m = 0: P(j' = 0) = P(j = 0)(1 − p) +
-P(j = 1)p = 1/(i+1) (the ε = −1 case at j = 0 is clipped back to 0 and the
-ε = +1 case leaves; they cancel). Symmetrically for m = i. So j' is exactly
-uniform and, being independent across cards, the Fisher–Yates proof applies
-unchanged. The same holds for any symmetric error distribution with
-independent errors (the transition kernel is doubly stochastic). ∎
+**[PROOF] Symmetric, independent neighbour errors with map correction
+preserve uniformity.** Let E be the set of truly empty slots when card i is
+placed, s uniform on E, and the realised slot s' = s ± 1 with equal
+probability p if that neighbour is in E, else s' = s. The kernel K(s → s')
+on E is symmetric (K(a→b) = K(b→a)) and hence doubly stochastic, so s' is
+uniform on E. With the map corrected, the next draw is uniform on the true
+remaining set, and the argument of §2.2 applies to the realised assignment.
+∎ Without correction (W3) the firmware's belief and the truth diverge and
+uniformity is lost (see the table below). A biased kernel is not doubly
+stochastic and produces a bias whether or not the map is corrected.
 
-The consequence for the design: **positioning noise is harmless as long as
-it is unbiased and independent of the commanded gap**. What matters is
-eliminating *systematic* offsets (F2, F3, F8) and *silent* failures (F4, F5).
-This is why the machine re-measures the stack height with a beam sensor
-every few cards (removes accumulated thickness error), homes before every
-shuffle (removes lost steps), has a calibration routine for the blade
-plane (removes the constant offset), counts cards (catches F5) and has a
-jam timeout on the entry beam (catches most F4).
+**[SIM] Effect sizes**, 200 000 shuffles per model (20 000 for riffles).
+Columns: chi-square p of the 52 × 52 card-position table; largest cell in
+σ; P(input bottom card ends at the bottom) (uniform 0.0192); pairwise
+precedence pairs beyond 3σ (uniform ≈ 3.6 of 1326); mean original
+successors directly above (uniform 0.981); Spearman z of input vs output
+position; informed next-card guessing score (uniform 4.54).
 
-**[SIM] Effect sizes.** 200 000 shuffles per model (20 000 for riffles),
-seed 12345. Columns: chi-square p-value of the 52×52 card-position table;
-largest cell deviation in σ; probability the input bottom card ends at the
-output bottom (uniform: 0.0192); pairwise-precedence pairs beyond 3σ
-(uniform: ≈3.6 of 1326); mean number of original successors directly
-above their predecessor (uniform: 0.981); mean rising sequences (uniform:
-26.5); informed next-card guessing score, correct cards per deck (uniform:
-4.54).
-
-| Model | pos-freq p | max σ | P(bot→bot) | pairs > 3σ | adjacency | rising | guess |
+| Model | pos-freq p | max σ | P(bot→bot) | pairs > 3σ | adjacency | Spearman z | guess |
 |---|---|---|---|---|---|---|---|
-| **Exact Fisher–Yates** | 0.42 | 3.9 | 0.0189 | 1 | 0.979 | 26.51 | 4.56 |
-| F1 symmetric ±1, p = 5 % each | 0.17 | 4.1 | 0.0199 | 7 | 0.980 | 26.50 | 4.52 |
-| F1 symmetric ±1, p = 25 % each | 0.18 | 3.8 | 0.0192 | 4 | 0.984 | 26.49 | 4.54 |
-| F2 systematic +1, p = 10 % | < 10⁻³⁰⁰ | 35.7 | **0.0302** | 248 | 0.991 | 26.41 | 4.55 |
-| F2 systematic +1, p = 100 % | < 10⁻³⁰⁰ | 3194 | **1.000** | 778 | 1.135 | 25.52 | 5.64 |
-| F3 thickness scale d = 3 % | < 10⁻³⁰⁰ | 62.6 | 0.0193 | 974 | 1.018 | 26.47 | 4.58 |
-| F4 blade miss p = 2 % | < 10⁻³⁰⁰ | 63.0 | 0.0207 | 1020 | 1.011 | 26.42 | 4.58 |
-| F5 double feed p = 2 % (undetected) | 1.3 × 10⁻⁶ | 5.4 | 0.0209 | 97 | **1.515** | 26.01 | 4.99 |
-| 8-bin shelf shuffler, 1 pass | < 10⁻³⁰⁰ | 344 | 0.125 | 1326 | 6.38 | 23.3 | **17.2** |
-| 8-bin shelf shuffler, 4 passes | 7.5 × 10⁻⁴ | 3.6 | 0.0189 | 1 | 0.988 | 26.50 | 4.58 |
-| GSR hand riffle × 1 | < 10⁻³⁰⁰ | 503 | 0.495 | 1315 | 25.5 | 2.0 | 26.7 |
-| GSR hand riffle × 7 | 3.7 × 10⁻¹² | 5.2 | 0.0242 | 150 | 1.185 | 24.7 | 4.62 |
-| GSR hand riffle × 12 | 8 × 10⁻³ | 4.0 | 0.0184 | 4 | 0.976 | 26.44 | 4.55 |
-| Two-hopper riffle machine × 1 | < 10⁻³⁰⁰ | 496 | 0.500 | 1304 | 10.0 | 2.0 | 12.3 |
-| Two-hopper riffle machine × 7 | 2.7 × 10⁻¹⁰ | 7.1 | 0.0226 | 105 | 1.042 | 26.29 | 4.59 |
+| **Wheel, exact** | 0.72 | 3.4 | 0.0189 | 2 | 0.980 | 0.5 | 4.55 |
+| W3 neighbour 5 % symmetric, **uncorrected** | 1.3 × 10⁻⁶ | 3.6 | 0.0189 | 48 | 1.005 | −6.4 | 4.57 |
+| W3 neighbour 5 % biased, uncorrected | 2.6 × 10⁻⁴⁰ | 6.5 | 0.0181 | 308 | 0.980 | −17.3 | 4.53 |
+| W3 neighbour 30 % symmetric, uncorrected | < 10⁻³⁰⁰ | 14.2 | 0.0191 | 613 | 1.136 | −39.2 | 4.81 |
+| W1 neighbour 5 % symmetric, **corrected** (firmware default) | 0.16 | 3.6 | 0.0188 | 5 | 0.982 | 0.4 | 4.54 |
+| W2 neighbour 5 % biased, corrected | 2.8 × 10⁻⁷ | 4.4 | 0.0179 | 34 | 0.935 | −5.5 | 4.60 |
+| W2 neighbour 30 % biased, corrected | < 10⁻³⁰⁰ | 20.9 | 0.0133 | 1278 | 0.713 | −35.1 | 5.29 |
+| W4 double feed 2 % (v1 model, same effect) | 5.8 × 10⁻⁷ | 5.9 | 0.0210 | 85 | **1.515** | 1.4 | 5.01 |
+| 8-bin shelf shuffler, 1 pass | < 10⁻³⁰⁰ | 347 | 0.126 | 1326 | 6.39 | 403 | **17.1** |
+| 8-bin shelf shuffler, 4 passes | 0.40 | 3.3 | 0.0196 | 3 | 0.989 | −0.6 | 4.55 |
+| GSR hand riffle × 7 | 8.6 × 10⁻¹³ | 5.9 | 0.0242 | 151 | 1.197 | 7.5 | 4.64 |
+| GSR hand riffle × 12 | 0.96 | 3.2 | 0.0197 | 5 | 0.981 | 1.3 | 4.54 |
+| Two-hopper riffle machine × 7 | 1.6 × 10⁻⁹ | 7.2 | 0.0240 | 116 | 1.049 | 6.1 | 4.63 |
 
-**[SIM] Total-variation distance for n = 6** (720 permutations,
-10⁶ samples; the "floor" is what a perfectly uniform source shows with the
-same sample size, ≈ 0.011):
+**[SIM] Exact total-variation distance for 6 cards** (wheel models with 8
+slots, 10⁶ samples; the floor is a perfect source at the same sample size):
 
-| Model | TV | Floor |
+| Model | TV | floor |
 |---|---|---|
-| Exact Fisher–Yates | 0.0108 | 0.0110 |
-| F1 symmetric ±1, 5 % | 0.0102 | 0.0109 |
-| F2 systematic +1, 10 % | 0.070 | 0.011 |
-| F2 systematic +1, 100 % | 0.833 | 0.011 |
-| F4 blade miss 2 % | 0.033 | 0.011 |
-| F5 double feed 2 % | 0.032 | 0.011 |
+| Wheel, exact | 0.0103 | 0.0110 |
+| W3 neighbour 5 % symmetric, uncorrected | 0.0134 | 0.0109 |
+| W3 neighbour 5 % biased, uncorrected | 0.0166 | 0.0111 |
+| W1 neighbour 5 % symmetric, corrected | 0.0108 | 0.0110 |
+| W2 neighbour 5 % biased, corrected | 0.0118 | 0.0109 |
 | 8-bin shelf, 1 pass | 0.240 | 0.011 |
-| 8-bin shelf, 3 passes | 0.0116 | 0.010 |
 
-Reading: symmetric blade noise is invisible (as proved). A 2 % rate of
-silent misses or double feeds is roughly as bad as an 8-bin shelf machine
-run three times, and would be caught by the card count (F5) and by the
-predicted-vs-actual test (F4). A 10 % systematic offset is very bad and is
-exactly what calibration removes.
+Reading: the wheel's only silent failure mode is a misplaced card the
+firmware does not notice, which is exactly what beam E and the correction
+routine are for. Every correction is logged with its direction, so a biased
+entry plane shows up in the machine's own statistics long before it could
+be seen in output statistics.
 
 ## 2.5 Riffle shuffles, for comparison
 
-The Gilbert–Shannon–Reeds model of a hand riffle (Gilbert 1955; Reeds 1981;
-Aldous & Diaconis 1986) cuts the deck at Binomial(n, ½) and interleaves with
-probability proportional to packet size. Bayer & Diaconis (1992, Theorem 1)
-give the exact law after k riffles: P(π) = C(2ᵏ + n − r, n)/2ᵏⁿ where r is
-the number of rising sequences of π, and hence the exact total-variation
-distance (computed by `simulation/shuffle_sim.py --bd-table`):
+The Gilbert–Shannon–Reeds model (Gilbert 1955; Reeds 1981; Aldous &
+Diaconis 1986) and its exact analysis by Bayer & Diaconis (1992, Theorem 1:
+P(π) = C(2ᵏ + n − r, n)/2ᵏⁿ with r the number of rising sequences) give the
+total-variation distance after k riffles of 52 cards
+(`shuffle_sim.py --bd-table`):
 
-| k riffles | 1–4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+| k | 1–4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
 |---|---|---|---|---|---|---|---|---|---|
-| TV distance (n = 52) | 1.000 | 0.924 | 0.614 | **0.334** | 0.167 | 0.085 | 0.043 | 0.021 | 0.011 |
+| TV | 1.000 | 0.924 | 0.614 | **0.334** | 0.167 | 0.085 | 0.043 | 0.021 | 0.011 |
 
-An N-bin "shelf" pass (each card to a uniform bin, bins stacked in order)
-is the inverse of an N-shuffle, and k passes compose to an Nᵏ-shuffle
-(Bayer–Diaconis, Lemma 1 on composition of a- and b-shuffles), so the same
-formula gives e.g. 8 bins × 4 passes → TV 0.011, 10 bins × 2 passes →
-0.42. Diaconis, Fulman & Holmes (2013) analysed a real 10-shelf casino
-machine, showed one pass leaves enough structure for a player to guess the
-next card far above chance (their guessing strategy is the model for the
-"guess" column above), and the manufacturer adopted a second pass.
+An N-bin shelf pass is the inverse of an N-riffle and k passes compose to
+an Nᵏ-shuffle, so 8 bins × 4 passes ≈ 12 riffles. Diaconis, Fulman & Holmes
+(2013) showed a real 10-shelf casino machine is exploitable after one pass.
+Consumer two-hopper riffle machines are worse than GSR per pass (near-
+perfect alternation, cut near 26). The wheel has no mixing-time question:
+its ideal output is uniform after one pass, and its faults are the concrete
+items in §2.4.
 
-**How real machines differ from the models.** A consumer two-hopper riffle
-machine does not follow GSR: its cut is always close to 26 and the two
-rollers alternate almost perfectly (run lengths mostly 1). After one pass
-the deck has exactly 2 rising sequences, and the mechanical model above is
-detectably non-uniform even after 7 passes. Real hand riffles also differ
-from GSR (people tend toward perfect interleaving in the middle and
-clumps at the ends). The insertion mechanism chosen here has no
-"mixing model" to argue about: its ideal output is uniform after one pass,
-and its errors are the concrete faults in §2.4.
+## 2.6 A second exact architecture (kept for reference): two wells
 
-## 2.6 What the statistical tests can and cannot establish
+If cards are diverted to two insertion wells A and B, each performing
+uniform random-gap insertion, and stack A is placed on stack B at the end,
+the result is exactly uniform whenever the label vector L ∈ {A,B}ⁿ is
+*exchangeable* (P(L) depends only on the number of A's), e.g. i.i.d. coin
+flips of any bias or a uniformly random 26/26 split. **[PROOF]** For a
+target π and each k, the event "top k of π = the A cards in π's order" has
+probability f(k)/(k!(n−k)!); summing over k gives
+(1/n!) Σₖ f(k) C(n, k) = (1/n!) Σ_L P(L) = 1/n!. ∎ This was the alternative
+to the wheel; it is slower and needs the user to combine two stacks.
 
-* A test on B shuffles can only detect deviations larger than roughly
-  1/√B per cell. With 200 000 shuffles the position-frequency test sees
-  cell probabilities to ±0.0005; it cannot see a deviation of 10⁻⁴.
-* No finite battery of tests proves uniformity over 8 × 10⁶⁷ outcomes.
-  Passing tests establishes "no bias of the tested kinds larger than the
-  resolution". That is why the argument for this machine is layered:
-  (1) the algorithm is uniform **[PROOF]**; (2) the RNG and sampler can be
-  checked bit-for-bit against the reference and statistically **[SIM/PHYS
-  via serial dump]**; (3) each physical step is confirmed by a sensor, and
-  the residual physical error can be *measured directly* by comparing the
-  predicted permutation with the actual one (§2.8), which is far more
-  powerful than testing output statistics.
-* Small-n exact TV distance (n = 6) *is* a complete measure, but only for
-  the model with 6 cards; effects that scale with n (F3) are
-  under-represented there.
+## 2.7 What the tests can and cannot establish
 
-## 2.7 Simulation code
+* B shuffles resolve deviations of about 1/√B per cell; 200 000 shuffles
+  see cell probabilities to ±0.0005. No finite test proves uniformity over
+  10⁶⁸ outcomes.
+* The argument for this machine is therefore layered: (1) the algorithm is
+  uniform **[PROOF]**; (2) the RNG and sampler are checked bit-for-bit
+  against the reference and statistically on the chip; (3) every insertion
+  is verified by a sensor and every deviation is logged with its direction,
+  so the residual physical error is *measured*, not assumed; (4) the
+  predicted-vs-actual test checks the whole chain including the unload.
 
-`simulation/shuffle_sim.py` — models and tests (see the file header).
-`simulation/rng_reference.py` — bit-exact reference of the firmware RNG.
-`simulation/analyze_physical.py` — runs the same tests on recorded physical
-outputs, and does the predicted-vs-actual comparison.
+## 2.8 Validation plan (strongest evidence first)
 
-Run `python3 shuffle_sim.py --quick` (≈1 min) or without `--quick`
-(≈10 min). The tests implemented: card-position frequency (chi-square,
-df 2601), bottom-card and top-card identity, pairwise precedence (1326
-pairs), original-neighbour adjacency, rising sequences (Eulerian
-expectation (n+1)/2 = 26.5, sd √((n+1)/12) = 2.10), serial correlation of
-consecutive cards' output positions (expected −1/(n−1)), Spearman
-correlation between input and output position, and the informed next-card
-guessing score.
+1. **RNG bit-exact** — `test ref` = `rng_reference.py --selftest` ★
+2. **RNG statistics on the chip** — `test rng 100000` →
+   `analyze_physical.py --gaps` (slot sequences; every statistic in the
+   uniform ranges) ★
+3. **Entropy health** — `test raw 1000000` → `ent` / NIST STS ≈ 8.0 bits/byte ★
+4. **Insertion accuracy from the machine's own log** — after every shuffle
+   `last` prints intended and realised slots. Over 20 shuffles (1040
+   insertions) the acceptance target **[EST]** is ≤ 1 % corrections with no
+   directional excess beyond the binomial test (p > 0.05), 0 lost cards,
+   0 double-feed suspects. `analyze_physical.py --log` tallies this. ★
+5. **Predicted-vs-actual** — `test fixed <seed>`, press the button, then
+   read the output deck (`analyze_physical.py --compare`). Every
+   discrepancy is a mechanical error not caught by the sensors (eject
+   order, unnoticed misplacement, double card). 20 decks. ★
+6. **Output statistics on physical shuffles** — 200–500 decks entered by
+   hand; only gross faults are visible at this size; sanity check.
+7. **Different starting orders** — sorted, reversed, previously shuffled:
+   5 decks each of step 5. Input independence is proved for the algorithm;
+   this checks the mechanics do not depend on order (new vs worn decks).
+8. **Fault injection** — misalign `cal entry` by +1.5° and confirm the
+   correction log shows a directional excess; set the gate to 0.8 mm and
+   confirm the double-feed warning.
 
-## 2.8 Validation plan
-
-Ordered from strongest to weakest evidence; do them in this order.
-
-1. **RNG + sampler, bit-exact [SIM/PHYS].** Firmware TEST mode prints the
-   derived key, shuffle counter and the 52 gap indices. `rng_reference.py
-   --key … --counter …` must print the identical sequence. This checks the
-   ChaCha20 and rejection-sampling implementation on the real chip.
-2. **RNG statistics on the chip [PHYS].** Firmware TEST mode streams
-   100 000 gap sequences over USB serial (a few minutes). Feed them to
-   `shuffle_sim.py` through `build_order`/`run_all_stats` (the
-   `analyze_physical.py --gaps` option). Expected: every statistic within
-   the uniform reference ranges above. This validates (C1) on hardware.
-3. **Entropy health [PHYS].** Firmware TEST mode dumps 1 MB of raw hardware
-   RNG bytes; run `ent` or NIST SP 800-22 on it. Expected ≈ 8.0 bits/byte.
-   Also confirm `bootloader_random_enable()` is active (the firmware checks
-   the register and refuses to shuffle otherwise).
-4. **Mechanism accuracy, predicted vs actual [PHYS].** Use a deck with
-   visible indices. TEST mode "fixed seed" runs a shuffle with a known gap
-   sequence and prints the *predicted* output order. Record the actual
-   output order (`analyze_physical.py --enter`). Every discrepancy is a
-   mechanical error; the script classifies it (off-by-one up/down, miss to
-   top, double feed, other). 20 shuffles = 1040 insertions, giving the error
-   rate to about ±0.3 % and, importantly, its *direction*. Acceptance
-   target **[EST]**: ≤ 1 % off-by-one with no directional bias beyond
-   sampling noise (two-sided binomial test, p > 0.05), 0 misses, 0 double
-   feeds in 1040 insertions. Directional bias → recalibrate blade offset.
-5. **Output statistics on physical shuffles [PHYS].** 200–500 shuffles of
-   a real deck, entered by hand (or photographed). At this sample size only
-   gross faults are visible (e.g. P(bottom→bottom) = 0.03 vs 0.019 needs
-   ~600 shuffles for 2σ). Use it as a sanity check, not as the proof.
-6. **Different starting orders [PHYS].** Repeat steps 4–5 from a sorted
-   deck, a reversed deck and a previously shuffled deck. Input
-   independence is proved for the algorithm; this checks that no mechanical
-   effect depends on input order (e.g. new decks feed differently from
-   worn ones).
-7. **Fault injection [PHYS].** Deliberately set the gate to 0.8 mm to
-   provoke double feeds and confirm the count check flags them; loosen the
-   blade calibration by +0.3 mm and confirm the predicted-vs-actual test
-   reports a directional bias.
-
-**Approximation target [EST].** With the acceptance criteria of step 4, and
-with symmetric residual errors, the output law is within total-variation
-distance ≈ 0.01 of uniform (comparable to 12 hand riffles), dominated by
-undetected asymmetry at the 1 % level. This is a target to be validated,
-not a claim.
+**Approximation target [EST].** Under the step-4 acceptance criteria, with
+symmetric residual errors and map correction, the output law is exactly
+uniform by §2.4; the residual risk is an undetected directional bias at
+the 1 % level, which corresponds to a total-variation distance of order
+0.01 (comparable to 12 hand riffles). To be validated, not claimed.
 
 ## References
 
-* R. A. Fisher, F. Yates, *Statistical Tables for Biological, Agricultural
-  and Medical Research*, 1938 (example 12).
+* R. A. Fisher, F. Yates, *Statistical Tables*, 1938, example 12.
 * R. Durstenfeld, "Algorithm 235: Random permutation", *CACM* 7(7), 1964.
-* D. E. Knuth, *The Art of Computer Programming* vol. 2, §3.4.2, Algorithm P.
-* E. N. Gilbert, "Theory of shuffling", Bell Labs technical memorandum, 1955.
-* D. Aldous, P. Diaconis, "Shuffling cards and stopping times", *American
-  Mathematical Monthly* 93(5), 1986, pp. 333–348.
+* D. E. Knuth, *TAOCP* vol. 2, §3.4.2.
+* E. N. Gilbert, "Theory of shuffling", Bell Labs memo, 1955.
+* D. Aldous, P. Diaconis, "Shuffling cards and stopping times", *Amer.
+  Math. Monthly* 93(5), 1986.
 * D. Bayer, P. Diaconis, "Trailing the dovetail shuffle to its lair",
-  *Annals of Applied Probability* 2(2), 1992, pp. 294–313.
+  *Ann. Appl. Probab.* 2(2), 1992.
 * P. Diaconis, J. Fulman, S. Holmes, "Analysis of casino shelf shuffling
-  machines", *Annals of Applied Probability* 23(4), 2013, pp. 1692–1720.
+  machines", *Ann. Appl. Probab.* 23(4), 2013.
 * L. N. Trefethen, L. M. Trefethen, "How many shuffles to randomize a deck
-  of cards?", *Proc. R. Soc. A* 456, 2000, pp. 2561–2568.
+  of cards?", *Proc. R. Soc. A* 456, 2000.
 * D. Lemire, "Fast random integer generation in an interval", *ACM TOMACS*
   29(1), 2019.
-* Y. Nir, A. Langley, "ChaCha20 and Poly1305 for IETF Protocols", RFC 8439,
-  2018.
-* Espressif, ESP-IDF Programming Guide, "Random Number Generation"
-  (`esp_random`, `bootloader_random_enable`).
-* NIST SP 800-90B, "Recommendation for the Entropy Sources Used for Random
-  Bit Generation", 2018 (health tests, §4.4).
+* RFC 8439 (ChaCha20); Espressif ESP-IDF "Random Number Generation";
+  NIST SP 800-90B §4.4.

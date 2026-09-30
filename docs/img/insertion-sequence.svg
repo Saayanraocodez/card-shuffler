@@ -1,81 +1,56 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" font-family="Helvetica, Arial, sans-serif" font-size="12">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" font-family="Helvetica, Arial, sans-serif" font-size="12">
   <style>
-    .wall { fill:#d9e2ef; stroke:#2b3a55; stroke-width:1.5; }
-    .card { fill:#fff8dc; stroke:#8a7a3a; stroke-width:0.8; }
-    .plat { fill:#d8b4e2; stroke:#5e3a6b; stroke-width:1; }
-    .blade { fill:#d4a017; stroke:#7a5c00; stroke-width:1; }
-    .new { fill:#ffb3b3; stroke:#b3261e; stroke-width:1; }
-    .t { fill:#111; }
-    .h { font-weight:bold; font-size:13px; }
-    .kz { stroke:#b3261e; stroke-width:1; stroke-dasharray:3,3; }
+    .fin { stroke:#a0885a; stroke-width:2; } .card { fill:#fff8dc; stroke:#8a7a3a; stroke-width:1; } .new { fill:#ffb3b3; stroke:#b3261e; stroke-width:1; }
+    .roller { fill:#b9b9b9; stroke:#333; stroke-width:1.2; } .shroud { stroke:#2b3a55; stroke-width:4; fill:none; } .shutter { stroke:#e08a00; stroke-width:4; fill:none; }
+    .t { fill:#111; } .h { font-weight:bold; font-size:13px; } .beam { stroke:#e53935; stroke-width:1.2; stroke-dasharray:3,3; }
   </style>
-  <text x="20" y="26" font-size="17" font-weight="bold">Insertion sequence, front view of the well (blades enter from the side walls; the entry slot faces the viewer)</text>
-
-  <!-- frame template: 6 frames, each 180 px wide -->
-  <g id="frames">
-    <!-- Frame 1: position -->
-    <g transform="translate(20,60)">
-      <text x="0" y="0" class="h">1. Position gap j</text>
-      <rect x="10" y="20" width="6" height="250" class="wall"/><rect x="164" y="20" width="6" height="250" class="wall"/>
-      <line x1="0" y1="150" x2="180" y2="150" class="kz"/><text x="120" y="146" class="t" font-size="10">blade plane</text>
-      <rect x="20" y="150" width="140" height="60" class="card"/>   <!-- lower k -->
-      <rect x="20" y="100" width="140" height="50" class="card"/>   <!-- upper -->
-      <rect x="35" y="210" width="110" height="8" class="plat"/>
-      <text x="20" y="300" class="t">Elevator moves stack so the</text><text x="20" y="316" class="t">boundary below card j is at</text><text x="20" y="332" class="t">Z = 2.5 mm (blades out).</text>
+  <text x="20" y="26" font-size="17" font-weight="bold">Load and unload sequence (a few fins of the wheel drawn; the wheel rotates, the feeder and exit stay fixed)</text>
+  <!-- Frame 1: index -->
+  <g transform="translate(20,60)">
+    <text x="0" y="0" class="h">1. Index: empty slot s to the entry</text>
+    <g transform="translate(60,220) rotate(-46.667)">
+      <line x1="30" y1="0" x2="140" y2="0" class="fin"/><line x1="30" y1="-12" x2="140" y2="-12" class="fin"/><line x1="30" y1="12" x2="140" y2="12" class="fin"/>
+      <rect x="150" y="-4" width="120" height="4" fill="#d9e2ef" stroke="#2b3a55"/>
+      <circle cx="165" cy="12" r="10" class="roller"/><circle cx="165" cy="-12" r="8" class="roller"/>
+      <rect x="190" y="-3" width="80" height="2.5" class="new"/>
     </g>
-    <!-- Frame 2: blades in -->
-    <g transform="translate(215,60)">
-      <text x="0" y="0" class="h">2. Blades in</text>
-      <rect x="10" y="20" width="6" height="250" class="wall"/><rect x="164" y="20" width="6" height="250" class="wall"/>
-      <rect x="20" y="150" width="140" height="60" class="card"/>
-      <rect x="20" y="100" width="140" height="50" class="card"/>
-      <rect x="35" y="210" width="110" height="8" class="plat"/>
-      <rect x="0" y="149" width="36" height="3" class="blade"/><rect x="144" y="149" width="36" height="3" class="blade"/>
-      <text x="20" y="300" class="t">Two 0.5 mm brass blades</text><text x="20" y="316" class="t">slide 7 mm into the stack</text><text x="20" y="332" class="t">edges (servo, ±30° swing).</text>
-    </g>
-    <!-- Frame 3: drop -->
-    <g transform="translate(410,60)">
-      <text x="0" y="0" class="h">3. Open the gap</text>
-      <rect x="10" y="20" width="6" height="250" class="wall"/><rect x="164" y="20" width="6" height="250" class="wall"/>
-      <rect x="20" y="180" width="140" height="60" class="card"/>
-      <rect x="20" y="100" width="140" height="50" class="card"/>
-      <rect x="35" y="240" width="110" height="8" class="plat"/>
-      <rect x="0" y="149" width="36" height="3" class="blade"/><rect x="144" y="149" width="36" height="3" class="blade"/>
-      <text x="40" y="170" class="t" fill="#b3261e" font-size="11">3 mm gap</text>
-      <text x="20" y="300" class="t">Elevator drops 3.0 mm; the</text><text x="20" y="316" class="t">upper cards stay on the</text><text x="20" y="332" class="t">blades (edge support).</text>
-    </g>
-    <!-- Frame 4: feed -->
-    <g transform="translate(605,60)">
-      <text x="0" y="0" class="h">4. Feed the card</text>
-      <rect x="10" y="20" width="6" height="250" class="wall"/><rect x="164" y="20" width="6" height="250" class="wall"/>
-      <rect x="20" y="180" width="140" height="60" class="card"/>
-      <rect x="20" y="100" width="140" height="50" class="card"/>
-      <rect x="35" y="240" width="110" height="8" class="plat"/>
-      <rect x="0" y="149" width="36" height="3" class="blade"/><rect x="144" y="149" width="36" height="3" class="blade"/>
-      <rect x="22" y="176" width="136" height="3.5" class="new"/>
-      <text x="20" y="300" class="t">Rollers push the card through</text><text x="20" y="316" class="t">the slot onto the lower stack;</text><text x="20" y="332" class="t">beam W confirms it is fully in.</text>
-    </g>
-    <!-- Frame 5: close -->
-    <g transform="translate(800,60)">
-      <text x="0" y="0" class="h">5. Close</text>
-      <rect x="10" y="20" width="6" height="250" class="wall"/><rect x="164" y="20" width="6" height="250" class="wall"/>
-      <rect x="20" y="158" width="140" height="60" class="card"/>
-      <rect x="20" y="100" width="140" height="50" class="card"/>
-      <rect x="35" y="218" width="110" height="8" class="plat"/>
-      <rect x="0" y="149" width="36" height="3" class="blade"/><rect x="144" y="149" width="36" height="3" class="blade"/>
-      <rect x="22" y="154" width="136" height="3.5" class="new"/>
-      <text x="20" y="300" class="t">Elevator rises 2.2 mm: the new</text><text x="20" y="316" class="t">card stops 0.2 mm under the</text><text x="20" y="332" class="t">blades.</text>
-    </g>
-    <!-- Frame 6: blades out -->
-    <g transform="translate(995,60)">
-      <text x="0" y="0" class="h">6. Blades out</text>
-      <rect x="10" y="20" width="6" height="250" class="wall"/><rect x="164" y="20" width="6" height="250" class="wall"/>
-      <rect x="20" y="158" width="140" height="60" class="card"/>
-      <rect x="20" y="104" width="140" height="50" class="card"/>
-      <rect x="35" y="218" width="110" height="8" class="plat"/>
-      <rect x="22" y="154" width="136" height="3.5" class="new"/>
-      <text x="20" y="300" class="t">Blades retract; the upper stack</text><text x="20" y="316" class="t">settles 0.7 mm. Stack now has</text><text x="20" y="332" class="t">i+1 cards; repeat from step 1.</text>
-    </g>
+    <text x="0" y="300" class="t">Card pre-staged at the gate; the wheel</text><text x="0" y="316" class="t">turns the short way (avg 90°, ~0.25 s)</text><text x="0" y="332" class="t">until fin s lies on the feeder plane.</text>
   </g>
-  <text x="20" y="405" fill="#444">Error handling: beam timeouts at step 4 trigger a reverse pulse and up to 2 retries with the same gap (no effect on the output law); a persistent jam stops the machine with the gap held open.</text>
+  <!-- Frame 2: push -->
+  <g transform="translate(320,60)">
+    <text x="0" y="0" class="h">2. Push: nip drives the card in</text>
+    <g transform="translate(60,220) rotate(-46.667)">
+      <line x1="30" y1="0" x2="140" y2="0" class="fin"/><line x1="30" y1="-12" x2="140" y2="-12" class="fin"/><line x1="30" y1="12" x2="140" y2="12" class="fin"/>
+      <rect x="150" y="-4" width="120" height="4" fill="#d9e2ef" stroke="#2b3a55"/>
+      <circle cx="165" cy="12" r="10" class="roller"/><circle cx="165" cy="-12" r="8" class="roller"/>
+      <rect x="95" y="-3" width="80" height="2.5" class="new"/>
+      <line x1="150" y1="-20" x2="150" y2="8" class="beam"/>
+    </g>
+    <text x="0" y="300" class="t">Beam B (gate) then beam E (plate tip)</text><text x="0" y="316" class="t">see the card; the feed roller stops when</text><text x="0" y="332" class="t">B clears (next card stays pre-staged).</text>
+  </g>
+  <!-- Frame 3: seat -->
+  <g transform="translate(620,60)">
+    <text x="0" y="0" class="h">3. Seat and verify</text>
+    <g transform="translate(60,220) rotate(-46.667)">
+      <line x1="30" y1="0" x2="140" y2="0" class="fin"/><line x1="30" y1="-12" x2="140" y2="-12" class="fin"/><line x1="30" y1="12" x2="140" y2="12" class="fin"/>
+      <rect x="150" y="-4" width="120" height="4" fill="#d9e2ef" stroke="#2b3a55"/>
+      <circle cx="165" cy="12" r="10" class="roller"/><circle cx="165" cy="-12" r="8" class="roller"/>
+      <rect x="30" y="-3" width="127" height="2.5" class="new"/>
+      <line x1="150" y1="-20" x2="150" y2="8" class="beam"/>
+    </g>
+    <text x="0" y="300" class="t">The card slides the last 9 mm under</text><text x="0" y="316" class="t">gravity to the hub; beam E stays blocked</text><text x="0" y="332" class="t">= card in slot s. If clear: check s±1, fix map.</text>
+  </g>
+  <!-- Frame 4: unload -->
+  <g transform="translate(920,60)">
+    <text x="0" y="0" class="h">4. Unload: slot order</text>
+    <g transform="translate(200,120) rotate(-208.333)">
+      <line x1="30" y1="0" x2="140" y2="0" class="fin"/><line x1="30" y1="-12" x2="140" y2="-12" class="fin"/><line x1="30" y1="12" x2="140" y2="12" class="fin"/>
+      <rect x="60" y="-3" width="127" height="2.5" class="card"/>
+      <circle cx="205" cy="12" r="10" class="roller"/><circle cx="205" cy="-12" r="8" class="roller"/>
+      <line x1="150" y1="-20" x2="150" y2="4" class="shutter"/>
+      <rect x="225" y="18" width="70" height="4" fill="#d9e2ef" stroke="#2b3a55"/>
+    </g>
+    <text x="0" y="300" class="t">Shutter open; fin s+1 on the exit plane;</text><text x="0" y="316" class="t">the card slides out (0.47 g) into the nip;</text><text x="0" y="332" class="t">beam X counts it into the chute. Repeat.</text>
+  </g>
+  <text x="20" y="410" fill="#444">Retries: a feed timeout triggers a reverse pulse and up to 2 retries into the same slot (no effect on the output law); an eject timeout retries 3 times. Persistent faults stop the machine; hold the button 3 s to unload everything.</text>
 </svg>

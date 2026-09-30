@@ -10,7 +10,7 @@ Pipeline (identical in firmware/shuffler/rng.cpp):
   5. next_u32()        = successive little-endian 32-bit words of the keystream
   6. uniform(n)        = rejection sampling: draw x = next_u32(); accept iff x < 2^32 - (2^32 mod n);
                          return x mod n.  (No modulo bias; expected rejections ≈ n / 2^32.)
-  7. gap sequence      = for card i in 0..n-1: j_i = uniform(i + 1)
+  7. wheel assignment  = card i -> empty[uniform(remaining)] (see slot_assignment); v1 gap sequence kept for reference
 
 The firmware can dump (key, shuffle counter, j-sequence) over serial in TEST mode; this file
 regenerates the j-sequence from the same key so the firmware's sampler can be checked bit for bit.
@@ -89,8 +89,28 @@ def derive_key(hw_random: bytes, jitter_pool: bytes, boot_counter: int, shuffle_
 
 
 def gap_sequence(key: bytes, shuffle_counter: int, n: int):
+    """v1 (elevator insertion): gap index for card i uniform in [0, i]."""
     d = Drbg(key, shuffle_counter)
     return [d.uniform(i + 1) for i in range(n)], d
+
+
+def slot_assignment(key: bytes, shuffle_counter: int, n_cards: int = 52, n_slots: int = 54):
+    """Wheel: card i -> uniformly random EMPTY slot.  Bit-exact with firmware slots_assign():
+    empty = [0..n_slots-1]; idx = uniform(len); slot = empty[idx]; empty[idx] = empty[len-1]; len -= 1."""
+    d = Drbg(key, shuffle_counter)
+    empty = list(range(n_slots))
+    slots = []
+    for _ in range(n_cards):
+        idx = d.uniform(len(empty))
+        slots.append(empty[idx])
+        empty[idx] = empty[-1]
+        empty.pop()
+    return slots, d
+
+
+def order_from_slots(slots):
+    """Output order (bottom -> top) when slots are unloaded in increasing slot number."""
+    return [i for _, i in sorted((s, i) for i, s in enumerate(slots))]
 
 
 def selftest():
@@ -120,11 +140,14 @@ def selftest():
     # deterministic sampler test vector used by the firmware host test
     k = hashlib.sha256(b"card-shuffler-test-key").digest()
     seq, d = gap_sequence(k, 1, 52)
+    slots, d2 = slot_assignment(k, 1, 52, 54)
     print("selftest OK")
     print("test key   :", k.hex())
     print("counter    : 1")
-    print("gaps(52)   :", " ".join(str(x) for x in seq))
-    print("words drawn:", d.words_drawn, " rejections:", d.rejections)
+    print("v1 gaps(52):", " ".join(str(x) for x in seq))
+    print("wheel slots:", " ".join(str(x) for x in slots))
+    print("wheel order:", " ".join(str(x) for x in order_from_slots(slots)))
+    print("words drawn:", d2.words_drawn, " rejections:", d2.rejections)
     return seq
 
 
@@ -138,5 +161,6 @@ if __name__ == "__main__":
     if a.selftest or not a.key:
         selftest()
         sys.exit(0)
-    seq, d = gap_sequence(bytes.fromhex(a.key), a.counter, a.n)
-    print(" ".join(str(x) for x in seq))
+    slots, d = slot_assignment(bytes.fromhex(a.key), a.counter, a.n, 54)
+    print("slots:", " ".join(str(x) for x in slots))
+    print("order:", " ".join(str(x) for x in order_from_slots(slots)))

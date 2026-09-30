@@ -1,10 +1,10 @@
-// shuffler.ino — main state machine for the card shuffler (ESP32 DevKitC).
+// shuffler.ino — main state machine for the WHEEL card shuffler (ESP32 DevKitC).
 //
-// One button: press = start shuffle / acknowledge; hold 3 s = lower platform & home (jam access);
-// hold 8 s at power-on = enter calibration mode (also available over serial: type `help`).
+// One button: press = start / acknowledge; hold 3 s = open the shutter, home and stop (jam access).
+// Serial console at 115200: type `help`.
 //
-// Files: config.h (pins/constants), hardware.* (actuators/sensors), motion.* (elevator/feeder),
-// rng.* + sha256/chacha20 (randomness), shuffle_core.* (algorithm), storage.* (NVS), cli.cpp (serial).
+// Shuffle = LOAD phase (each card from the hopper into a uniformly random empty slot of the 54-slot
+// wheel) + UNLOAD phase (slots emptied in slot order into the chute).  See docs/02-mathematics.md.
 #include <Arduino.h>
 #include "config.h"
 #include "platform.h"
@@ -17,54 +17,42 @@
 
 Calibration cal;
 
-enum State { ST_IDLE, ST_SHUFFLING, ST_DONE, ST_ERROR, ST_CAL };
+enum State { ST_IDLE, ST_LOADING, ST_UNLOADING, ST_DONE, ST_ERROR };
 static State state = ST_IDLE;
-static int   error_code = 0;
-static const char* error_text = "";
-static uint32_t last_move_ms = 0;
+static int error_code = 0;
+enum { E_NONE = 0, E_HOME = 1, E_NO_DECK = 2, E_JAM_FEED = 3, E_WHEEL_NOT_EMPTY = 4, E_RNG = 5, E_LOWBAT = 6, E_TOO_MANY = 7, E_LOST_CARD = 8, E_JAM_EJECT = 9, E_COUNT = 10 };
 
-// error codes (LED blinks red, buzzer beeps the code)
-enum { E_NONE = 0, E_HOME = 1, E_NO_DECK = 2, E_JAM = 3, E_WELL_NOT_EMPTY = 4, E_RNG = 5, E_LOWBAT = 6, E_TOO_MANY = 7, E_STACK_MEASURE = 8 };
-
-struct ShuffleLog {           // last shuffle, for the serial `last` command and the physical validation test
-    uint8_t  n;
-    uint8_t  gaps[MAX_CARDS];
-    uint8_t  order[MAX_CARDS];
+struct ShuffleLog {
+    uint8_t  n;                        // cards loaded
+    uint8_t  slot_of_card[MAX_CARDS];  // realised slot (after any correction)
+    uint8_t  intended[MAX_CARDS];      // slot drawn by the RNG
+    uint8_t  order[MAX_CARDS];         // predicted output order (bottom..top, input index)
     uint8_t  retries[MAX_CARDS];
-    uint8_t  double_suspects;
-    float    t_card;
-    uint32_t ms;
-    uint8_t  key[32];
-    uint64_t counter;
-    bool     fixed_seed;
+    uint8_t  corrections, double_suspects, ejected;
+    uint32_t ms_load, ms_unload;
+    uint8_t  key[32]; uint64_t counter; bool fixed_seed;
 } last;
 
-// provided by cli.cpp
-void cli_init(); void cli_poll();
-bool cli_fixed_seed_pending(uint32_t* seed);
+void cli_init(); void cli_poll(); bool cli_fixed_seed_pending(uint32_t* seed);
 
 static void set_error(int code, const char* text) {
-    error_code = code; error_text = text; state = ST_ERROR;
-    feeder_stop(); motors_sleep(true); blades_power(false); elevator_idle();
+    error_code = code; state = ST_ERROR;
+    feeder_stop(); eject_stop(); motors_sleep(true); wheel_idle();
     ui_blink(C_ERROR, 500); ui_beep(3, 120, 1800);
-    cal.total_jams += (code == E_JAM); cal_save(cal);
+    if (code == E_JAM_FEED || code == E_JAM_EJECT) cal.total_jams++;
+    cal_save(cal);
     Serial.printf("ERROR %d: %s\n", code, text);
 }
 
 // ---------------------------------------------------------------- seeding
 static bool seed_drbg(Drbg* d, bool fixed, uint32_t fixed_seed) {
     cal.shuffle_counter++;
-    if (fixed) {
-        char buf[40]; int n = snprintf(buf, sizeof buf, "fixed-seed:%lu", (unsigned long)fixed_seed);
-        uint8_t key[32]; sha256((const uint8_t*)buf, n, key);
-        drbg_seed_key(d, key, cal.shuffle_counter);
-        memcpy(last.key, key, 32); last.fixed_seed = true; last.counter = cal.shuffle_counter;
-        return true;
-    }
+    if (fixed) { char buf[40]; int n = snprintf(buf, sizeof buf, "fixed-seed:%lu", (unsigned long)fixed_seed);
+        uint8_t key[32]; sha256((const uint8_t*)buf, n, key); drbg_seed_key(d, key, cal.shuffle_counter);
+        memcpy(last.key, key, 32); last.fixed_seed = true; last.counter = cal.shuffle_counter; return true; }
     uint8_t hw[64], jit[32];
     jitter_add(micros()); jitter_add((uint32_t)(battery_volts() * 100000.0f)); jitter_add(esp_random());
-    hw_random_bytes(hw, sizeof hw);
-    jitter_snapshot(jit);
+    hw_random_bytes(hw, sizeof hw); jitter_snapshot(jit);
     bool ok = drbg_seed(d, hw, jit, cal.boot_counter, cal.shuffle_counter);
     memcpy(last.key, d->key, 32); last.fixed_seed = false; last.counter = cal.shuffle_counter;
     return ok;
@@ -76,116 +64,143 @@ static bool feed_with_retries(uint8_t i, FeedResult* out) {
     for (int attempt = 0; attempt <= FEED_RETRIES; attempt++) {
         r = feeder_feed_one(&st);
         if (r == FEED_OK) { if (st.double_suspect) last.double_suspects++; last.retries[i] = attempt; *out = r; return true; }
-        if (r == FEED_NO_CARD) { *out = r; return false; }           // hopper empty (or pickup failure): caller decides
+        if (r == FEED_NO_CARD) { *out = r; return false; }
+        if (r == FEED_NOT_SEATED) { *out = r; return false; }        // card went somewhere: caller searches the neighbours
         Serial.printf("# card %u: %s, retry %d\n", i, feed_result_name(r), attempt + 1);
         feeder_reverse_pulse();
     }
     *out = r; return false;
 }
 
+// After a feed, the card should be in slot s (beam E blocked at the entry).  If not, look one slot each
+// side; return the slot where it was found or -1.
+static int locate_card(uint8_t s, bool occupied[N_SLOTS_HW]) {
+    if (beam_blocked_now(BEAM_E)) return s;
+    int cands[2] = { (s + 1) % N_SLOTS_HW, (s + N_SLOTS_HW - 1) % N_SLOTS_HW };
+    for (int c = 0; c < 2; c++) {
+        if (occupied[cands[c]]) continue;                    // was already occupied: a card there is not the new one
+        wheel_fin_to_entry((uint8_t)cands[c]); delay(30);
+        if (beam_blocked_now(BEAM_E)) return cands[c];
+    }
+    return -1;
+}
+
 static void run_shuffle(bool fixed, uint32_t fixed_seed) {
     uint32_t t0 = millis();
-    state = ST_SHUFFLING; ui_color(C_BUSY);
+    state = ST_LOADING; ui_color(C_BUSY);
     memset(&last, 0, sizeof last);
-
-    float v = battery_volts();
-    if (v < VBAT_REFUSE) { set_error(E_LOWBAT, "battery too low to start"); return; }
+    if (battery_volts() < VBAT_REFUSE) { set_error(E_LOWBAT, "battery too low to start"); return; }
 
     Drbg d;
     if (!seed_drbg(&d, fixed, fixed_seed)) { set_error(E_RNG, "hardware RNG health test failed"); return; }
-    if (fixed) {   // predicted-vs-actual test mode: print the plan before moving anything
-        uint8_t g[MAX_CARDS], o[MAX_CARDS]; Drbg dd = d;
-        uint8_t n = cal.expected_cards; gaps_draw(&dd, n, g); predict_order(n, g, o);
-        Serial.printf("PLAN cards=%u seed=%lu\nPLAN gaps:", n, (unsigned long)fixed_seed);
-        for (int i = 0; i < n; i++) Serial.printf(" %u", g[i]);
-        Serial.print("\nPLAN order(bottom..top, input index):");
-        for (int i = 0; i < n; i++) Serial.printf(" %u", o[i]);
-        Serial.println();
+    if (fixed) {   // predicted-vs-actual test: print the plan before moving
+        uint8_t sl[MAX_CARDS], o[MAX_CARDS]; Drbg dd = d; uint8_t n = cal.expected_cards;
+        slots_assign(&dd, n, N_SLOTS_HW, sl); predict_order_from_slots(n, sl, o);
+        Serial.printf("PLAN cards=%u seed=%lu\nPLAN slots:", n, (unsigned long)fixed_seed);
+        for (int i = 0; i < n; i++) Serial.printf(" %u", sl[i]);
+        Serial.print("\nPLAN order(bottom..top, input index):"); for (int i = 0; i < n; i++) Serial.printf(" %u", o[i]); Serial.println();
     }
 
-    // mechanics: home, verify the well is empty, verify a deck is loaded
-    blades_power(true); blades_set(BLADES_RETRACTED);
-    if (!elevator_home()) { set_error(E_HOME, "elevator endstop not found"); return; }
-    elevator_move_to(Z_WELL_CHECK);
-    if (beam_blocked_now(BEAM_S)) { set_error(E_WELL_NOT_EMPTY, "remove cards from the well first"); return; }
+    shutter_power(true); shutter_set(SHUTTER_CLOSED);
+    if (!wheel_home()) { set_error(E_HOME, "wheel index not found"); return; }
+    bool occupied[N_SLOTS_HW] = {false};
+#if SCAN_AT_START
+    if (wheel_scan(occupied) != 0) { set_error(E_WHEEL_NOT_EMPTY, "cards left in the wheel: hold the button to unload"); return; }
+#endif
     if (!feeder_probe_hopper()) { set_error(E_NO_DECK, "no deck in the hopper"); return; }
 
-    float t_card = cal.t_card;
-    if (t_card < T_CARD_MIN || t_card > T_CARD_MAX) t_card = T_CARD_DEFAULT;
-    uint8_t n = 0;
-    bool lowbat_abort = false;
-
-    for (uint8_t i = 0; i < MAX_CARDS; i++) {
-        // periodic stack-height measurement: removes accumulated thickness error and lost steps
-        if (i >= 8 && (i % STACK_MEASURE_EVERY) == 0) {
-            float zp = elevator_find_beam_s(Z_BEAM_S_NOMINAL + 1.0f);
-            if (isnan(zp)) { set_error(E_STACK_MEASURE, "stack-top beam not found"); return; }
-            float h = Z_BEAM_S_NOMINAL - zp;
-            float t = h / (float)i;
-            if (t > T_CARD_MIN && t < T_CARD_MAX) t_card = t;
-        }
-        uint8_t j = (uint8_t)drbg_uniform(&d, (uint32_t)i + 1);
-        last.gaps[i] = j;
-        float z1 = gap_platform_z(knife_z(), j, t_card);
-        elevator_move_to(z1);
-        blades_set(BLADES_EXTENDED);
-        elevator_move_to(z1 - GAP_DROP);
+    // ---- LOAD: card i -> uniform among the slots the firmware knows to be empty (exact Fisher–Yates)
+    uint8_t empty[N_SLOTS_HW]; uint8_t n_empty = N_SLOTS_HW; for (uint8_t s = 0; s < N_SLOTS_HW; s++) empty[s] = s;
+    uint8_t n = 0; bool lowbat = false;
+    for (uint8_t i = 0; i < N_SLOTS_HW; i++) {
+        uint8_t idx = (uint8_t)drbg_uniform(&d, n_empty);
+        uint8_t s = empty[idx];
+        last.intended[i] = s;
+        wheel_fin_to_entry(s);
         FeedResult r;
         if (!feed_with_retries(i, &r)) {
-            if (r == FEED_NO_CARD) {                     // hopper empty: close up and finish
-                elevator_move_to(z1 - GAP_DROP + GAP_CLOSE); blades_set(BLADES_RETRACTED);
-                break;
-            }
-            set_error(E_JAM, feed_result_name(r)); return;   // blades stay in, gap stays open for access
+            if (r == FEED_NO_CARD) break;                                      // hopper empty
+            if (r == FEED_NOT_SEATED) {
+#if VERIFY_AFTER_INSERT
+                int found = locate_card(s, occupied);
+                if (found < 0) { set_error(E_LOST_CARD, "card left the feeder but is not in the slot or its neighbours"); return; }
+                if (found != s) { last.corrections++; cal.total_corrections++; Serial.printf("# card %u landed in slot %d (intended %u): map corrected\n", i, found, s); }
+                s = (uint8_t)found;
+#else
+                set_error(E_LOST_CARD, "card not seen in the slot"); return;
+#endif
+            } else { set_error(E_JAM_FEED, feed_result_name(r)); return; }
         }
-        elevator_move_to(z1 - GAP_DROP + GAP_CLOSE);
-        blades_set(BLADES_RETRACTED);
-        n = i + 1;
-        if (battery_volts() < VBAT_ABORT) { lowbat_abort = true; break; }
-        if (n >= MAX_CARDS) { set_error(E_TOO_MANY, "more cards than MAX_CARDS"); return; }
+        // remove the realised slot from the empty list (swap-remove; order irrelevant for uniformity)
+        occupied[s] = true; last.slot_of_card[i] = s; n = i + 1;
+        uint8_t k = 0; while (k < n_empty && empty[k] != s) k++;
+        if (k < n_empty) { empty[k] = empty[n_empty - 1]; n_empty--; }
+        if (n_empty == 0) break;
+        if (battery_volts() < VBAT_ABORT) { lowbat = true; break; }
         ui_tick();
     }
-    blades_power(false); motors_sleep(true);
+    feeder_stop();
+    last.n = n; last.ms_load = millis() - t0;
+    if (n == 0) { set_error(E_NO_DECK, "no card could be fed"); return; }
 
-    // present the deck
-    float h = n * t_card;
-    float zp = Z_PRESENT_TOP - h; if (zp > Z_MAX) zp = Z_MAX;
-    elevator_move_to(zp);
-    elevator_idle();
-
-    last.n = n; last.t_card = t_card; last.ms = millis() - t0;
-    predict_order(n, last.gaps, last.order);
-    cal.t_card = t_card; cal.total_cards += n; cal.last_shuffle_ms = last.ms; cal_save(cal);
+    // ---- UNLOAD: slots in increasing order into the chute
+    state = ST_UNLOADING; ui_color(C_UNLOAD);
+    uint32_t t1 = millis();
+    shutter_set(SHUTTER_OPEN);
+    uint8_t ejected = 0;
+    for (uint8_t s = 0; s < N_SLOTS_HW; s++) {
+        if (!occupied[s]) continue;
+        wheel_fin_to_exit(s);
+        EjectResult er = EJECT_OK;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            er = eject_one();
+            if (er == EJECT_OK) break;
+            Serial.printf("# slot %u: eject %s, retry %d\n", s, er == EJECT_NO_CARD ? "no card" : "jam", attempt + 1);
+            motor_run(M_NIPX, -cal.nipx_pwm); delay(T_REVERSE_MS); eject_stop(); delay(60);
+        }
+        if (er == EJECT_JAM) { set_error(E_JAM_EJECT, "card stuck in the exit nip"); return; }
+        if (er == EJECT_OK) ejected++;
+        else Serial.printf("# slot %u: no card came out (map said occupied)\n", s);
+        ui_tick();
+    }
+    shutter_set(SHUTTER_CLOSED); shutter_power(false); motors_sleep(true); wheel_idle();
+    last.ms_unload = millis() - t1; last.ejected = ejected;
+    predict_order_from_slots(n, last.slot_of_card, last.order);
+    cal.total_cards += n; cal.last_shuffle_ms = millis() - t0; cal_save(cal);
 
     unsigned retries = 0; for (int i = 0; i < n; i++) retries += last.retries[i];
-    Serial.printf("DONE cards=%u time=%lu ms t_card=%.4f retries=%u double_suspects=%u\n", n, (unsigned long)last.ms,
-                  t_card, retries, last.double_suspects);
-    if (lowbat_abort) { set_error(E_LOWBAT, "battery low: shuffle stopped early, deck presented"); return; }
+    Serial.printf("DONE loaded=%u ejected=%u load=%lu ms unload=%lu ms retries=%u corrections=%u double_suspects=%u\n",
+                  n, ejected, (unsigned long)last.ms_load, (unsigned long)last.ms_unload, retries, last.corrections, last.double_suspects);
+    if (lowbat) { set_error(E_LOWBAT, "battery low: stopped early; deck is in the chute"); return; }
     state = ST_DONE;
-    if (n != cal.expected_cards || last.double_suspects) {
+    if (ejected != n || n != cal.expected_cards || last.double_suspects) {
         ui_blink(C_WARN, 400); ui_beep(2, 200, 1500);
-        Serial.printf("WARN expected %u cards, counted %u (double-feed suspects %u): consider re-running\n", cal.expected_cards, n, last.double_suspects);
+        Serial.printf("WARN expected %u, loaded %u, ejected %u (double-feed suspects %u): consider re-running\n", cal.expected_cards, n, ejected, last.double_suspects);
     } else { ui_color(C_DONE); ui_beep(1, 250, 2600); }
 }
 
 void shuffle_print_last() {
     if (last.n == 0) { Serial.println("no shuffle yet"); return; }
-    Serial.printf("LAST cards=%u time=%lu ms t_card=%.4f seed=%s counter=%llu key=", last.n, (unsigned long)last.ms, last.t_card,
-                  last.fixed_seed ? "fixed" : "hardware", (unsigned long long)last.counter);
+    Serial.printf("LAST loaded=%u ejected=%u load=%lu ms unload=%lu ms seed=%s counter=%llu key=", last.n, last.ejected, (unsigned long)last.ms_load,
+                  (unsigned long)last.ms_unload, last.fixed_seed ? "fixed" : "hardware", (unsigned long long)last.counter);
     for (int i = 0; i < 32; i++) Serial.printf("%02x", last.key[i]);
-    Serial.print("\nLAST gaps:"); for (int i = 0; i < last.n; i++) Serial.printf(" %u", last.gaps[i]);
+    Serial.print("\nLAST intended slots:"); for (int i = 0; i < last.n; i++) Serial.printf(" %u", last.intended[i]);
+    Serial.print("\nLAST realised slots:"); for (int i = 0; i < last.n; i++) Serial.printf(" %u", last.slot_of_card[i]);
     Serial.print("\nLAST order(bottom..top, input index):"); for (int i = 0; i < last.n; i++) Serial.printf(" %u", last.order[i]);
     Serial.print("\nLAST retries:"); for (int i = 0; i < last.n; i++) Serial.printf(" %u", last.retries[i]);
     Serial.println();
 }
 
-// ---------------------------------------------------------------- jam access
-static void lower_for_access() {
-    ui_color(C_CAL);
-    feeder_stop(); motors_sleep(true);
-    blades_power(true); blades_set(BLADES_RETRACTED); blades_power(false);
-    if (elevator_home()) elevator_move_to(Z_MIN + 1.0f);
-    elevator_idle();
+// ---------------------------------------------------------------- recovery: unload whatever is in the wheel
+static void unload_all() {
+    ui_color(C_CAL); feeder_stop();
+    shutter_power(true);
+    if (!wheel_home()) { set_error(E_HOME, "wheel index not found"); return; }
+    bool occ[N_SLOTS_HW]; int n = wheel_scan(occ);
+    shutter_set(SHUTTER_OPEN);
+    for (uint8_t s = 0; s < N_SLOTS_HW; s++) if (occ[s]) { wheel_fin_to_exit(s); eject_one(); }
+    shutter_set(SHUTTER_CLOSED); shutter_power(false); motors_sleep(true); wheel_idle();
+    Serial.printf("# unloaded %d cards\n", n);
     state = ST_IDLE; ui_color(C_IDLE);
 }
 
@@ -197,40 +212,31 @@ static void handle_button() {
     if (!d && was_down) {
         uint32_t held = millis() - down_since;
         if (held > 30 && held < BUTTON_LONG_MS) {
-            if (state == ST_IDLE || state == ST_DONE || state == ST_ERROR) {
-                if (state == ST_DONE) { if (elevator_home()) elevator_move_to(Z_WELL_CHECK); elevator_idle(); state = ST_IDLE; ui_color(C_IDLE); }
-                else if (state == ST_ERROR) { state = ST_IDLE; ui_color(C_IDLE); }
-                else { uint32_t s; bool fixed = cli_fixed_seed_pending(&s); run_shuffle(fixed, s); }
-            }
-        } else if (held >= BUTTON_LONG_MS) lower_for_access();
+            if (state == ST_DONE || state == ST_ERROR) { state = ST_IDLE; ui_color(C_IDLE); }
+            else if (state == ST_IDLE) { uint32_t s; bool fixed = cli_fixed_seed_pending(&s); run_shuffle(fixed, s); }
+        } else if (held >= BUTTON_LONG_MS) unload_all();
     }
     was_down = d;
 }
 
 // ---------------------------------------------------------------- Arduino
 void setup() {
-    Serial.begin(115200);
-    delay(200);
+    Serial.begin(115200); delay(200);
     cal_load(cal); cal.boot_counter++; cal_save(cal);
-    stepper_init(); blades_init(); motors_init(); sensors_init(); ui_init(); cli_init();
+    stepper_init(); shutter_init(); motors_init(); sensors_init(); ui_init(); cli_init();
     ui_color(C_IDLE);
-    Serial.println("\n# card shuffler firmware — type `help` for the serial console");
+    Serial.println("\n# wheel card shuffler firmware — type `help` for the serial console");
     cal_print(cal);
     jitter_add(esp_random()); jitter_add(micros());
-    float v = battery_volts();
-    Serial.printf("# battery %.2f V\n", v);
+    float v = battery_volts(); Serial.printf("# battery %.2f V\n", v);
     if (v < VBAT_WARN) ui_blink(C_LOWBAT, 1000);
 }
-
 void loop() {
-    cli_poll();
-    handle_button();
-    ui_tick();
+    cli_poll(); handle_button(); ui_tick();
     static uint32_t last_bat = 0;
     if (millis() - last_bat > 5000) { last_bat = millis(); if (state == ST_IDLE) { float v = battery_volts(); if (v < VBAT_WARN) ui_blink(C_LOWBAT, 1000); else ui_color(C_IDLE); } }
 #if KEEPALIVE_MS > 0
-    static uint32_t last_ka = 0;
-    if (millis() - last_ka > KEEPALIVE_MS) { last_ka = millis(); stepper_enable(true); delay(150); stepper_enable(false); }
+    static uint32_t last_ka = 0; if (millis() - last_ka > KEEPALIVE_MS) { last_ka = millis(); stepper_enable(true); delay(150); stepper_enable(false); }
 #endif
     delay(5);
 }
