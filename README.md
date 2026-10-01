@@ -25,7 +25,7 @@ complete in `archive/v1-elevator-insertion/`.
 |---|---|
 | Mechanism comparison and selection | `docs/01-mechanism-selection.md` |
 | Mathematics: uniformity proof, RNG, fault analysis, riffle theory, validation plan | `docs/02-mathematics.md` |
-| Simulation and results | `simulation/shuffle_sim.py`, `simulation/results/` |
+| Simulation and results | `simulation/shuffle_sim.py`, `simulation/results/`; animated shuffle `simulation/wheel_sim.html` (open in a browser) |
 | Bit-exact RNG reference, physical-test analysis | `simulation/rng_reference.py`, `simulation/analyze_physical.py` |
 | Parametric CAD, 24 STL files (print list in `cad/print-settings.md`), views, collision and printability checks | `cad/params.scad`, `cad/shuffler.scad`, `cad/stl/`, `cad/png/`, `cad/check_clearance.sh`, `cad/check_printability.py` |
 | Mechanical design document | `docs/03-mechanical-design.md`, `cad/print-settings.md` |

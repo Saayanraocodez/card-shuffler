@@ -1,0 +1,1226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>54-Slot Wheel Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: a bench instrument. The machine drawn to scale on the left, the instrument panel and serial
+   console on the right, the input and output decks as a strip underneath, the model's numbers last. */
+:root {
+  --bg: #e8edeb; --panel: #f6f8f7; --ink: #132220; --muted: #56655f; --rule: #c4cfcb;
+  --accent: #0a776d; --accent-soft: rgba(10, 119, 109, .13); --on-accent: #ffffff;
+  --signal: #d46f0a; --alert: #c4283f; --alert-soft: rgba(196, 40, 63, .12);
+  --metal: #c3ccc9; --part: #93a39e; --wheel: #4f625d; --grid: rgba(19, 34, 32, .07);
+  --edge-s: #1b2423; --edge-h: #c8102e; --edge-c: #18803a; --edge-d: #1f5fbf; --edge-j: #7a5ab8;
+  --face: #fdfdfb; --face-ink: #1a1a1a; --face-h: #c8102e; --face-c: #18803a; --face-d: #1f5fbf; --face-j: #6b4aa8; --face-edge: #c9d1ce;
+  --font-display: "Archivo", "Arial Narrow", "Helvetica Neue", system-ui, sans-serif;
+  --font-body: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1413; --panel: #141d1c; --ink: #e1eae7; --muted: #8b9d98; --rule: #283533;
+    --accent: #45c1b2; --accent-soft: rgba(69, 193, 178, .15); --on-accent: #06201d;
+    --signal: #f1a33b; --alert: #ff6a7e; --alert-soft: rgba(255, 106, 126, .14);
+    --metal: #2f3c3a; --part: #536662; --wheel: #9db1ab; --grid: rgba(225, 234, 231, .06);
+    --edge-s: #e6eeeb; --edge-h: #ff5d70; --edge-c: #4fca70; --edge-d: #6ba3ff; --edge-j: #b79bf0;
+    --face-edge: #3a4845;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1413; --panel: #141d1c; --ink: #e1eae7; --muted: #8b9d98; --rule: #283533;
+  --accent: #45c1b2; --accent-soft: rgba(69, 193, 178, .15); --on-accent: #06201d;
+  --signal: #f1a33b; --alert: #ff6a7e; --alert-soft: rgba(255, 106, 126, .14);
+  --metal: #2f3c3a; --part: #536662; --wheel: #9db1ab; --grid: rgba(225, 234, 231, .06);
+  --edge-s: #e6eeeb; --edge-h: #ff5d70; --edge-c: #4fca70; --edge-d: #6ba3ff; --edge-j: #b79bf0;
+  --face-edge: #3a4845;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--font-body); }
+.page { max-width: 1240px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 48px; display: grid; gap: 22px; }
+@media (max-width: 560px) { .page { padding-inline: 16px; padding-block: 18px 36px; } }
+h1, h2 { text-wrap: balance; margin: 0; }
+.label { font: 600 11px/1.2 var(--font-display); font-stretch: 75%; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---- masthead */
+.mast { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 28px; border-bottom: 1px solid var(--rule); padding-bottom: 18px; }
+.mast-text { display: grid; gap: 8px; max-width: 70ch; min-width: 0; }
+.eyebrow { margin: 0; font: 500 12px/1.2 var(--font-mono); color: var(--muted); letter-spacing: .02em; }
+h1 { font: 780 clamp(28px, 4.6vw, 46px)/1.02 var(--font-display); font-stretch: 118%; letter-spacing: -.015em; }
+.lede { margin: 0; color: var(--muted); max-width: 66ch; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 11px; border: 1px solid var(--rule); border-radius: 999px; font: 500 12px/1.2 var(--font-mono); color: var(--muted); background: var(--panel); white-space: nowrap; }
+.chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--part); }
+.chip[data-ok="1"] i { background: var(--accent); }
+.chip[data-ok="0"] i { background: var(--alert); }
+
+/* ---- setup bar */
+.setup { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 14px; padding: 14px; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); }
+.field { display: grid; gap: 5px; min-width: 0; }
+.field select, .field input { height: 34px; padding: 0 9px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); min-width: 0; }
+.field input[type="number"] { width: 92px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.field select { max-width: 100%; }
+.setup .grow { flex: 1 1 300px; min-width: 0; }
+.btn { height: 34px; padding: 0 14px; border-radius: 5px; border: 1px solid var(--rule); background: var(--bg); cursor: pointer; font-weight: 600; white-space: nowrap; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: .5; cursor: default; }
+
+/* ---- bench */
+.bench { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 920px) { .bench { grid-template-columns: minmax(0, 1fr); } }
+.stage { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.stage-frame { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; position: relative; }
+#cv { display: block; width: 100%; }
+.stage figcaption { font-size: 13px; color: var(--muted); max-width: 70ch; }
+.stage figcaption b { font-weight: 600; color: var(--ink); }
+
+.panel { display: grid; gap: 16px; min-width: 0; }
+.transport { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 5px; overflow: hidden; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { padding: 0 11px; height: 32px; display: inline-flex; align-items: center; cursor: pointer; font: 500 13px/1 var(--font-mono); border-left: 1px solid var(--rule); background: var(--bg); }
+.seg label:first-of-type { border-left: 0; }
+.seg input:checked + label { background: var(--ink); color: var(--bg); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.readout { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 18px; align-items: baseline; padding: 14px 16px; background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); }
+.clock { font: 500 clamp(30px, 4vw, 40px)/1 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; grid-row: span 2; }
+.phase { font: 700 17px/1.2 var(--font-display); font-stretch: 92%; min-width: 0; }
+.detail { color: var(--muted); font-size: 13.5px; min-width: 0; overflow-wrap: anywhere; }
+.progress { grid-column: 1 / -1; height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+.progress i { display: block; height: 100%; width: 0; background: var(--accent); }
+
+.lamps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.lamp { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 8px; align-items: center; padding: 8px 9px; border: 1px solid var(--rule); border-radius: 5px; background: var(--panel); min-width: 0; }
+.lamp i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--part); grid-row: span 2; }
+.lamp b { font: 600 13px/1.1 var(--font-mono); }
+.lamp small { font-size: 11px; color: var(--muted); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lamp[data-on="1"] i { background: var(--signal); border-color: var(--signal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 25%, transparent); }
+.lamp.motor[data-on="1"] i { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+@media (max-width: 480px) { .lamps { gap: 6px; } .lamp { padding: 7px 6px; gap: 2px 6px; } .lamp small { display: none; } .lamp b { font-size: 11.5px; } }
+
+.counts { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--panel); }
+.count { padding: 9px 10px; display: grid; gap: 3px; border-left: 1px solid var(--rule); min-width: 0; }
+.count:first-child { border-left: 0; }
+.count b { font: 500 20px/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.count[data-alert="1"] b { color: var(--alert); }
+@media (max-width: 480px) { .counts { grid-template-columns: repeat(3, minmax(0, 1fr)); } .count:nth-child(4) { border-left: 0; } .count:nth-child(n+4) { border-top: 1px solid var(--rule); } }
+
+.console { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--panel); display: grid; min-width: 0; }
+.console-head { display: flex; justify-content: space-between; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--rule); }
+#log { margin: 0; padding: 10px 12px; height: 300px; overflow: auto; font: 400 12px/1.55 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+#log .ts { color: var(--muted); }
+#log .dim { color: var(--muted); }
+#log .cmd { color: var(--accent); }
+#log .alert { color: var(--alert); }
+#log .sim { font-style: italic; }
+
+/* ---- decks */
+.decks { display: grid; gap: 18px; }
+.deck-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 8px; }
+.deck-head h2 { font: 700 18px/1.2 var(--font-display); font-stretch: 92%; }
+.deck-head p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 5px; }
+.card { aspect-ratio: 5 / 7; max-width: 100%; border-radius: 4px; background: var(--face); border: 1px solid var(--face-edge); display: grid; place-content: center; text-align: center; font: 600 12px/1.05 var(--font-mono); color: var(--face-ink); position: relative; cursor: default; transition: opacity .25s, transform .25s; }
+.card span { display: block; font-size: 13px; }
+.card[data-s="h"] { color: var(--face-h); } .card[data-s="c"] { color: var(--face-c); } .card[data-s="d"] { color: var(--face-d); } .card[data-s="j"] { color: var(--face-j); }
+.card[data-state="gone"] { opacity: .22; }
+.card[data-state="moving"] { box-shadow: 0 0 0 2px var(--signal); }
+.card.ghost { background: transparent; border: 1px dashed var(--part); color: var(--muted); opacity: .75; }
+.card.ghost span { color: var(--muted); }
+.card.diff::after { content: ""; position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--alert); }
+.card.hl { box-shadow: 0 0 0 2px var(--accent); }
+.verdict { margin: 8px 0 0; font-size: 14px; display: flex; gap: 8px; align-items: baseline; }
+.verdict i { width: 9px; height: 9px; border-radius: 50%; background: var(--part); flex: none; transform: translateY(1px); }
+.verdict[data-ok="1"] i { background: var(--accent); }
+.verdict[data-ok="0"] i { background: var(--alert); }
+
+/* ---- results */
+.results { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; }
+@media (max-width: 920px) { .results { grid-template-columns: minmax(0, 1fr); } }
+.card-block { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+.card-block h2 { font: 700 18px/1.2 var(--font-display); font-stretch: 92%; }
+.card-block p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 65ch; }
+.bars { display: grid; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 64px; gap: 10px; align-items: center; }
+.bar-row .name { font-size: 13.5px; }
+.bar-row .val { text-align: right; font: 500 13.5px/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.track { position: relative; height: 14px; }
+.track i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 0 4px 4px 0; min-width: 2px; }
+.track .ref { position: absolute; top: -4px; bottom: -4px; border: 1.5px dashed var(--muted); border-radius: 3px; background: transparent; }
+.bar-row.total .name { font-weight: 700; }
+.bar-row.total .track i { background: var(--ink); }
+.axis { display: grid; grid-template-columns: 112px minmax(0, 1fr) 64px; gap: 10px; }
+.axis .ticks { position: relative; height: 16px; border-top: 1px solid var(--rule); }
+.axis .ticks span { position: absolute; top: 3px; transform: translateX(-50%); font: 400 11px/1 var(--font-mono); color: var(--muted); white-space: nowrap; }
+.axis .ticks span:last-child { transform: translateX(-100%); }
+.legend-ref { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.legend-ref i { width: 22px; height: 12px; border: 1.5px dashed var(--muted); border-radius: 3px; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--rule); }
+.stat { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); display: grid; gap: 3px; min-width: 0; }
+.stat b { font: 500 22px/1.1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.stat[data-alert="1"] b { color: var(--alert); }
+.stat small { color: var(--muted); font-size: 12.5px; }
+@media (max-width: 480px) { .bar-row, .axis { grid-template-columns: 86px minmax(0, 1fr) 54px; } }
+
+/* ---- notes */
+.notes { display: grid; gap: 10px; }
+.notes h2 { font: 700 18px/1.2 var(--font-display); font-stretch: 92%; }
+.notes dl { margin: 0; display: grid; grid-template-columns: minmax(150px, 230px) minmax(0, 1fr); border-top: 1px solid var(--rule); }
+.notes dt, .notes dd { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--rule); font-size: 14px; min-width: 0; }
+.notes dt { font-weight: 600; padding-right: 16px; }
+.notes dd { color: var(--muted); }
+.tag { font: 600 10.5px/1 var(--font-mono); padding: 2px 5px; border-radius: 3px; background: var(--accent-soft); color: var(--accent); margin-left: 4px; vertical-align: 1px; }
+@media (max-width: 560px) { .notes dl { grid-template-columns: minmax(0, 1fr); } .notes dt { border-bottom: 0; padding-bottom: 0; } }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--rule); padding-top: 14px; }
+code { font-family: var(--font-mono); font-size: .92em; }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="mast">
+    <div class="mast-text">
+      <p class="eyebrow">card-shuffler / simulation / wheel_sim.html</p>
+      <h1>54-Slot Wheel Simulator</h1>
+      <p class="lede">Watch the shuffler load a deck into random empty slots and unload it in slot order. Every draw comes from the firmware's ChaCha20 RNG, and the wheel follows the firmware's own moves, waits and sensor checks on the CAD geometry.</p>
+    </div>
+    <span class="chip" id="selftest" title="ChaCha20 RFC 8439 vector, SHA-256, and the wheel slot list from simulation/rng_reference.py --selftest"><i></i><span>RNG self-test running</span></span>
+  </header>
+
+  <form class="setup" id="setup" autocomplete="off">
+    <div class="field">
+      <label class="label" for="src">Seed</label>
+      <select id="src">
+        <option value="fixed" selected>Fixed seed (test fixed)</option>
+        <option value="test">Reference test key</option>
+        <option value="hw">Hardware random</option>
+      </select>
+    </div>
+    <div class="field"><label class="label" for="seed">Seed number</label><input id="seed" type="number" min="0" max="4294967295" step="1" value="1"></div>
+    <div class="field"><label class="label" for="ctr">Shuffle counter</label><input id="ctr" type="number" min="1" step="1" value="1"></div>
+    <div class="field">
+      <label class="label" for="ncards">Cards</label>
+      <select id="ncards"><option value="52" selected>52</option><option value="53">53 (1 joker)</option><option value="54">54 (2 jokers)</option></select>
+    </div>
+    <div class="field">
+      <label class="label" for="fault">Card lands one slot off</label>
+      <select id="fault"><option value="0" selected>Never</option><option value="0.02">2 % of cards</option><option value="0.05">5 % of cards</option><option value="0.1">10 % of cards</option></select>
+    </div>
+    <div class="field">
+      <label class="label" for="bias">Off-slot direction</label>
+      <select id="bias"><option value="0" selected>Either side</option><option value="1">Always one slot up</option></select>
+    </div>
+    <div class="field grow">
+      <label class="label" for="unload">Unload sequence</label>
+      <select id="unload">
+        <option value="fw" selected>Firmware as written: open shutter, then move</option>
+        <option value="fix">Proposed: move to the first slot, then open</option>
+      </select>
+    </div>
+    <button class="btn primary" type="submit" id="restart">Restart</button>
+  </form>
+
+  <main class="bench">
+    <figure class="stage">
+      <div class="stage-frame"><canvas id="cv" role="img" aria-label="To-scale section of the shuffler: the 54-fin wheel, the feeder at 50 degrees, the exit and chute at 205 degrees, with cards moving through them."></canvas></div>
+      <figcaption>Section at the wheel centreline, seen from −Y, drawn to scale on a 10 mm grid from <code>cad/params.scad</code>. Card edges use four-colour suits. Dots are the IR beams: <b>B</b> gate, <b>S</b> seat, <b>E</b> card in slot, <b>X</b> exit. They light amber when blocked.</figcaption>
+    </figure>
+
+    <aside class="panel" aria-label="Instrument panel">
+      <div class="transport">
+        <button class="btn primary" type="button" id="play">Run</button>
+        <div class="seg" role="radiogroup" aria-label="Speed">
+          <input type="radio" name="speed" id="sp025" value="0.25"><label for="sp025">¼×</label>
+          <input type="radio" name="speed" id="sp1" value="1" checked><label for="sp1">1×</label>
+          <input type="radio" name="speed" id="sp4" value="4"><label for="sp4">4×</label>
+          <input type="radio" name="speed" id="sp16" value="16"><label for="sp16">16×</label>
+        </div>
+        <button class="btn" type="button" id="skip">Skip to end</button>
+        <button class="btn" type="button" id="rewind">Rewind</button>
+      </div>
+
+      <div class="readout" aria-live="polite">
+        <div class="clock" id="clock">00:00.0</div>
+        <div class="phase" id="phase">Ready</div>
+        <div class="detail" id="detail">Deck in the hopper, wheel empty.</div>
+        <div class="progress"><i id="prog"></i></div>
+      </div>
+
+      <div class="lamps">
+        <div class="lamp" id="lB"><i></i><b>B</b><small>gate</small></div>
+        <div class="lamp" id="lS"><i></i><b>S</b><small>seat</small></div>
+        <div class="lamp" id="lE"><i></i><b>E</b><small>in slot</small></div>
+        <div class="lamp" id="lX"><i></i><b>X</b><small>exit</small></div>
+        <div class="lamp" id="lI"><i></i><b>IDX</b><small>index</small></div>
+        <div class="lamp motor" id="mF"><i></i><b>FEED</b><small>roller</small></div>
+        <div class="lamp motor" id="mE"><i></i><b>NIP E</b><small>entry</small></div>
+        <div class="lamp motor" id="mX"><i></i><b>NIP X</b><small>exit</small></div>
+        <div class="lamp motor" id="mW"><i></i><b>WHEEL</b><small id="wspeed">0 °/s</small></div>
+        <div class="lamp motor" id="mS"><i></i><b>SHUT</b><small id="shutst">closed</small></div>
+      </div>
+
+      <div class="counts">
+        <div class="count"><span class="label">Hopper</span><b id="cH">52</b></div>
+        <div class="count"><span class="label">Wheel</span><b id="cW">0</b></div>
+        <div class="count"><span class="label">Chute</span><b id="cC">0</b></div>
+        <div class="count"><span class="label">Fixes</span><b id="cF">0</b></div>
+        <div class="count" id="cZbox"><span class="label">Window</span><b id="cZ">0</b></div>
+      </div>
+
+      <div class="console">
+        <div class="console-head"><span class="label">Serial console · 115200</span><span class="label" id="loglines">0 lines</span></div>
+        <pre id="log" role="log" aria-label="Firmware serial output"></pre>
+      </div>
+    </aside>
+  </main>
+
+  <section class="decks" aria-label="Decks">
+    <div>
+      <div class="deck-head"><h2>Input deck</h2><p>Sorted, bottom to top. The bottom card is fed first.</p></div>
+      <ol class="cards" id="deckIn"></ol>
+    </div>
+    <div>
+      <div class="deck-head"><h2>Output deck</h2><p>In the chute, bottom to top. Dashed outlines show the firmware's plan until each card lands.</p></div>
+      <ol class="cards" id="deckOut"></ol>
+      <p class="verdict" id="verdict"><i></i><span>The output fills in as the wheel unloads.</span></p>
+    </div>
+  </section>
+
+  <section class="results">
+    <div class="card-block">
+      <h2>Cycle time for this shuffle</h2>
+      <div class="bars" id="bars"></div>
+      <div class="legend-ref"><i></i><span>Docs estimate for a first build, 40–45 s (<code>docs/01</code> §1.6)</span></div>
+      <p id="timenote"></p>
+    </div>
+    <div class="card-block">
+      <h2 id="batchTitle">1,000 shuffles with these settings</h2>
+      <div class="stats" id="stats"></div>
+      <p id="batchNote">Random keys, same geometry and timing as the animation.</p>
+      <div><button class="btn" type="button" id="batchRun">Run 1,000 again</button></div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <h2>What the model assumes</h2>
+    <dl>
+      <dt>Slot choice <span class="tag">exact</span></dt><dd>Card <i>i</i> goes to <code>empty[uniform(n)]</code> with swap-remove, from ChaCha20 keyed by SHA-256 (<code>rng.cpp</code>, <code>shuffler.ino</code>). Fixed seeds use the key SHA-256("fixed-seed:N") and the shuffle counter, so the plan is the one <code>test fixed N</code> prints.</dd>
+      <dt>Wheel moves <span class="tag">firmware</span></dt><dd><code>stepper_move()</code> ramp: 5000 °/s², 20–360 °/s, 3200 steps per revolution, shortest path, rounded to whole steps. Homing at 90 °/s, then the slow re-approach.</dd>
+      <dt>Firmware waits <span class="tag">firmware</span></dt><dd>250 ms after beam B clears (<code>T_SEAT_MS</code>), 40 ms before the beam E check, 30 ms per scan or search stop, 60 ms after each eject, 250 ms for each shutter move.</dd>
+      <dt>Card speeds <span class="tag">estimate</span></dt><dd>0.30 m/s through the feeder and 0.50 m/s through the exit nip (<code>docs/01</code> §1.6), 30 ms roller spin-up.</dd>
+      <dt>Gravity <span class="tag">docs/03</span></dt><dd>A card slides the last 10.5 mm to the hub at 0.73 g. Over the open window it slides outward at 0.47 g. Any card more than 0.5° inside the window counts as over it.</dd>
+      <dt>Calibration</dt><dd>The index trips at the firmware's home angle (90°), and the entry trim is −0.3°.</dd>
+      <dt>Not modelled</dt><dd>Double feeds, jams, retries, static cling, battery sag, and what a dropped card does next. The simulation flags the drop and carries on as the firmware would.</dd>
+    </dl>
+  </section>
+
+  <footer>Geometry from <code>cad/params.scad</code>. Sequence, waits and RNG from <code>firmware/shuffler/</code>. Off-slot landings follow the neighbour-slot model in <code>simulation/shuffle_sim.py</code>. This is a model of an unbuilt machine, so every time on this page is an estimate.</footer>
+</div>
+<script>
+// ===================================================================================
+// Simulation core. No DOM. Geometry: cad/params.scad. Logic and timing: firmware/shuffler.
+// ===================================================================================
+const SIM = (() => {
+  "use strict";
+
+  // ---------------------------------------------------------------- geometry (mm, degrees)
+  const G = {
+    N_SLOTS: 54, PITCH: 360 / 54,
+    R_HUB: 22, R_SEAT: 85.5, R_TIP: 77.5, FIN_T: 1.4, CARD_W: 63.5, CARD_T: 0.32,
+    R_SHROUD: 88.5, SHROUD_T: 3, SHROUD_A0: 172, SHROUD_A1: 368, WIN_A0: 202, WIN_A1: 214,
+    SHUT_A0: 199.4, SHUT_A1: 216.6, SHUT_OPEN: 17.5, SHUT_RIN: 87.0, SHUT_ROUT: 88.2,
+    ENTRY_FIN: 360 / 54 * 7, EXIT_FIN: 208 + 1 / 3,          // 46.667°, 208.333°
+    R_DECK_TIP: 88.5, R_NIPE: 96, R_BEAM_E: 81.5, R_BEAM_S: 86.8, R_BEAM_B: 106.5,
+    R_GATE: 118, R_FEED: 129.5, R_HOP1: 183, HOP_H: 50, PRESTAGE: 108,
+    R_NIPX: 100.5, R_NIPX_GRAB: 92.5, R_BEAM_X: 111, R_CHUTE0: 109.5, R_CHUTE1: 182.5, CHUTE_DROP: 28,
+    INDEX_SENSOR: 90, INDEX_TAB_W: 6,
+  };
+  G.CARD_LEAN_FIN = Math.atan2(G.FIN_T, 77.5) * 180 / Math.PI;  // ≈1.03°: a card resting on a fin's CW face
+
+  // ---------------------------------------------------------------- firmware constants (config.h)
+  const FW = {
+    STEPS_PER_REV: 3200, VMAX: 360, VMIN: 20, ACC: 5000, V_HOME: 90,
+    HOME_OFFSET: 90, ENTRY_TRIM: -0.3, EXIT_TRIM: 0,
+    SHUTTER_SETTLE: 0.25, T_PICK: 0.8, T_SEAT: 0.25, T_SEAT_WAIT: 0.4, SEAT_CHECK: 0.04,
+    SCAN_DWELL: 0.03, EJECT_TAIL: 0.06, SLEEP_WAKE: 0.002, STEPPER_WAKE: 0.005,
+  };
+  const SPD = FW.STEPS_PER_REV / 360;
+
+  // ---------------------------------------------------------------- model assumptions [EST]
+  const EST = {
+    V_FEED: 300,            // mm/s card speed in the feeder (docs/01 §1.6)
+    V_EXIT: 500,            // mm/s card speed in the exit nip (docs/01 §1.6)
+    T_SPINUP: 0.03,         // s, N20 roller spin-up
+    A_FIN: 0.73 * 9810,     // mm/s², card sliding down the fin to the hub (docs/03 §3.4)
+    A_EXIT: 0.47 * 9810,    // mm/s², card sliding out of the open window (docs/03 §3.3)
+    POLL: 0.001,            // s, beams_poll() before each wheel move
+    WIN_MARGIN: 0.5,        // deg: a card closer than this to a window edge still rests on the shroud
+    SERVO_MOVE: 0.15,       // s, blade travel (the firmware waits SHUTTER_SETTLE)
+  };
+
+  const wrap = a => ((a % 360) + 360) % 360;
+  const lround = x => (x < 0 ? -Math.round(-x) : Math.round(x));
+
+  // ================================================================ SHA-256
+  const SHA_K = new Uint32Array(64), SHA_H0 = new Uint32Array(8);
+  (() => {
+    const primes = []; for (let n = 2; primes.length < 64; n++) if (primes.every(p => n % p)) primes.push(n);
+    const frac = x => (x - Math.floor(x)) * 4294967296;
+    for (let i = 0; i < 64; i++) SHA_K[i] = frac(Math.cbrt(primes[i]));
+    for (let i = 0; i < 8; i++) SHA_H0[i] = frac(Math.sqrt(primes[i]));
+  })();
+  function sha256(msg) {
+    const l = msg.length, nb = ((l + 9 + 63) >> 6) << 6;
+    const buf = new Uint8Array(nb); buf.set(msg); buf[l] = 0x80;
+    const dv = new DataView(buf.buffer);
+    dv.setUint32(nb - 4, (l * 8) >>> 0); dv.setUint32(nb - 8, Math.floor(l / 536870912));
+    const H = SHA_H0.slice(), W = new Uint32Array(64);
+    for (let off = 0; off < nb; off += 64) {
+      for (let i = 0; i < 16; i++) W[i] = dv.getUint32(off + 4 * i);
+      for (let i = 16; i < 64; i++) {
+        const a = W[i - 15], b = W[i - 2];
+        const s0 = ((a >>> 7) | (a << 25)) ^ ((a >>> 18) | (a << 14)) ^ (a >>> 3);
+        const s1 = ((b >>> 17) | (b << 15)) ^ ((b >>> 19) | (b << 13)) ^ (b >>> 10);
+        W[i] = W[i - 16] + s0 + W[i - 7] + s1;
+      }
+      let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+      for (let i = 0; i < 64; i++) {
+        const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+        const t1 = (h + S1 + ((e & f) ^ (~e & g)) + SHA_K[i] + W[i]) | 0;
+        const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+        const t2 = (S0 + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+        h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+      }
+      H[0] += a; H[1] += b; H[2] += c; H[3] += d; H[4] += e; H[5] += f; H[6] += g; H[7] += h;
+    }
+    const out = new Uint8Array(32), ov = new DataView(out.buffer);
+    for (let i = 0; i < 8; i++) ov.setUint32(4 * i, H[i]);
+    return out;
+  }
+  const utf8 = s => new TextEncoder().encode(s);
+  const hex = b => Array.from(b, x => x.toString(16).padStart(2, "0")).join("");
+  const unhex = s => new Uint8Array(s.match(/../g).map(x => parseInt(x, 16)));
+
+  // ================================================================ ChaCha20 (RFC 8439) DRBG, as rng.cpp
+  function chachaBlock(key, counter, nonce, out) {
+    const s = new Uint32Array(16);
+    s[0] = 0x61707865; s[1] = 0x3320646e; s[2] = 0x79622d32; s[3] = 0x6b206574;
+    s.set(key, 4); s[12] = counter >>> 0; s.set(nonce, 13);
+    const x = s.slice();
+    const qr = (a, b, c, d) => {
+      x[a] += x[b]; x[d] ^= x[a]; x[d] = (x[d] << 16) | (x[d] >>> 16);
+      x[c] += x[d]; x[b] ^= x[c]; x[b] = (x[b] << 12) | (x[b] >>> 20);
+      x[a] += x[b]; x[d] ^= x[a]; x[d] = (x[d] << 8) | (x[d] >>> 24);
+      x[c] += x[d]; x[b] ^= x[c]; x[b] = (x[b] << 7) | (x[b] >>> 25);
+    };
+    for (let i = 0; i < 10; i++) {
+      qr(0, 4, 8, 12); qr(1, 5, 9, 13); qr(2, 6, 10, 14); qr(3, 7, 11, 15);
+      qr(0, 5, 10, 15); qr(1, 6, 11, 12); qr(2, 7, 8, 13); qr(3, 4, 9, 14);
+    }
+    for (let i = 0; i < 16; i++) out[i] = x[i] + s[i];
+    return out;
+  }
+  const leWords = (bytes) => { const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), w = new Uint32Array(bytes.length / 4); for (let i = 0; i < w.length; i++) w[i] = dv.getUint32(4 * i, true); return w; };
+
+  class Drbg {
+    constructor(key, shuffleCounter) {
+      this.key = leWords(key);
+      const n = new Uint8Array(12); n.set([0x53, 0x48, 0x46, 0x01]);
+      const dv = new DataView(n.buffer); dv.setUint32(4, shuffleCounter >>> 0, true); dv.setUint32(8, Math.floor(shuffleCounter / 4294967296), true);
+      this.nonce = leWords(n); this.block = 1; this.buf = new Uint32Array(16); this.pos = 16; this.words = 0; this.rejections = 0;
+    }
+    nextU32() { if (this.pos >= 16) { chachaBlock(this.key, this.block++, this.nonce, this.buf); this.pos = 0; } this.words++; return this.buf[this.pos++]; }
+    uniform(n) { const lim = 4294967296 - (4294967296 % n); for (;;) { const x = this.nextU32(); if (x < lim) return x % n; this.rejections++; } }
+  }
+
+  function slotsAssign(d, nCards, nSlots) {   // shuffle_core.cpp slots_assign()
+    const empty = Array.from({ length: nSlots }, (_, i) => i), out = [];
+    for (let i = 0; i < nCards; i++) { const idx = d.uniform(empty.length); out.push(empty[idx]); empty[idx] = empty[empty.length - 1]; empty.pop(); }
+    return out;
+  }
+  const orderFromSlots = slots => slots.map((s, i) => [s, i]).sort((a, b) => a[0] - b[0]).map(p => p[1]);
+
+  // Reference vectors: RFC 8439 §2.3.2 and simulation/rng_reference.py --selftest
+  const TEST_KEY_SLOTS = "3 23 40 50 29 13 47 52 22 5 39 43 36 25 20 2 15 53 51 37 11 8 26 16 6 34 1 48 42 4 9 0 49 12 32 17 44 14 45 31 10 38 41 33 27 19 35 46 30 28 21 24";
+  function selfTest() {
+    const blk = chachaBlock(leWords(new Uint8Array([...Array(32).keys()])), 1, leWords(unhex("000000090000004a00000000")), new Uint32Array(16));
+    const blkHex = hex(new Uint8Array(blk.buffer));
+    const okChacha = blkHex === "10f1e7e4d13b5915500fdd1fa32071c4c7d1f4c733c068030422aa9ac3d46c4ed2826446079faa0914c2d705d98b02a2b5129cd1de164eb9cbd083e8a2503c4e";
+    const okSha = hex(sha256(utf8("abc"))) === "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+    const k = sha256(utf8("card-shuffler-test-key"));
+    const okKey = hex(k) === "1b5093f405094119166c8d4b01f0d753525f4939e192e07e88c6a3993a126870";
+    const okSlots = slotsAssign(new Drbg(k, 1), 52, 54).join(" ") === TEST_KEY_SLOTS;
+    return { ok: okChacha && okSha && okKey && okSlots, okChacha, okSha, okKey, okSlots };
+  }
+
+  // Small PRNG for fault injection and the hardware-random stand-in (never touches the DRBG stream).
+  function mulberry32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+  // ================================================================ deck
+  const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+  const SUITS = [["s", "♠"], ["h", "♥"], ["c", "♣"], ["d", "♦"]];
+  function deck(n) {   // input order, bottom (fed first) to top: A♠..K♠, A♥..K♥, A♣..K♣, A♦..K♦, jokers
+    const out = [];
+    for (const [s, sym] of SUITS) for (const r of RANKS) out.push({ rank: r, suit: s, sym, label: r + sym });
+    for (let j = 0; out.length < n; j++) out.push({ rank: "JK", suit: "j", sym: "★", label: "JK" + (j ? "2" : "1") });
+    return out.slice(0, n);
+  }
+
+  // ================================================================ stepper profile (hardware.cpp stepper_move)
+  const profCache = new Map();
+  function profile(n, vmax) {
+    const key = n + "|" + vmax; let cum = profCache.get(key); if (cum) return cum;
+    cum = new Float64Array(n + 1);
+    const a = FW.ACC, vmin = FW.VMIN;
+    for (let i = 0; i < n; i++) {
+      let v = vmax;
+      const va = Math.sqrt(2 * a * (i / SPD) + vmin * vmin), vd = Math.sqrt(2 * a * ((n - i) / SPD) + vmin * vmin);
+      if (va < v) v = va; if (vd < v) v = vd; if (v < vmin) v = vmin;
+      cum[i + 1] = cum[i] + Math.floor(1e6 / (v * SPD)) / 1e6;
+    }
+    profCache.set(key, cum); return cum;
+  }
+  // time (s from move start) at which `steps` steps (fractional) are done
+  function timeAtSteps(cum, k, steps) { if (steps <= 0) return 0; if (steps >= k) return cum[k]; const i = Math.floor(steps); return cum[i] + (cum[i + 1] - cum[i]) * (steps - i); }
+  function stepsAtTime(cum, k, tau) {
+    if (tau <= 0) return 0; if (tau >= cum[k]) return k;
+    let lo = 0, hi = k; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (cum[m] <= tau) lo = m; else hi = m; }
+    return lo + (tau - cum[lo]) / (cum[lo + 1] - cum[lo]);
+  }
+
+  // card resting angle in slot k for wheel angle th (deg): on fin k in the right half, on fin k+1 in the left half
+  function cardAngle(th, k) {
+    const p = G.PITCH, phi = th + (k + 0.5) * p;
+    const c = Math.max(-1, Math.min(1, Math.cos(phi * Math.PI / 180) * 5));
+    const lo = th + k * p + 0.1, hi = th + (k + 1) * p - G.CARD_LEAN_FIN - 0.1;
+    return lo + (hi - lo) * (1 - c) / 2;
+  }
+  const leftHalfCardAngle = (th, k) => th + (k + 1) * G.PITCH - G.CARD_LEAN_FIN - 0.1;
+
+  // ================================================================ plan: one complete shuffle, timed
+  // opt: { key, counter, nCards, seedLabel, faultP, faultBias (0 either way, 1 always +1), faultSeed, theta0, unloadFix, light }
+  function buildPlan(opt) {
+    const light = !!opt.light, nCards = opt.nCards, NS = G.N_SLOTS, P = G.PITCH;
+    const cards = deck(nCards).map((c, i) => ({ ...c, i, segs: light ? null : [{ type: "hopper", t0: 0 }] }));
+    const B = {
+      t: 0, log: [], wheel: [], shutter: [], phases: [], hazards: [], drops: [],
+      motors: { feed: [[0, 0]], nipE: [[0, 0]], nipX: [[0, 0]], stepper: [[0, 0]] },
+      ang: wrap(opt.theta0 ?? 0), fw: 0, pile: 0,
+    };
+    const say = (text, cls = "fw") => { if (!light) B.log.push({ t: B.t, text, cls }); };
+    const phase = (label, detail = "") => { if (!light) B.phases.push({ t: B.t, label, detail }); };
+    const motorAt = (m, t, on) => B.motors[m].push([t, on ? 1 : 0]);
+    const seg = (c, s) => { if (!light) c.segs.push(s); };
+    const occupied = new Array(NS).fill(false), cardIn = new Array(NS).fill(-1), droppedAtOpen = new Set();
+    let shutterOpen = 0;   // 0 closed, 1 open (state after the servo has moved)
+
+    // ---- wheel motion
+    const rawMove = (steps, vmax, stopAt) => {
+      const n = Math.abs(steps); if (!n) return null;
+      const cum = profile(n, vmax), k = stopAt == null ? n : Math.min(stopAt, n);
+      const s = { t0: B.t, t1: B.t + cum[k], a0: B.ang, dir: Math.sign(steps), k, cum };
+      B.wheel.push(s); B.t = s.t1; B.ang += s.dir * k / SPD;
+      return s;
+    };
+    const angAt = (s, t) => s.a0 + s.dir * stepsAtTime(s.cum, s.k, t - s.t0) / SPD;
+    const goto = (target, exclude = -1) => {   // motion.cpp wheel_goto(): shortest path, lroundf steps
+      target = wrap(target);
+      let d = target - B.fw; if (d > 180) d -= 360; if (d < -180) d += 360;
+      const steps = lround(d * SPD);
+      if (steps === 0) return null;
+      B.t += EST.POLL;
+      const s = rawMove(steps, FW.VMAX);
+      B.fw = wrap(B.fw + steps / SPD);
+      if (shutterOpen) windowCrossings(s, exclude);
+      return s;
+    };
+    const finToEntry = fin => G.ENTRY_FIN + FW.ENTRY_TRIM - fin * P;
+    const finToExit = slot => G.EXIT_FIN + FW.EXIT_TRIM - (slot + 1) * P;
+
+    // ---- the open exit window. A card over it is free to slide out at ≈0.47 g (docs/03 §3.3).
+    const W0 = G.WIN_A0 + EST.WIN_MARGIN, W1 = G.WIN_A1 - EST.WIN_MARGIN;
+    const inWindow = a => { a = wrap(a); return a > W0 && a < W1; };
+    function windowCrossings(s, target) {
+      for (let k = 0; k < NS; k++) {
+        if (!occupied[k] || k === target || droppedAtOpen.has(k)) continue;
+        const off = (k + 1) * P - G.CARD_LEAN_FIN - 0.1;
+        const pa = s.a0 + off, pb = s.a0 + s.dir * s.k / SPD + off, lo = Math.min(pa, pb), hi = Math.max(pa, pb);
+        for (let m = Math.floor((lo - W1) / 360); m <= Math.ceil((hi - W0) / 360); m++) {
+          const u = Math.max(lo, W0 + 360 * m), v = Math.min(hi, W1 + 360 * m);
+          if (u >= v) continue;
+          const su = Math.abs(u - pa) * SPD, sv = Math.abs(v - pa) * SPD;
+          const tu = timeAtSteps(s.cum, s.k, Math.min(su, sv)), tv = timeAtSteps(s.cum, s.k, Math.max(su, sv));
+          const exposure = tv - tu, drop = Math.min(4, 0.5 * EST.A_EXIT * exposure * exposure);
+          B.hazards.push({ kind: "sweep", t: s.t0 + tu, slot: k, card: cardIn[k], exposure, drop });
+          if (!light) B.drops.push({ card: cardIn[k], t0: s.t0 + tu, t1: s.t0 + tv, mm: drop });
+        }
+      }
+    }
+    function shutterSet(open, target = -1) {   // hardware.cpp shutter_set(..., wait = true)
+      if (!light) B.shutter.push({ t0: B.t, t1: B.t + EST.SERVO_MOVE, from: shutterOpen, to: open ? 1 : 0 });
+      if (open && !shutterOpen) {   // cards already resting over the window drop toward the stopped exit nip
+        for (let k = 0; k < NS; k++) {
+          if (!occupied[k] || k === target || !inWindow(leftHalfCardAngle(B.fw, k))) continue;
+          B.hazards.push({ kind: "open", t: B.t, slot: k, card: cardIn[k], exposure: Infinity, drop: 4 }); droppedAtOpen.add(k);
+          if (!light) B.drops.push({ card: cardIn[k], t0: B.t + 0.05, t1: null, mm: 4, slot: k, kind: "open" });
+        }
+      }
+      shutterOpen = open ? 1 : 0;
+      B.t += FW.SHUTTER_SETTLE;
+    }
+
+    // ---- RNG
+    const d = new Drbg(opt.key, opt.counter);
+    const fault = mulberry32(opt.faultSeed >>> 0 || 1);
+
+    // ---- start: run_shuffle()
+    const keyHex = hex(opt.key);
+    let planSlots = null, planOrder = null;
+    {
+      const dd = new Drbg(opt.key, opt.counter);
+      planSlots = slotsAssign(dd, nCards, NS); planOrder = orderFromSlots(planSlots);
+      if (opt.printPlan) {
+        say(`PLAN cards=${nCards} seed=${opt.seedLabel}`);
+        say(`PLAN slots: ${planSlots.join(" ")}`);
+        say(`PLAN order(bottom..top, input index): ${planOrder.join(" ")}`);
+      }
+    }
+    phase("Homing", "shutter closed, finding the index tab");
+    B.motors.stepper.push([B.t, 1]);
+    shutterSet(false);
+    B.t += EST.POLL + EST.POLL + FW.STEPPER_WAKE;          // wheel_path_clear() twice, stepper_enable()
+    { // wheel_home(): CCW until the tab blocks the index beam, back off 4°, approach slowly
+      const active = () => { const a = wrap(B.ang); return a >= G.INDEX_SENSOR && a <= G.INDEX_SENSOR + G.INDEX_TAB_W; };
+      if (active()) rawMove(Math.trunc(15 * SPD), FW.V_HOME);
+      const dist = wrap(G.INDEX_SENSOR - B.ang) || 360;
+      rawMove(Math.trunc(370 * SPD), FW.V_HOME, Math.ceil(dist * SPD - 1e-9));
+      const back = Math.trunc(4 * SPD); rawMove(-back, FW.V_HOME);
+      rawMove(Math.trunc(8 * SPD), 15, back);
+      B.ang = Math.round((B.ang - G.INDEX_SENSOR) / 360) * 360 + FW.HOME_OFFSET;   // calibrated: the tab sits at the sensor
+      B.fw = FW.HOME_OFFSET;
+    }
+    const tHomed = B.t;
+    phase("Scanning", "one revolution reading beam E: the wheel must be empty");
+    for (let s = 0; s < NS; s++) { goto(finToEntry(s)); B.t += FW.SCAN_DWELL; }
+    const tScanned = B.t;
+
+    // feeder_probe_hopper(): the deck rests against the gate; run the feed roller until beam B sees card 0
+    phase("Probing the hopper", "feed roller until beam B blocks");
+    B.t += FW.SLEEP_WAKE + EST.POLL;
+    const V = EST.V_FEED, Tu = EST.T_SPINUP;
+    const dist = tau => (tau < Tu ? V * tau * tau / (2 * Tu) : V * (tau - Tu / 2));
+    const tauOf = x => (x <= 0 ? 0 : x <= V * Tu / 2 ? Math.sqrt(2 * Tu * x / V) : x / V + Tu / 2);
+    const lead = new Array(nCards).fill(G.R_GATE);
+    if (nCards > 0) {
+      const tOn = B.t, r0 = G.R_GATE, r1 = G.R_BEAM_B - 0.2, tau = tauOf(r0 - r1);
+      motorAt("feed", tOn, 1); motorAt("feed", tOn + tau, 0);
+      if (!light) { const ts = [], rs = []; for (let x = 0; x <= tau + 1e-9; x += 0.004) { ts.push(tOn + x); rs.push(r0 - dist(x)); } ts.push(tOn + tau); rs.push(r1); seg(cards[0], { type: "entry", t0: tOn, ts, rs }); }
+      lead[0] = r1; B.t = tOn + tau;
+    }
+    const tStartDone = B.t;
+
+    // ---- LOAD
+    const empty = Array.from({ length: NS }, (_, i) => i), intended = [], realised = [], idxTimes = [];
+    let nLoaded = 0, corrections = 0;
+    for (let i = 0; i < NS; i++) {
+      const idx = d.uniform(empty.length), s = empty[idx];
+      intended.push(s);
+      phase(i < nCards ? `Loading card ${i + 1} of ${nCards}` : "Loading: hopper empty", i < nCards ? `${cards[i].label} → slot ${s}` : `index to slot ${s}, no card at beam B`);
+      const mv = goto(finToEntry(s));
+      if (mv && i < nCards) idxTimes.push(mv.t1 - mv.t0);
+      if (i >= nCards) {   // feeder_feed_one(): no card reaches beam B within T_PICK_MS
+        const tOn = B.t + FW.SLEEP_WAKE; motorAt("nipE", tOn, 1); motorAt("feed", tOn, 1);
+        B.t = tOn + FW.T_PICK; motorAt("nipE", B.t, 0); motorAt("feed", B.t, 0);
+        break;
+      }
+      // where the card lands: the intended slot, or (fault model) one slot off when that slot is empty
+      let L = s;
+      if (opt.faultP > 0 && fault() < opt.faultP) {
+        const dir = opt.faultBias ? 1 : (fault() < 0.5 ? 1 : -1), nb = (s + dir + NS) % NS;
+        if (!occupied[nb]) L = nb;
+      }
+      // feeder_feed_one()
+      const tOn = B.t + FW.SLEEP_WAKE, r0 = lead[i];
+      motorAt("nipE", tOn, 1); motorAt("feed", tOn, 1);
+      const tauBc = tauOf(r0 - (G.R_BEAM_B - G.CARD_W));        // trailing edge past beam B: feed roller stops
+      const tauNip = tauOf(r0 - (G.R_NIPE - G.CARD_W));         // trailing edge leaves the entry nip
+      const dSlide = G.R_NIPE - G.CARD_W - G.R_HUB, aF = EST.A_FIN;
+      const tSlide = (-V + Math.sqrt(V * V + 2 * aF * dSlide)) / aF;
+      const tauSeat = tauNip + tSlide;
+      const tauSclear = (() => { const x = G.R_BEAM_S - G.CARD_W; return tauNip + (-V + Math.sqrt(V * V + 2 * aF * Math.max(0, (G.R_NIPE - G.CARD_W) - x))) / aF; })();
+      motorAt("feed", tOn + tauBc, 0); motorAt("nipE", tOn + tauBc + FW.T_SEAT, 0);
+      const tauEnd = Math.max(tauBc + FW.T_SEAT, tauSclear) + FW.SEAT_CHECK;
+      const leadAt = tau => (tau <= tauNip ? r0 - dist(tau) : Math.max(G.R_HUB, (G.R_NIPE - G.CARD_W) - (V * (tau - tauNip) + 0.5 * aF * (tau - tauNip) ** 2)));
+      if (!light) {
+        const ts = [], rs = []; for (let x = 0; x < tauSeat; x += 0.004) { ts.push(tOn + x); rs.push(leadAt(x)); }
+        ts.push(tOn + tauSeat); rs.push(G.R_HUB);
+        seg(cards[i], { type: "entry", t0: tOn, ts, rs, target: s, landing: L });
+        seg(cards[i], { type: "slot", t0: tOn + tauSeat, slot: L });
+        if (i + 1 < nCards) {   // the next card follows under the gate until it is pre-staged 10 mm past it
+          const g0 = tauOf(r0 - (G.R_GATE - G.CARD_W)), g1 = tauOf(r0 - (G.PRESTAGE - G.CARD_W));
+          const ts2 = [], rs2 = []; for (let x = g0; x < g1; x += 0.004) { ts2.push(tOn + x); rs2.push(G.R_GATE - (dist(x) - dist(g0))); }
+          ts2.push(tOn + g1); rs2.push(G.PRESTAGE);
+          seg(cards[i + 1], { type: "entry", t0: tOn + g0, ts: ts2, rs: rs2 });
+        }
+      }
+      if (i + 1 < nCards) lead[i + 1] = G.PRESTAGE;
+      B.t = tOn + tauEnd;
+      let found = L;
+      if (L !== s) {   // beam E clear at the target: locate_card() looks one slot each side
+        say(`# card ${i}: beam E clear after the feed (card not in slot ${s})`, "fw dim");
+        phase(`Finding card ${i + 1}`, `${cards[i].label} is not in slot ${s}: checking the neighbours`);
+        found = -1;
+        for (const c of [(s + 1) % NS, (s + NS - 1) % NS]) {
+          if (occupied[c]) continue;
+          goto(finToEntry(c)); B.t += FW.SCAN_DWELL;
+          if (c === L) { found = c; break; }
+        }
+        corrections++;
+        say(`# card ${i} landed in slot ${found} (intended ${s}): map corrected`);
+      }
+      occupied[found] = true; cardIn[found] = i; realised.push(found); nLoaded = i + 1;
+      const kk = empty.indexOf(found); empty[kk] = empty[empty.length - 1]; empty.pop();
+      if (empty.length === 0) break;
+    }
+    const tLoadEnd = B.t;
+
+    // ---- UNLOAD
+    const tUnload0 = B.t;
+    phase("Unloading", opt.unloadFix ? "wheel to the first slot, then shutter open" : "shutter open");
+    const firstOcc = occupied.indexOf(true);
+    if (opt.unloadFix && firstOcc >= 0) goto(finToExit(firstOcc), firstOcc);
+    shutterSet(true, opt.unloadFix ? firstOcc : -1);
+    const order = [];
+    for (let s = 0; s < NS; s++) {
+      if (!occupied[s]) continue;
+      phase(`Unloading slot ${s}`, `${cards[cardIn[s]].label} → chute, position ${order.length + 1}`);
+      const um = goto(finToExit(s), s);
+      if (um && !light) for (const dr of B.drops) if (dr.kind === "open" && dr.t1 == null) dr.t1 = Math.min(um.t1, um.t0 + 0.12);   // the move drags it out of the window
+      // eject_one(): the card slides out of the window into the running exit nip and is pulled through beam X
+      const tm = B.t, tOn = tm + FW.SLEEP_WAKE;
+      motorAt("nipX", tOn, 1);
+      const tS = Math.sqrt(2 * (G.R_NIPX_GRAB - G.R_SHROUD) / EST.A_EXIT), VX = EST.V_EXIT;
+      const outerAt = tau => (tau < tS ? G.R_SHROUD + 0.5 * EST.A_EXIT * tau * tau : G.R_NIPX_GRAB + VX * (tau - tS));
+      const tauXc = tS + (G.R_BEAM_X + G.CARD_W - G.R_NIPX_GRAB) / VX;
+      const tauFree = tS + (G.R_NIPX + G.CARD_W - G.R_NIPX_GRAB) / VX;
+      const c = cards[cardIn[s]];
+      if (!light) {
+        const ang = leftHalfCardAngle(B.fw, s);
+        const ts = [], rs = []; for (let x = 0; x < tauFree; x += 0.004) { ts.push(tm + x); rs.push(outerAt(x)); }
+        ts.push(tm + tauFree); rs.push(outerAt(tauFree));
+        seg(c, { type: "exit", t0: tm, ts, rs, ang });
+        seg(c, { type: "fly", t0: tm + tauFree, t1: tm + tauFree + 0.16, ang, from: outerAt(tauFree), pile: order.length });
+        seg(c, { type: "pile", t0: tm + tauFree + 0.16, pile: order.length });
+        for (const dr of B.drops) if (dr.card === c.i && dr.t1 == null) dr.t1 = tm;
+      }
+      B.t = tOn + tauXc + FW.EJECT_TAIL;
+      motorAt("nipX", B.t, 0);
+      order.push(cardIn[s]); occupied[s] = false;
+    }
+    phase("Closing the shutter", "");
+    shutterSet(false);
+    B.motors.stepper.push([B.t, 0]);
+    const T = B.t;
+    for (const dr of B.drops) if (dr.t1 == null) dr.t1 = T;
+
+    const predicted = orderFromSlots(realised);
+    const ms = x => Math.round(x * 1000);
+    say(`DONE loaded=${nLoaded} ejected=${order.length} load=${ms(tLoadEnd)} ms unload=${ms(T - tUnload0)} ms retries=0 corrections=${corrections} double_suspects in/out=0/0`);
+    if (!light) {
+      say("> last", "cmd");
+      say(`LAST loaded=${nLoaded} ejected=${order.length} load=${ms(tLoadEnd)} ms unload=${ms(T - tUnload0)} ms seed=${opt.printPlan ? "fixed" : "hardware"} counter=${opt.counter} key=${keyHex}`);
+      say(`LAST intended slots: ${intended.slice(0, nLoaded).join(" ")}`);
+      say(`LAST realised slots: ${realised.join(" ")}`);
+      say(`LAST order(bottom..top, input index): ${predicted.join(" ")}`);
+    }
+    phase("Done", `${order.length} cards in the chute`);
+
+    // sim-only annotations for the window hazards
+    if (!light) {
+      const opens = B.hazards.filter(h => h.kind === "open"), sweeps = B.hazards.filter(h => h.kind === "sweep");
+      for (const h of opens) B.log.push({ t: h.t, text: `! sim: shutter opens with ${cards[h.card].label} (slot ${h.slot}) over the exit window; it slides out against the stopped exit nip`, cls: "sim alert" });
+      for (const h of sweeps) B.log.push({ t: h.t, text: `! sim: ${cards[h.card].label} (slot ${h.slot}) swept across the open window: ${(h.exposure * 1000).toFixed(0)} ms exposed, ≈${h.drop.toFixed(1)} mm drop`, cls: "sim alert" });
+      B.log.sort((a, b) => a.t - b.t);
+    }
+
+    const mean = a => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
+    return {
+      opt, cards, T, wheel: B.wheel, shutter: B.shutter, motors: B.motors, phases: B.phases, log: B.log,
+      hazards: B.hazards, drops: B.drops, keyHex, planSlots, planOrder, intended, realised, predicted, order,
+      times: { home: tHomed, scan: tScanned - tHomed, start: tStartDone, load: tLoadEnd - tStartDone, loadFw: tLoadEnd, unload: T - tUnload0, total: T, meanIndex: mean(idxTimes) },
+      corrections, nLoaded, angAt,
+    };
+  }
+
+  return { G, FW, EST, SPD, sha256, utf8, hex, unhex, Drbg, slotsAssign, orderFromSlots, selfTest, buildPlan, profile, stepsAtTime, cardAngle, leftHalfCardAngle, wrap, deck, mulberry32, TEST_KEY_SLOTS };
+})();
+</script>
+<script>
+// ===================================================================================
+// Rendering and controls.
+// ===================================================================================
+(() => {
+  "use strict";
+  const { G, SPD } = SIM;
+  const $ = s => document.querySelector(s);
+  const D2R = Math.PI / 180;
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------------------------------------------------------------- state
+  const st = { plan: null, t: 0, playing: false, speed: 1, last: null, logIdx: 0, hover: -1, dirty: true, theta0: 0 };
+
+  // ---------------------------------------------------------------- theme colours (read from CSS tokens)
+  let C = {};
+  const TOKENS = ["bg", "panel", "ink", "muted", "rule", "accent", "accent-soft", "signal", "alert", "alert-soft", "metal", "part", "wheel", "grid", "edge-s", "edge-h", "edge-c", "edge-d", "edge-j"];
+  function readColors() {
+    const cs = getComputedStyle(document.documentElement);
+    for (const t of TOKENS) C[t] = cs.getPropertyValue("--" + t).trim();
+    st.dirty = true;
+  }
+  const suitColor = s => C["edge-" + s] || C.ink;
+
+  // ---------------------------------------------------------------- canvas and view (mm → px)
+  const cv = $("#cv"), ctx = cv.getContext("2d");
+  const VIEW = { x0: -174, x1: 144, z0: -150, z1: 197 };
+  let k = 2, dpr = 1;
+  function resize() {
+    const w = cv.parentElement.clientWidth;
+    const h = Math.round(w * (VIEW.z1 - VIEW.z0) / (VIEW.x1 - VIEW.x0));
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.height = h + "px";
+    k = w / (VIEW.x1 - VIEW.x0);
+    st.dirty = true;
+  }
+  const X = x => (x - VIEW.x0) * k, Y = z => (VIEW.z1 - z) * k;
+  // point at radius r along angle a (deg), offset `off` mm perpendicular (positive = counter-clockwise side)
+  const P = (r, a, off = 0) => { const c = Math.cos(a * D2R), s = Math.sin(a * D2R); return [r * c - off * s, r * s + off * c]; };
+  const mv = p => ctx.moveTo(X(p[0]), Y(p[1])), ln = p => ctx.lineTo(X(p[0]), Y(p[1]));
+  function poly(pts, fill, stroke, lw = 1) { ctx.beginPath(); mv(pts[0]); for (let i = 1; i < pts.length; i++) ln(pts[i]); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); } }
+  function sector(r0, r1, a0, a1, fill, stroke, lw = 1) {   // annular sector, CCW from a0 to a1 (screen y is flipped)
+    ctx.beginPath(); ctx.arc(X(0), Y(0), r1 * k, -a0 * D2R, -a1 * D2R, true); ctx.arc(X(0), Y(0), r0 * k, -a1 * D2R, -a0 * D2R, false); ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
+  }
+  function circle(p, r, fill, stroke, lw = 1) { ctx.beginPath(); ctx.arc(X(p[0]), Y(p[1]), r * k, 0, 2 * Math.PI); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); } }
+  function seg2(a, b, color, w) { ctx.beginPath(); mv(a); ln(b); ctx.strokeStyle = color; ctx.lineWidth = w; ctx.stroke(); }
+  function label(text, p, align = "left", color = C.muted, size = 10.5) {
+    ctx.font = `600 ${size}px ${FONT_DISPLAY}`;
+    ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = "middle";
+    ctx.fillText(text, X(p[0]), Y(p[1]));
+  }
+  let FONT_DISPLAY = "sans-serif", FONT_MONO = "monospace";
+  function readFonts() { const cs = getComputedStyle(document.documentElement); FONT_DISPLAY = cs.getPropertyValue("--font-display").trim(); FONT_MONO = cs.getPropertyValue("--font-mono").trim(); }
+  function tag(text, p, align = "left", color = C.muted, minor = false) {
+    if (minor && k < 1.45) return;
+    ctx.save(); ctx.font = `600 ${Math.max(k < 1.45 ? 8 : 9.5, 3.6 * k)}px ${FONT_DISPLAY}`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = "middle";
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "0.08em";
+    ctx.fillText(text.toUpperCase(), X(p[0]), Y(p[1])); ctx.restore();
+  }
+
+  // ---------------------------------------------------------------- plan queries at time t
+  const lerp = (a, b, f) => a + (b - a) * f;
+  const clamp01 = x => (x < 0 ? 0 : x > 1 ? 1 : x);
+  function interp(ts, rs, t) {
+    if (t <= ts[0]) return rs[0]; const n = ts.length; if (t >= ts[n - 1]) return rs[n - 1];
+    let lo = 0, hi = n - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (ts[m] <= t) lo = m; else hi = m; }
+    return lerp(rs[lo], rs[hi], (t - ts[lo]) / (ts[hi] - ts[lo]));
+  }
+  function lastAt(arr, t, key = "t0") { let lo = -1, hi = arr.length; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (arr[m][key] <= t) lo = m; else hi = m; } return lo; }
+  function wheelAt(t) {
+    const p = st.plan, i = lastAt(p.wheel, t);
+    if (i < 0) return { ang: st.plan.opt.theta0, v: 0 };
+    const s = p.wheel[i];
+    if (t >= s.t1) return { ang: s.a0 + s.dir * s.k / SPD, v: 0 };
+    const tau = t - s.t0, steps = SIM.stepsAtTime(s.cum, s.k, tau), j = Math.min(s.k - 1, Math.floor(steps));
+    return { ang: s.a0 + s.dir * steps / SPD, v: 1 / ((s.cum[j + 1] - s.cum[j]) * SPD) };
+  }
+  function shutterAt(t) { const a = st.plan.shutter, i = lastAt(a, t); if (i < 0) return 0; const s = a[i]; return lerp(s.from, s.to, clamp01((t - s.t0) / (s.t1 - s.t0))); }
+  function motorAt(m, t) { const a = st.plan.motors[m]; let v = 0; for (const e of a) { if (e[0] <= t) v = e[1]; else break; } return v; }
+  function cardSeg(c, t) { const a = c.segs; let i = a.length - 1; while (i > 0 && a[i].t0 > t) i--; return a[i]; }
+  let dropsByCard = new Map(), hazardT = new Map();
+  function dropAt(ci, t) { const a = dropsByCard.get(ci); if (!a) return 0; let m = 0; for (const d of a) if (t >= d.t0 && t <= d.t1) m = Math.max(m, d.mm * clamp01((t - d.t0) / 0.045)); return m; }
+  const ease = f => f * f * (3 - 2 * f);
+
+  // ---------------------------------------------------------------- one frame: compute everything visible at time t
+  function snapshot(t) {
+    const p = st.plan, w = wheelAt(t), th = w.ang, f = shutterAt(t);
+    const out = { th, v: w.v, f, cards: [], beams: { B: 0, S: 0, E: 0, X: 0, I: 0 }, counts: { H: 0, W: 0, C: 0 } };
+    const tabA = SIM.wrap(th); out.beams.I = tabA >= G.INDEX_SENSOR && tabA <= G.INDEX_SENSOR + G.INDEX_TAB_W ? 1 : 0;
+    let underStack = 0;
+    const blade0 = G.SHUT_A0 + G.SHUT_OPEN * f, blade1 = G.SHUT_A1 + G.SHUT_OPEN * f;
+    for (const c of p.cards) {
+      const s = cardSeg(c, t), o = { c, type: s.type };
+      if (s.type === "hopper") { out.counts.H++; }
+      else if (s.type === "entry") {
+        const lead = interp(s.ts, s.rs, t); o.lead = lead; const tail = lead + G.CARD_W;
+        if (tail > G.R_GATE) underStack++;
+        if (lead > G.R_DECK_TIP) out.counts.H++; else out.counts.W++;
+        if (lead <= G.R_BEAM_B && tail >= G.R_BEAM_B) out.beams.B = 1;
+        if (lead <= G.R_BEAM_S && tail >= G.R_BEAM_S) out.beams.S = 1;
+        if (lead <= G.R_BEAM_E && tail >= G.R_BEAM_E) out.beams.E = 1;
+      } else if (s.type === "slot") {
+        out.counts.W++;
+        const a = SIM.cardAngle(th, s.slot), aw = SIM.wrap(a);
+        let rest = G.R_SEAT;
+        const gOut = -Math.sin(a * D2R);
+        if (gOut > 0) {
+          const inShroud = aw >= G.SHROUD_A0 || aw <= G.SHROUD_A1 - 360;
+          const blade = aw >= blade0 && aw <= blade1;
+          if (inShroud || blade) rest = blade ? G.SHUT_RIN : G.R_SHROUD;
+        }
+        o.ang = a; o.rOut = G.R_SEAT + (rest - G.R_SEAT) * clamp01(gOut / 0.12) + dropAt(c.i, t);
+        if (aw > G.ENTRY_FIN - 2.5 && aw < G.ENTRY_FIN + 3.5) out.beams.E = 1;
+      } else if (s.type === "exit") {
+        out.counts.W++;
+        o.ang = s.ang; o.rOut = interp(s.ts, s.rs, t);
+        if (o.rOut - G.CARD_W <= G.R_BEAM_X && o.rOut >= G.R_BEAM_X) out.beams.X = 1;
+      } else if (s.type === "fly") {
+        out.counts.C++; o.f = ease(clamp01((t - s.t0) / (s.t1 - s.t0))); o.ang = s.ang; o.from = s.from; o.pile = s.pile;
+      } else { out.counts.C++; o.pile = s.pile; }
+      out.cards.push(o);
+    }
+    out.underStack = underStack;
+    return out;
+  }
+
+  // ---------------------------------------------------------------- drawing
+  const AE = G.ENTRY_FIN, AXP = G.EXIT_FIN - G.CARD_LEAN_FIN - 0.1;   // entry plane; resting angle of a card at the exit
+  const pileOff = j => G.CHUTE_DROP - (j + 0.5) * G.CARD_T;
+
+  function draw(t, S) {
+    const W = cv.width / dpr, H = cv.height / dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = C.panel; ctx.fillRect(0, 0, W, H);
+    if (!st.plan) return;
+    const th = S.th, p = st.plan;
+
+    // grid: 10 mm, heavier every 50 mm
+    ctx.lineWidth = 1;
+    for (let x = Math.ceil(VIEW.x0 / 10) * 10; x <= VIEW.x1; x += 10) { ctx.strokeStyle = x % 50 ? C.grid : C.rule; ctx.globalAlpha = x % 50 ? 1 : 0.55; ctx.beginPath(); ctx.moveTo(Math.round(X(x)) + 0.5, 0); ctx.lineTo(Math.round(X(x)) + 0.5, H); ctx.stroke(); }
+    for (let z = Math.ceil(VIEW.z0 / 10) * 10; z <= VIEW.z1; z += 10) { ctx.strokeStyle = z % 50 ? C.grid : C.rule; ctx.globalAlpha = z % 50 ? 1 : 0.55; ctx.beginPath(); ctx.moveTo(0, Math.round(Y(z)) + 0.5); ctx.lineTo(W, Math.round(Y(z)) + 0.5); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+
+    // base boxes and table
+    poly([[-100, -145], [133, -145], [133, -100], [-100, -100]], C.metal, C.part);
+    seg2([-60, -145], [-60, -100], C.part, 1);
+    seg2([VIEW.x0, -145], [VIEW.x1, -145], C.muted, 1.5);
+    tag("base · battery + controller", [16, -122], "center", C.muted, true);
+
+    // +Y disc (behind the section): spoked ring, hub boss, index tab
+    ctx.globalAlpha = 0.55;
+    sector(62, 77.5, 0, 360, C.metal, null);
+    for (let i = 0; i < 6; i++) { const a = th + i * 60; poly([P(15, a, -4), P(75, a, -4), P(75, a, 4), P(15, a, 4)], C.metal, null); }
+    circle([0, 0], 15, C.metal, null);
+    ctx.globalAlpha = 1;
+    sector(66, 76, th - G.INDEX_TAB_W, th, S.beams.I ? C.signal : C.part, null);
+
+    // index sensor at 12 o'clock
+    poly([[-2.5, 52], [2.5, 52], [2.5, 59], [-2.5, 59]], C.part, null);
+    poly([[-2.5, 83], [2.5, 83], [2.5, 90], [-2.5, 90]], C.part, null);
+    ctx.setLineDash([3, 3]); seg2([0, 59], [0, 83], S.beams.I ? C.signal : C.muted, S.beams.I ? 2 : 1); ctx.setLineDash([]);
+    tag("index", [5, 93], "left", C.muted, true);
+
+    // shroud (two segments around the exit window) and the window strap
+    sector(G.R_SHROUD, G.R_SHROUD + G.SHROUD_T, G.SHROUD_A0, G.WIN_A0, C["accent-soft"], C.accent);
+    sector(G.R_SHROUD, G.R_SHROUD + G.SHROUD_T, G.WIN_A1, G.SHROUD_A1, C["accent-soft"], C.accent);
+    ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.arc(X(0), Y(0), (G.R_SHROUD + 1.5) * k, -G.WIN_A0 * D2R, -G.WIN_A1 * D2R, true); ctx.strokeStyle = C.accent; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+    tag("shroud", P(97, 300), "center", C.accent, true);
+
+    // fins
+    for (let i = 0; i < G.N_SLOTS; i++) { const a = th + i * G.PITCH; poly([P(20.5, a), P(G.R_TIP, a), P(G.R_TIP - 2.5, a, -G.FIN_T), P(20.5, a, -G.FIN_T)], C.wheel, null); }
+    // hub tube, bore, rod
+    sector(20, 22, 0, 360, C.wheel, null);
+    circle([0, 0], 4.3, C.panel, C.wheel, 1);
+    circle([0, 0], 3.6, C.part, null);
+
+    // shutter blade (slides counter-clockwise along the inside of the shroud)
+    sector(G.SHUT_RIN, G.SHUT_ROUT, G.SHUT_A0 + G.SHUT_OPEN * S.f, G.SHUT_A1 + G.SHUT_OPEN * S.f, C.accent, null);
+    tag(S.f > 0.5 ? "shutter open" : "shutter", P(101, 238), "center", C.accent, true);
+
+    // ---- feeder (entry plane at 46.7°)
+    poly([P(G.R_DECK_TIP, AE), P(186, AE), P(186, AE, -3), P(G.R_DECK_TIP, AE, -3)], C.metal, C.part);
+    poly([P(183, AE), P(186, AE), P(186, AE, G.HOP_H), P(183, AE, G.HOP_H)], C.part, null);          // back wall
+    poly([P(115, AE, 0.45), P(G.R_GATE, AE, 0.45), P(G.R_GATE, AE, G.HOP_H), P(115, AE, G.HOP_H)], C.part, null); // gate wall, gap below
+    const spinF = motorAt("feed", t) ? t * 14 : 0, spinE = motorAt("nipE", t) ? t * 20 : 0, spinX = motorAt("nipX", t) ? t * 30 : 0;
+    const roller = (c, r, ang, on) => { circle(c, r, C.metal, C.wheel, 1.2); circle(c, r * 0.35, C.part, null); const a = -ang; seg2([c[0] + Math.cos(a) * r * 0.4, c[1] + Math.sin(a) * r * 0.4], [c[0] + Math.cos(a) * r * 0.95, c[1] + Math.sin(a) * r * 0.95], on ? C.accent : C.wheel, 1.5); };
+    roller(P(G.R_FEED, AE, -(13.5 - 0.7)), 13.5, spinF, !!spinF);
+    roller(P(G.R_NIPE, AE, -(8 - 0.5)), 8, spinE, !!spinE);
+    roller(P(G.R_NIPE, AE, 6), 6, -spinE * 1.3, !!spinE);
+    // ---- exit (card plane at 207.2°; the chute floor 28 mm below it)
+    roller(P(G.R_NIPX, AXP, 8 - 0.5), 8, spinX, !!spinX);
+    roller(P(G.R_NIPX, AXP, -6), 6, -spinX * 1.3, !!spinX);
+    poly([P(G.R_CHUTE0, AXP, G.CHUTE_DROP), P(G.R_CHUTE1, AXP, G.CHUTE_DROP), P(G.R_CHUTE1, AXP, G.CHUTE_DROP + 3), P(G.R_CHUTE0, AXP, G.CHUTE_DROP + 3)], C.metal, C.part);
+    poly([P(G.R_CHUTE1, AXP, 6), P(G.R_CHUTE1 + 3, AXP, 6), P(G.R_CHUTE1 + 3, AXP, G.CHUTE_DROP + 3), P(G.R_CHUTE1, AXP, G.CHUTE_DROP + 3)], C.part, null);
+
+    // labels for the fixed parts
+    tag("hopper · 50°", P(150, AE, G.HOP_H + 9), "center");
+    tag("gate 0.45", P(104, AE, 21), "center", C.muted, true);
+    tag("feed roller", P(141, AE, -27), "left", C.muted, true);
+    tag("entry nip", P(96, AE, -24), "center", C.muted, true);
+    tag("exit nip · 205°", P(103, AXP, -19), "center");
+    tag("chute", P(150, AXP, G.CHUTE_DROP + 13), "center");
+
+    // ---- cards
+    const cw = Math.max(1.1, Math.min(2.2, 0.55 * k));
+    const hl = st.hover;
+    const showLabels = k >= 1.55;
+    // hopper stack, lid
+    let level = S.underStack;
+    for (const o of S.cards) {
+      if (o.type !== "hopper") continue;
+      const off = (level + 0.5) * G.CARD_T; level++;
+      seg2(P(G.R_GATE + 0.5, AE, off), P(G.R_GATE + 0.5 + G.CARD_W, AE, off), suitColor(o.c.suit), Math.max(0.7, G.CARD_T * k));
+    }
+    const lidOff = level * G.CARD_T;
+    poly([P(124, AE, lidOff), P(178, AE, lidOff), P(178, AE, lidOff + 6), P(124, AE, lidOff + 6)], C.part, C.wheel, 1);
+    poly([P(119, AE, lidOff + 6), P(185, AE, lidOff + 6), P(185, AE, lidOff + 9), P(119, AE, lidOff + 9)], C.metal, C.part, 1);
+    tag("lid", P(151, AE, lidOff + 15), "center", C.muted, true);
+
+    for (const o of S.cards) {
+      const col = suitColor(o.c.suit), isHl = o.c.i === hl;
+      let a, b;
+      if (o.type === "entry") { a = P(o.lead, AE, 0.16); b = P(o.lead + G.CARD_W, AE, 0.16); }
+      else if (o.type === "slot" || o.type === "exit") { a = P(o.rOut - G.CARD_W, o.ang); b = P(o.rOut, o.ang); }
+      else if (o.type === "fly") {
+        const a0 = P(o.from - G.CARD_W, o.ang), b0 = P(o.from, o.ang);
+        const off = pileOff(o.pile), a1 = P(G.R_CHUTE1 - 0.5 - G.CARD_W, AXP, off), b1 = P(G.R_CHUTE1 - 0.5, AXP, off);
+        a = [lerp(a0[0], a1[0], o.f), lerp(a0[1], a1[1], o.f)]; b = [lerp(b0[0], b1[0], o.f), lerp(b0[1], b1[1], o.f)];
+      } else if (o.type === "pile") { const off = pileOff(o.pile); a = P(G.R_CHUTE1 - 0.5 - G.CARD_W, AXP, off); b = P(G.R_CHUTE1 - 0.5, AXP, off); }
+      else continue;
+      if (isHl) seg2(a, b, C.accent, cw + 5);
+      const hazard = (o.type === "slot" || o.type === "exit") && (hazardT.get(o.c.i) ?? Infinity) <= t;
+      if (hazard) { ctx.setLineDash([3, 2]); seg2(a, b, C.alert, cw + 3.5); ctx.setLineDash([]); circle(b, 1.6, C.alert, null); }
+      seg2(a, b, col, o.type === "pile" ? Math.max(0.7, G.CARD_T * k) : cw);
+      if (showLabels && o.type === "slot") {
+        const lp = P(55, o.ang), right = Math.cos(o.ang * D2R) >= 0;
+        ctx.save(); ctx.translate(X(lp[0]), Y(lp[1])); ctx.rotate(-(o.ang + (right ? 0 : 180)) * D2R);
+        ctx.font = `600 ${Math.max(8, 2.7 * k)}px ${FONT_MONO}`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+        ctx.lineWidth = 3; ctx.strokeStyle = C.panel; ctx.strokeText(o.c.label, 0, right ? -1.5 : 1.5 + Math.max(8, 2.7 * k));
+        ctx.fillStyle = isHl ? C.accent : col; ctx.fillText(o.c.label, 0, right ? -1.5 : 1.5 + Math.max(8, 2.7 * k));
+        ctx.restore();
+      }
+    }
+
+    // window hazard marker
+    const hz = p.drops.some(d => t >= d.t0 && t <= d.t1 + 0.25);
+    if (hz) { ctx.setLineDash([4, 3]); sector(G.R_SHROUD - 2, G.R_SHROUD + G.SHROUD_T + 4, G.WIN_A0, G.WIN_A1, C["alert-soft"] || null, C.alert, 1.5); ctx.setLineDash([]); tag("card over open window", P(110, 196), "right", C.alert); }
+
+    // beams (dots on the card planes)
+    const beam = (pt, on, name, align = "left", dx = 4.5) => { circle(pt, 1.9, on ? C.signal : C.panel, on ? C.signal : C.muted, 1.3); if (on) circle(pt, 3.6, null, C.signal, 1); label(name, [pt[0] + (align === "left" ? dx : -dx), pt[1]], align, on ? C.signal : C.muted, Math.max(10, 3.4 * k)); };
+    beam(P(G.R_BEAM_B, AE, 3.2), S.beams.B, "B", "left");
+    beam(P(G.R_BEAM_S, AE, 3.2), S.beams.S, "S", "right");
+    beam(P(G.R_BEAM_E, AE, 3.2), S.beams.E, "E", "right");
+    beam(P(G.R_BEAM_X, AXP, -3.2), S.beams.X, "X", "right");
+
+    // slot call-outs at the entry and exit
+    const sEntry = ((Math.round((G.ENTRY_FIN + SIM.FW.ENTRY_TRIM - th) / G.PITCH) % 54) + 54) % 54;
+    const sExit = ((Math.round((G.EXIT_FIN - th) / G.PITCH - 1) % 54) + 54) % 54;
+    label(`slot ${sEntry}`, P(52, AE + 9), "center", C.ink, Math.max(10, 3.6 * k));
+    label(`slot ${sExit}`, P(54, AXP - 10), "center", C.ink, Math.max(10, 3.6 * k));
+  }
+
+  // ---------------------------------------------------------------- panel, console, decks
+  const fmtClock = t => { const m = Math.floor(t / 60), s = t - 60 * m; return `${String(m).padStart(2, "0")}:${s.toFixed(1).padStart(4, "0")}`; };
+  const fmtTs = t => { const m = Math.floor(t / 60), s = t - 60 * m; return `${String(m).padStart(2, "0")}:${s.toFixed(3).padStart(6, "0")}`; };
+  const setText = (el, s) => { if (el.textContent !== s) el.textContent = s; };
+  const setAttr = (el, a, v) => { v = String(v); if (el.getAttribute(a) !== v) el.setAttribute(a, v); };
+  const el = { clock: $("#clock"), phase: $("#phase"), detail: $("#detail"), prog: $("#prog"), log: $("#log"), loglines: $("#loglines"),
+    lB: $("#lB"), lS: $("#lS"), lE: $("#lE"), lX: $("#lX"), lI: $("#lI"), mF: $("#mF"), mE: $("#mE"), mX: $("#mX"), mW: $("#mW"), mS: $("#mS"), wspeed: $("#wspeed"), shutst: $("#shutst"),
+    cH: $("#cH"), cW: $("#cW"), cC: $("#cC"), cF: $("#cF"), cZ: $("#cZ"), cZbox: $("#cZbox"), deckIn: $("#deckIn"), deckOut: $("#deckOut"), verdict: $("#verdict"), play: $("#play") };
+
+  function updatePanel(t, S) {
+    const p = st.plan;
+    setText(el.clock, fmtClock(t));
+    const ph = p.phases[Math.max(0, lastAt(p.phases, t, "t"))];
+    setText(el.phase, t <= 0 ? "Ready" : ph.label);
+    setText(el.detail, t <= 0 ? `Deck of ${p.cards.length} in the hopper, wheel empty. Press Run.` : ph.detail || " ");
+    el.prog.style.width = (100 * t / p.T).toFixed(2) + "%";
+    setAttr(el.lB, "data-on", S.beams.B); setAttr(el.lS, "data-on", S.beams.S); setAttr(el.lE, "data-on", S.beams.E); setAttr(el.lX, "data-on", S.beams.X); setAttr(el.lI, "data-on", S.beams.I);
+    setAttr(el.mF, "data-on", motorAt("feed", t)); setAttr(el.mE, "data-on", motorAt("nipE", t)); setAttr(el.mX, "data-on", motorAt("nipX", t));
+    setAttr(el.mW, "data-on", S.v > 0 ? 1 : 0); setText(el.wspeed, `${Math.round(S.v)} °/s`);
+    setAttr(el.mS, "data-on", S.f > 0.02 ? 1 : 0); setText(el.shutst, S.f > 0.98 ? "open" : S.f > 0.02 ? "moving" : "closed");
+    setText(el.cH, String(S.counts.H)); setText(el.cW, String(S.counts.W)); setText(el.cC, String(S.counts.C));
+    let fixes = 0; for (const l of p.log) { if (l.t > t) break; if (/map corrected/.test(l.text)) fixes++; }
+    const hz = p.hazards.filter(h => h.t <= t).length;
+    setText(el.cF, String(fixes)); setText(el.cZ, String(hz)); setAttr(el.cZbox, "data-alert", hz ? 1 : 0);
+    // console
+    if (st.logIdx > 0 && (st.logIdx > p.log.length || p.log[st.logIdx - 1].t > t)) { el.log.textContent = ""; st.logIdx = 0; }
+    if (st.logIdx < p.log.length && p.log[st.logIdx].t <= t) {
+      const atBottom = el.log.scrollHeight - el.log.scrollTop - el.log.clientHeight < 24;
+      const frag = document.createDocumentFragment();
+      while (st.logIdx < p.log.length && p.log[st.logIdx].t <= t) {
+        const l = p.log[st.logIdx++], line = document.createElement("div");
+        const ts = document.createElement("span"); ts.className = "ts"; ts.textContent = `[${fmtTs(l.t)}] `;
+        const tx = document.createElement("span"); tx.className = l.cls; tx.textContent = l.text;
+        line.append(ts, tx); frag.append(line);
+      }
+      el.log.append(frag);
+      if (atBottom) el.log.scrollTop = el.log.scrollHeight;
+    }
+    setText(el.loglines, `${st.logIdx} lines`);
+    // decks
+    for (const o of S.cards) {
+      const li = deckInEls[o.c.i];
+      const state = o.type === "hopper" || (o.type === "entry" && o.lead > G.R_GATE - 1) ? "in" : (o.type === "entry" || o.type === "exit" || o.type === "fly") ? "moving" : "gone";
+      setAttr(li, "data-state", state);
+    }
+    const landed = new Set(); for (const o of S.cards) if (o.type === "pile" || (o.type === "fly" && o.f > 0.95)) landed.add(o.pile);
+    for (let j = 0; j < deckOutEls.length; j++) {
+      const li = deckOutEls[j], isLanded = landed.has(j), ci = isLanded ? p.order[j] : p.planOrder[j];
+      const key = `${isLanded ? 1 : 0}:${ci}`;
+      if (li.dataset.key !== key) {
+        li.dataset.key = key; const c = p.cards[ci];
+        li.className = "card" + (isLanded ? "" : " ghost") + (isLanded && p.order[j] !== p.planOrder[j] ? " diff" : "") + (ci === st.hover ? " hl" : "");
+        li.dataset.s = c.suit; li.dataset.ci = ci; li.innerHTML = ""; const r = document.createElement("span"); r.textContent = c.rank; const s = document.createElement("span"); s.textContent = c.sym; li.append(r, s);
+        li.title = cardTitle(ci, isLanded ? `output ${j + 1}` : `planned for output ${j + 1}`);
+      }
+    }
+    const done = t >= p.T - 1e-9;
+    const nDiff = p.order.reduce((n, ci, j) => n + (ci !== p.planOrder[j] ? 1 : 0), 0);
+    const sameAsFw = p.order.join(" ") === p.predicted.join(" ");
+    if (!done) { setAttr(el.verdict, "data-ok", ""); setText(el.verdict.lastChild, `The output fills in as the wheel unloads (${landed.size} of ${p.cards.length}).`); }
+    else if (nDiff === 0) { setAttr(el.verdict, "data-ok", 1); setText(el.verdict.lastChild, `All ${p.order.length} cards match the plan. The order is the one the firmware prints in LAST order.`); }
+    else { setAttr(el.verdict, "data-ok", sameAsFw ? 1 : 0); setText(el.verdict.lastChild, `${nDiff} positions differ from the plan because ${p.corrections} card${p.corrections === 1 ? "" : "s"} landed one slot off. The firmware corrected its map, so the output still matches its LAST order${sameAsFw ? "" : " (mismatch: check the model)"}.`); }
+  }
+  function cardTitle(ci, where) { const p = st.plan, c = p.cards[ci]; return `${c.label} · input ${ci + 1} from the bottom · slot ${p.realised[ci] ?? "-"} · ${where}`; }
+
+  let deckInEls = [], deckOutEls = [];
+  function buildDecks() {
+    const p = st.plan;
+    el.deckIn.textContent = ""; el.deckOut.textContent = "";
+    deckInEls = p.cards.map(c => { const li = document.createElement("li"); li.className = "card"; li.dataset.s = c.suit; li.dataset.ci = c.i; const r = document.createElement("span"); r.textContent = c.rank; const s = document.createElement("span"); s.textContent = c.sym; li.append(r, s); li.title = cardTitle(c.i, `output ${p.order.indexOf(c.i) + 1}`); el.deckIn.append(li); return li; });
+    deckOutEls = p.cards.map(() => { const li = document.createElement("li"); li.className = "card ghost"; el.deckOut.append(li); return li; });
+  }
+  function setHover(ci) {
+    if (st.hover === ci) return; st.hover = ci; st.dirty = true;
+    for (const li of deckInEls) li.classList.toggle("hl", +li.dataset.ci === ci);
+    for (const li of deckOutEls) li.classList.toggle("hl", +li.dataset.ci === ci);
+  }
+  for (const box of [$("#deckIn"), $("#deckOut")]) {
+    box.addEventListener("pointerover", e => { const li = e.target.closest(".card"); if (li && li.dataset.ci != null) setHover(+li.dataset.ci); });
+    box.addEventListener("pointerleave", () => setHover(-1));
+  }
+
+  // ---------------------------------------------------------------- results
+  function renderTiming() {
+    const p = st.plan, T = p.times, max = 80;
+    const rows = [["Home + scan", T.start, ""], [`Load ${p.nLoaded} cards`, T.load, ""], ["Unload", T.unload, ""], ["Total", T.total, "total"]];
+    const bars = $("#bars"); bars.textContent = "";
+    for (const [name, v, cls] of rows) {
+      const r = document.createElement("div"); r.className = "bar-row " + cls;
+      r.innerHTML = `<span class="name"></span><div class="track" title=""><i></i></div><span class="val"></span>`;
+      r.querySelector(".name").textContent = name; r.querySelector(".val").textContent = v.toFixed(1) + " s";
+      r.querySelector("i").style.width = (100 * v / max).toFixed(2) + "%"; r.querySelector(".track").title = `${name}: ${v.toFixed(2)} s`;
+      if (cls === "total") { const ref = document.createElement("span"); ref.className = "ref"; ref.style.left = (100 * 40 / max) + "%"; ref.style.width = (100 * 5 / max) + "%"; ref.title = "docs/01 §1.6 estimate: 40–45 s"; r.querySelector(".track").append(ref); }
+      bars.append(r);
+    }
+    const ax = document.createElement("div"); ax.className = "axis"; ax.innerHTML = `<span></span><div class="ticks"></div><span></span>`;
+    for (let s = 0; s <= max; s += 20) { const sp = document.createElement("span"); sp.style.left = (100 * s / max) + "%"; sp.textContent = s + " s"; ax.querySelector(".ticks").append(sp); }
+    bars.append(ax);
+    const fixedWaits = p.nLoaded * (SIM.FW.T_SEAT + SIM.FW.SEAT_CHECK);
+    $("#timenote").textContent = `Mean index move ${T.meanIndex.toFixed(2)} s (the docs assume 0.25 s). The firmware's fixed waits after each card (250 ms seat run plus 40 ms check) add ${fixedWaits.toFixed(1)} s to the load.`;
+  }
+  let batchToken = 0;
+  function runBatch() {
+    const token = ++batchToken, o = currentOpts(), N = 1000, res = [];
+    const btn = $("#batchRun"); btn.disabled = true; btn.textContent = "Running…";
+    const step = () => {
+      if (token !== batchToken) return;
+      const t0 = performance.now();
+      while (res.length < N && performance.now() - t0 < 14) {
+        const key = new Uint8Array(32); crypto.getRandomValues(key);
+        const q = SIM.buildPlan({ ...o, key, counter: res.length + 1, printPlan: false, theta0: Math.random() * 360, faultSeed: (Math.random() * 4294967296) >>> 0, light: true });
+        res.push({ T: q.times.total, open: q.hazards.filter(h => h.kind === "open").length, sweep: q.hazards.filter(h => h.kind === "sweep"), corr: q.corrections });
+      }
+      renderStats(res, N);
+      if (res.length < N) requestAnimationFrame(step); else { btn.disabled = false; btn.textContent = "Run 1,000 again"; }
+    };
+    step();
+  }
+  function renderStats(res, N) {
+    const n = res.length, Ts = res.map(r => r.T), mean = Ts.reduce((a, b) => a + b, 0) / n;
+    const withOpen = res.filter(r => r.open > 0).length, sweeps = res.reduce((a, r) => a + r.sweep.length, 0);
+    const maxDrop = Math.max(0, ...res.flatMap(r => r.sweep.map(h => h.drop))), corr = res.reduce((a, r) => a + r.corr, 0);
+    const items = [
+      [mean.toFixed(1) + " s", `mean cycle time (${Math.min(...Ts).toFixed(1)}–${Math.max(...Ts).toFixed(1)} s)`, 0],
+      [(100 * withOpen / n).toFixed(0) + " %", "of shuffles open the shutter with a card over the window", withOpen ? 1 : 0],
+      [(sweeps / n).toFixed(1), "cards per shuffle swept across the open window", sweeps ? 1 : 0],
+      [maxDrop.toFixed(1) + " mm", "largest outward drop while crossing it", maxDrop > 0 ? 1 : 0],
+      [(corr / n).toFixed(2), "map corrections per shuffle", 0],
+      [n.toLocaleString("en-US"), n < N ? `of ${N.toLocaleString("en-US")} shuffles run` : "shuffles run", 0],
+    ];
+    const box = $("#stats"); box.textContent = "";
+    for (const [v, s, a] of items) { const d = document.createElement("div"); d.className = "stat"; d.dataset.alert = a; const b = document.createElement("b"); b.textContent = v; const sm = document.createElement("small"); sm.textContent = s; d.append(b, sm); box.append(d); }
+  }
+
+  // ---------------------------------------------------------------- setup and transport
+  const form = $("#setup");
+  function currentOpts() {
+    return { nCards: +$("#ncards").value, faultP: +$("#fault").value, faultBias: +$("#bias").value, unloadFix: $("#unload").value === "fix" };
+  }
+  function syncFields() { const src = $("#src").value; $("#seed").disabled = src !== "fixed"; $("#ctr").disabled = src === "test"; if (src === "test") $("#ctr").value = 1; }
+  function newPlan() {
+    const src = $("#src").value, seed = Math.max(0, Math.min(4294967295, Math.floor(+$("#seed").value || 0))), ctr = Math.max(1, Math.floor(+$("#ctr").value || 1));
+    let key, label = "", printPlan = false, note = null;
+    if (src === "fixed") { key = SIM.sha256(SIM.utf8("fixed-seed:" + seed)); label = String(seed); printPlan = true; }
+    else if (src === "test") { key = SIM.sha256(SIM.utf8("card-shuffler-test-key")); label = "test-key"; printPlan = true; note = "# sim: reference key SHA-256(\"card-shuffler-test-key\"), counter 1. PLAN slots match rng_reference.py --selftest"; }
+    else { key = new Uint8Array(32); crypto.getRandomValues(key); }
+    const theta0 = src === "hw" ? Math.random() * 360 : (seed * 137.508 + ctr * 59.3) % 360;
+    const faultSeed = src === "hw" ? (Math.random() * 4294967296) >>> 0 : (seed * 7919 + ctr * 104729 + 1) >>> 0;
+    const plan = SIM.buildPlan({ ...currentOpts(), key, counter: ctr, seedLabel: label, printPlan, theta0, faultSeed });
+    if (note) plan.log.unshift({ t: 0, text: note, cls: "sim dim" });
+    if (src === "fixed") plan.log.unshift({ t: 0, text: `next button press: fixed-seed shuffle, seed ${seed}`, cls: "fw" }, { t: 0, text: `> test fixed ${seed}`, cls: "cmd" });
+    st.plan = plan; st.t = 0; st.logIdx = 0; el.log.textContent = "";
+    hazardT = new Map(); for (const h of plan.hazards) if (!hazardT.has(h.card)) hazardT.set(h.card, h.t);
+    dropsByCard = new Map(); for (const d of plan.drops) { if (!dropsByCard.has(d.card)) dropsByCard.set(d.card, []); dropsByCard.get(d.card).push(d); }
+    buildDecks(); renderTiming(); st.dirty = true;
+  }
+  form.addEventListener("submit", e => { e.preventDefault(); newPlan(); setPlaying(!reduceMotion); runBatch(); });
+  $("#src").addEventListener("change", syncFields);
+  function setPlaying(on) { st.playing = on && st.t < st.plan.T; st.last = null; el.play.textContent = st.playing ? "Pause" : st.t >= st.plan.T ? "Run again" : st.t > 0 ? "Resume" : "Run"; }
+  el.play.addEventListener("click", () => { if (st.t >= st.plan.T) { st.t = 0; st.logIdx = 0; el.log.textContent = ""; } setPlaying(!st.playing); st.dirty = true; });
+  $("#skip").addEventListener("click", () => { st.t = st.plan.T; setPlaying(false); st.dirty = true; });
+  $("#rewind").addEventListener("click", () => { st.t = 0; st.logIdx = 0; el.log.textContent = ""; setPlaying(false); st.dirty = true; });
+  for (const r of document.querySelectorAll('input[name="speed"]')) r.addEventListener("change", () => { st.speed = +r.value; });
+  $("#batchRun").addEventListener("click", runBatch);
+
+  function frame(now) {
+    if (st.playing) {
+      if (st.last != null) st.t = Math.min(st.plan.T, st.t + Math.min(0.1, (now - st.last) / 1000) * st.speed);
+      st.last = now; st.dirty = true;
+      if (st.t >= st.plan.T) setPlaying(false);
+    }
+    if (st.dirty && st.plan) { const S = snapshot(st.t); draw(st.t, S); updatePanel(st.t, S); st.dirty = false; }
+    requestAnimationFrame(frame);
+  }
+
+  // ---------------------------------------------------------------- boot
+  const chip = $("#selftest"), r = SIM.selfTest();
+  chip.dataset.ok = r.ok ? 1 : 0;
+  chip.lastChild.textContent = r.ok ? "RNG matches rng_reference.py" : "RNG self-test failed";
+  readColors(); readFonts();
+  const mq = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+  if (mq && mq.addEventListener) mq.addEventListener("change", readColors);
+  new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class"] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { st.dirty = true; });
+  new ResizeObserver(resize).observe(cv.parentElement);
+  resize(); syncFields(); newPlan(); setPlaying(!reduceMotion); runBatch();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
