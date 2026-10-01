@@ -48,6 +48,7 @@ shut_pin_r  = 86.75;                   // nominal pin radius on the tab
 horn_r      = 18;                      // servo horn pin radius
 // servo axis: on the perpendicular bisector of the pin's two end positions, inside the pin arc
 shut_mid_a  = shut_tab_a + shutter_open_deg/2;                                 // 221.75°
+shut_skirt_a1 = shut_tab_a + shutter_open_deg + 3 + 3;                        // -Y shroud skirt left off from the window to here (drive tab travel)
 shut_half_chord = shut_pin_r * sin(shutter_open_deg/2);
 servo_ax_r  = shut_pin_r * cos(shutter_open_deg/2) - sqrt(horn_r*horn_r - shut_half_chord*shut_half_chord);   // ≈ 73.4
 
@@ -76,6 +77,8 @@ feed_protr     = 0.7;  nip_protr = 0.5;
 n20_w = 12; n20_h = 10; n20_len = 24;
 idler_d = 12; idler_w = 6; idler_y = [-27, 27];   // directly over the outer O-rings of the driven roller
 rail_h = 6;
+post_h = 23;            // idler pivot posts: top face, where the separate spring_bar screws on
+spring_bar_y = 52;      // spring_bar screw positions (|Y|), in the middle of the 49..55 posts
 
 // ---- exit (chute) ----------------------------------------------------------------
 exit_slot_ang = 205;
@@ -86,6 +89,8 @@ chute_r0      = nipX_r + 9;                      // 109.5 chute floor starts
 chute_len     = card_w + 9.5;                    // 73: the pile (against the end wall) starts 8 mm past beam X
 chute_drop    = 28;                              // floor below the exit plane: a 54-card thick deck stays below the plane
 chute_wall_h  = 4;                               // side walls only guide; low so the footprint stays under 12 in
+chute_screw_x = nipX_r + 10.5;                   // 111: horizontal M3 x 20 screws through the tower cheeks into the nip housing
+chute_screw_z = [-10, -22];                      //       (clear of the +Y motor pocket, which ends at x 106.7)
 
 // ---- towers / frame --------------------------------------------------------------
 tower_y_in    = 58;     // inner faces of the two towers

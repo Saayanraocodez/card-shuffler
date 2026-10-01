@@ -27,7 +27,7 @@ complete in `archive/v1-elevator-insertion/`.
 | Mathematics: uniformity proof, RNG, fault analysis, riffle theory, validation plan | `docs/02-mathematics.md` |
 | Simulation and results | `simulation/shuffle_sim.py`, `simulation/results/` |
 | Bit-exact RNG reference, physical-test analysis | `simulation/rng_reference.py`, `simulation/analyze_physical.py` |
-| Parametric CAD, 21 STL files, views, collision checks | `cad/params.scad`, `cad/shuffler.scad`, `cad/stl/`, `cad/png/`, `cad/check_clearance.sh` |
+| Parametric CAD, 24 STL files (print list in `cad/print-settings.md`), views, collision and printability checks | `cad/params.scad`, `cad/shuffler.scad`, `cad/stl/`, `cad/png/`, `cad/check_clearance.sh`, `cad/check_printability.py` |
 | Mechanical design document | `docs/03-mechanical-design.md`, `cad/print-settings.md` |
 | Electronics, battery, wiring, pins | `docs/04-electronics.md`, `electronics/wiring-diagram.svg` |
 | Bill of materials | `docs/05-bom.md`, `electronics/bom.csv` |
@@ -65,6 +65,7 @@ python3 simulation/shuffle_sim.py --quick
 python3 simulation/rng_reference.py --selftest
 cd firmware/test_host && make run && ./syntax_check.sh
 cd cad && ./render.sh && ./check_clearance.sh   # OpenSCAD 2021.01 + xvfb-run
+pip install trimesh shapely scipy networkx rtree && python3 check_printability.py
 ```
 
 ## Licence

@@ -19,8 +19,10 @@ then everything else (`09-prototype-plan.md`). Part names refer to
 |---|---|---|
 | Brackets to the deck, shroud tabs, base covers, index bracket | M3 × 8 self-tapping (2.6 mm holes) | ≈ 40 |
 | Tower feet to base | M3 × 10 | 12 |
-| Feeder deck / chute to tower arms (vertical, up into the arms) | M3 × 16 | 8 |
-| NEMA 17 | M3 × 8 | 4 |
+| Feeder deck to the tower arms (down through the plate into the arms) | M3 × 12 | 4 |
+| Chute to the tower cheeks (horizontal, from the towers' outer faces) | M3 × 20 | 4 |
+| NEMA 17, through the +Y tower and the motor_mount | M3 × 40 | 4 |
+| Spring bars to the idler pivot posts | M3 × 10 | 4 |
 | Gate clamp | M3 × 12 | 2 |
 | Idler axles | M3 × 50 + nyloc | 2 |
 | Idler pivots | M3 × 10 | 4 |
@@ -33,8 +35,10 @@ then everything else (`09-prototype-plan.md`). Part names refer to
 
 ## 6.3 Stage A: feeder module (steps 1–12)
 
-1. **Prepare the feeder deck.** Run an M3 screw through every 2.6 mm hole.
-   Sand the hopper floor and the plate between the gate and the nip.
+1. **Prepare the feeder deck.** Cut the three thin print ribs out of the
+   gate window with flush cutters and file the window edges flat. Run an
+   M3 screw through every 2.6 mm hole. Sand the hopper floor and the plate
+   between the gate and the nip.
 2. **Gate block.** Round the lip (the lower edge on the hopper side) to R1
    with 600-grit. Fit the block into the window from the wheel side. Put two
    M3 × 12 screws through the slots into the bosses, finger-tight.
@@ -59,15 +63,17 @@ then everything else (`09-prototype-plan.md`). Part names refer to
       M3 × 50 axle with a nyloc. They sit over the roller's outer O-rings.
    2. Push the beam-B phototransistor into the arm's boss from above,
       leads up.
-   3. Slide the arm in under the crossbar from the wheel side and mount it
-      on the pivot posts (2 × M3 × 10). It must pivot freely.
-   4. Drop a pen spring into each spring pocket. The springs bear on the
-      crossbar.
-   5. Thread the phototransistor leads up through the crossbar hole.
+   3. Mount the arm on the pivot posts (2 × M3 × 10). It must pivot
+      freely.
+   4. Drop a pen spring into each spring pocket. Thread the
+      phototransistor leads up through the hole in a `spring_bar`, then
+      screw the bar across the tops of the pivot posts (2 × M3 × 10). The
+      springs bear on it.
 9. **Gate.** Put a 0.45 mm feeler under the block, press the block down
    and tighten. Check that 0.40 passes and 0.55 does not.
 10. **Lid.** Fit the hinge with the M3 × 60. Put a felt pad under the boss.
-    Tape two dead AA cells into the troughs.
+    Drop two dead AA cells into the pockets in the top of the lid and tape
+    over them.
 11. **Bench test (Stage 1).** Put the electronics on a breadboard (§6.6).
     Clamp the deck at 50° with a box below the nip. Run `feed` 100 times
     with a deck loaded, tuning `cal pwm feed`, `cal pwm nipe` and the gate
@@ -84,8 +90,9 @@ then everything else (`09-prototype-plan.md`). Part names refer to
 14. **Rod.**
     1. Cut the M8 rod to 165 mm and deburr it.
     2. Put a washer and nyloc on one end, 8 mm in.
-    3. Slide the rod through the wheel, then add a washer and nyloc on the
-       other side.
+    3. Slide the `hub_spacer` onto the rod, then the wheel with its plain
+       (−Y) disc against the spacer. Add a washer and nyloc on the other
+       side.
     4. Clamp the wheel centred, with the index-tab disc toward the long end
        of the rod.
     5. Wrap one layer of tape on the thread where each bearing will sit.
@@ -98,21 +105,28 @@ then everything else (`09-prototype-plan.md`). Part names refer to
     3. Fit the index LED and phototransistor in `index_bracket`, facing
        each other across the gap, and screw the bracket to the post on the
        +Y tower (2 × M3 × 8).
+    4. **Motor, before the wheel goes in** (the bolts go in from the
+       tower's inner face, which the wheel later covers). Fit the coupler
+       on the NEMA 17 shaft. Hold `motor_mount` on the +Y tower's outer
+       face and the motor on the mount. Push 4 × M3 × 40 from the inner
+       face (heads into the counterbores) through the tower and the mount
+       into the motor, and tighten them evenly.
 16. **Shroud and shutter.** Lay the `shutter` blade inside `shroud_A`
     against the window, with its drive tab at the −Y end beside the shroud.
     It must slide 17.5° freely. Sand its outer face if it drags.
 17. **Base.** Join `base_front` and `base_rear` on a flat surface. Screw
     the −Y tower's foot down (6 × M3 × 10). Stand the +Y tower loosely.
 18. **Wheel into the towers.** Slide the rod through the −Y bearing (short
-    end first), bring the +Y tower onto the long end and screw its foot
+    end first). Bring the +Y tower, with its motor, onto the long end so
+    the rod passes through the bearing into the coupler, and screw its foot
     down. The wheel must spin freely with axial play under 0.5 mm.
 19. **Shroud segments.** Fit both segments between the towers (two tabs
     each end, M3 × 8). Load a few cards by hand at 12 o'clock and rotate
     them through the bottom. They should ride on the shroud and on the
     shutter's ramps without catching.
-20. **Motor.** Fit the coupler on the rod's long end and the NEMA 17 on
-    the standoff (4 × M3 × 8). Tighten the coupler through the access
-    windows.
+20. **Coupler.** Turn the wheel by hand to check the rod is centred in the
+    coupler, then tighten the coupler's rod-side screws through the
+    `motor_mount` access windows.
 21. **Shutter servo.** Centre the MG90S at 1500 µs. Drop it into the
     −Y tower's pocket from the outside, flange on the outer face, and
     secure it with 2 × M2 × 8. Fit a single-arm horn inside the recess,
@@ -125,7 +139,7 @@ then everything else (`09-prototype-plan.md`). Part names refer to
     `entry 10` and `entry 40`: the wheel goes the short way. Run `scan` with
     a few cards placed by hand: the reported slots must match.
 23. **Feeder on the wheel.** Screw the feeder deck to the tower arms
-    (4 × M3 × 16 from below, up into the arms). Push a card by hand through
+    (4 × M3 × 12, down through the plate into the arms). Push a card by hand through
     the nip into the slot at the entry. It must slide down to the hub, with
     beam E blocked and beam S clear (`beams`). Fine-tune `cal entry`
     (±0.1°) until cards enter cleanly in slots 0, 13, 27 and 40.
@@ -141,9 +155,13 @@ then everything else (`09-prototype-plan.md`). Part names refer to
     2. Push the N20 into the +Y pocket and hot-glue it.
     3. Put the beam X LED into the floor pocket from below.
     4. Fit the second `idler_arm` (its boss takes the beam X
-       phototransistor) with wheels and springs under the crossbar.
+       phototransistor) with wheels and springs, then its `spring_bar`
+       (2 × M3 × 10), as in step 8.
 26. **Felt.** Stick a felt strip on the inside face of the chute end wall.
-27. **Mount.** Screw the chute to the tower arms (4 × M3 × 16 from below).
+27. **Mount.** Slide the chute in between the towers from outside (it
+    clears each tower face by 0.5 mm) and screw it to the tower cheeks:
+    4 × M3 × 20, horizontal, from the towers' outer faces into the nip
+    housing.
 28. **Bench test (Stage 3).** With cards in the wheel, run
     `shutter open`, `exit 5`, then `eject`. The card slides out and is
     pulled through, beam X blocks then clears, and the card lands in the

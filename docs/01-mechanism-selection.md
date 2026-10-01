@@ -140,7 +140,7 @@ under gravity into the running nip and is pulled into the chute.
 
 | Phase | Per card | Basis |
 |---|---|---|
-| Wheel index to a random empty slot | 0.25 s | mean 90° shortest path at 5000°/s² and 360°/s max. Inertia with cards ≈ 1.2 × 10⁻³ kg·m², so about 10.5 N·cm peak. The driver must be set to ≈ 1.0 A RMS. At the earlier 900°/s² setting the mean index was 0.6 s and the shuffle ≈ 60–65 s |
+| Wheel index to a random empty slot | 0.25 s | mean 90° shortest path at 5000°/s² and 360°/s max. Inertia with cards ≈ 1.45 × 10⁻³ kg·m² [EST], so about 13 N·cm peak. The driver must be set to ≈ 1.0 A RMS. At the earlier 900°/s² setting the mean index was 0.6 s and the shuffle ≈ 60–65 s |
 | Card push from the pre-staged gate into the slot (85 mm at 0.3 m/s) | 0.30 s | overlaps ~0.05 s with the index |
 | **Load, 52 cards** | **≈ 26 s** | |
 | Unload: step 6.7° + pull 63.5 mm at 0.5 m/s + settle | 0.22 s | 52 occupied slots |

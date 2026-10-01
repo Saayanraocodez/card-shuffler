@@ -8,7 +8,7 @@
 | Honest cycle-time estimate | `01` §1.6: 40–45 s first build, 28–32 s tuned |
 | Mathematics: proofs, RNG, fault analysis, riffle theory, validation plan | `02-mathematics.md` |
 | Simulation code and results | `simulation/shuffle_sim.py`, `simulation/results/` (wheel, corrected/uncorrected faults, v1 faults, riffles, bins) |
-| Dimensioned mechanical design, parametric CAD, printable files, exploded views, print settings, tolerances | `03-mechanical-design.md`, `cad/params.scad`, `cad/shuffler.scad`, 21 STL files in `cad/stl/`, views in `cad/png/`, `cad/print-settings.md`, collision checks `cad/check_clearance.sh` |
+| Dimensioned mechanical design, parametric CAD, printable files, exploded views, print settings, tolerances | `03-mechanical-design.md`, `cad/params.scad`, `cad/shuffler.scad`, 24 STL files in `cad/stl/`, views in `cad/png/`, print list `cad/print-settings.md`, collision checks `cad/check_clearance.sh`, print checks `cad/check_printability.py` |
 | Electronics, battery, wiring, BOM | `04-electronics.md`, `electronics/wiring-diagram.svg`, `05-bom.md`, `electronics/bom.csv` |
 | Complete firmware | `firmware/shuffler/` (RNG core host-tested bit-exact; hardware modules syntax-checked against a mock) |
 | Assembly, calibration, first-use checks | `06-assembly.md` |
@@ -96,9 +96,49 @@ Mistakes found and fixed in the review:
   check.
 * **Docs:** the low-battery abort description did not match the firmware.
 
+## 10.4.1 Print-readiness sweep
+
+A slicer-style check (`cad/check_printability.py`: slices every STL at
+0.2 mm and flags anything printed over air) and new mating-part collision
+checks found:
+
+* **Towers** printed standing on their 4 mm beam bosses, with the whole
+  plate 4 mm in the air. They now print outer face down; the motor
+  standoff became the separate `motor_mount`, bolted through with 4 × M3 ×
+  40. A plate was added behind the beam boss, which overhung the tower edge.
+* **Chute vs towers (assembly clash):** the chute floor ran through both
+  tower plates (≈ 1.9 cm³ overlap), and one chute screw hole was sealed
+  inside the tower. The floor now sits between the towers and screws to
+  new tower cheeks from the side.
+* **Wheel** printed on a hub boss, with the 155 mm disc 6 mm in the air.
+  The −Y boss is now the separate `hub_spacer`, the −Y disc is solid, the
+  hub has internal ribs, and the fin windows are pointed so their tops
+  need no bridging. The wheel is heavier (≈ 375 g; inertia ≈ 1.45 × 10⁻³
+  kg·m² with cards, ≈ 13 N·cm peak at 5000°/s²).
+* **Shroud A** was cut in two by the exit window, and both shrouds stood
+  on their tab feet only, with the arc 12 mm in the air. The arc now runs
+  tower to tower, with a strap across the window and 45° tab gussets.
+* **Feeder deck:** the hinge knuckles were loose, unattached bodies, and
+  the middle one sat over the finger recess. The rails touched the gate
+  bosses along a single edge, so the mesh was not watertight. The gate
+  wall was a 91 mm bridge. Now there are two gusseted knuckles, window
+  jambs, and three cut-away print ribs.
+* **Spring crossbars** (deck and chute) were 110 mm bridges. They are now
+  a separate `spring_bar`, ×2.
+* **Lid** printed on its ballast box, with the plate overhanging it, and
+  had a sealed cavity. The AA ballast now drops into pockets in the
+  pressure boss, and the lid prints top face down.
+* **Rollers** stood on their 4 mm stub axles; they now stand on the D-bore
+  end. The **index bracket** printed with 7 mm ledges; it now prints back
+  plate down. The **gate block's** top overhung its flange; it is tapered.
+  The exit +Y rail hung over the motor pocket and was removed.
+* **Counts:** 24 files, 30 pieces. The two nips use 2 × `roller_nip`, and
+  the 2 × `idler_arm` carry 4 × `idler_wheel`. Filament is ≈ 1.25 kg, not
+  900 g.
+
 ## 10.5 Environment record
 
-* OpenSCAD 2021.01 rendered all 21 STL files with no warnings (`cad/render.log`); `cad/check_clearance.sh`: 17/17 OK.
+* OpenSCAD 2021.01 rendered all 24 STL files with no warnings; `cad/check_clearance.sh`: 19 OK + 4 face contacts, no collisions (`cad/clearance.log`); `cad/check_printability.py`: all 24 parts OK (`cad/printability.log`).
 * Simulation: `simulation/results/full_results.txt` and
   `simulation/results/corrected_runs.txt` (numpy 2.4, scipy 1.17).
 * Host test: all pass. Syntax check: pass (two style warnings fixed).

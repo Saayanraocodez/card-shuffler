@@ -15,3 +15,9 @@ OK         shutter_closed_vs_fixed
 OK         shutter_mid_vs_fixed
 OK         chute_shroud
 OK         deck_shroud
+OK         chute_towers
+OK         deck_towers
+CONTACT    shroud_towers (faces touch, 0.00 mm3)
+CONTACT    index_towers (faces touch, 0.00 mm3)
+CONTACT    lid_deck (faces touch, 0.00 mm3)
+CONTACT    motor_mount_tower (faces touch, 0.00 mm3)

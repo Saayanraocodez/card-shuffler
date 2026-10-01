@@ -79,7 +79,7 @@ Assumptions: 3S at 11.1 V, buck 85 %, wheel driver disabled between moves
 
 | Item | Peak / stall |
 |---|---|
-| NEMA 17 (driver-limited) | 1.0 A RMS, 1.4 A peak per phase; at a 12 V bus ≈ 0.6 A from the pack during acceleration. Needed: ≈ 10.5 N·cm at 5000°/s²; a 17HS4401 gives ≈ 25–30 N·cm at 1 A, so the margin is about 2–3× |
+| NEMA 17 (driver-limited) | 1.0 A RMS, 1.4 A peak per phase; at a 12 V bus ≈ 0.6 A from the pack during acceleration. Needed: ≈ 13 N·cm at 5000°/s²; a 17HS4401 gives ≈ 25–30 N·cm at 1 A, so the margin is about 2× |
 | MG90S | ≈ 0.7 A at 5 V stall (shutter travel is unobstructed) |
 | N20 ×3 | ≈ 0.8–1.0 A each at 5 V stall; at most two run at once |
 | Worst case simultaneous | ≈ 5.5 W + 5 V × 2.7 A / 0.85 ≈ 21 W ≈ **2 A from the pack** |

@@ -38,7 +38,7 @@ r 86.
 | Height | ≈ 331 (axis 145 above the table, hopper lid top 186 above the axis) |
 | Wheel outer diameter (fin tips / discs) | 155 |
 | Shroud outer diameter | 183 |
-| Mass, printed parts | ≈ 900 g [EST] |
+| Mass, printed parts | ≈ 1.25 kg [EST] (wheel ≈ 375 g) |
 
 ## 3.2 The wheel
 
@@ -50,19 +50,24 @@ r 86.
 | Fin tips and disc radius | 77.5 | cards overhang 8 mm; the entry beam sees the overhang |
 | Fin thickness | 1.4, chamfered to a point over the last 2.5 mm | an incoming card rides onto the fin face instead of hitting its end |
 | Slot width | 1.16 at the hub, 7.6 at the tip | funnel |
-| Fin windows | 17 × 30 and 19 × 30 mm per fin | mass −55 %; inertia ≈ 1.2 × 10⁻³ kg·m² with cards |
-| Discs | spoked, 3 mm, ring r 62–77.5 | |
+| Fin windows | 17 × 30 and 19 × 30 mm per fin, pointed at the +Y end | lighter fins; the points let the window tops print without bridging. Inertia ≈ 1.45 × 10⁻³ kg·m² with cards [EST] |
+| Discs | 3 mm. −Y disc solid (it is the first layers on the bed); +Y disc spoked, ring r 62–77.5 | |
+| Hub | tube r 20–22 with a bore tube and 6 ribs inside | the +Y disc bridges ≤ 14 mm between the ribs |
 | Index tab | +Y disc face, r 66–76, Y 49–53, at 90° | inside the rim, so it never crosses the entry beams |
-| Bore | 8.6 for an M8 threaded rod, clamped by nyloc nuts | |
+| Bore | 8.6 for an M8 threaded rod, clamped by nyloc nuts | +Y boss on the wheel; the −Y boss is the separate `hub_spacer` |
 
-Printing: axis vertical, one hub boss on the bed, 110 mm tall, about 24 h,
-PETG. The top disc bridges the ≤ 7.6 mm slot widths.
+Printing: axis vertical, the solid −Y disc on the bed, 104 mm tall, about
+24 h, PETG. The top disc bridges the ≤ 7.6 mm slot widths.
 
 ## 3.3 Retention: shroud and shutter
 
 In the lower half, gravity pulls cards outward. A fixed shroud stops them
-after 3 mm of travel: inner radius 88.5, 3 mm thick, 92 mm wide, in two
-segments from 172° to 270° and from 270° to 368°. The card edge then slides
+after 3 mm of travel: inner radius 88.5, 3 mm thick, in two segments from
+172° to 270° and from 270° to 368°. It runs from tower face to tower face
+(116 mm), so each segment prints standing on a full edge. The −Y edge is
+cut back to 92 mm wide where the shutter's drive tab travels (202°–236.5°).
+Across the exit window only a strap at |Y| 47–58 remains, outside the
+card width. The card edge then slides
 on smooth PETG as the wheel turns.
 
 The exit window (202°–214°) is closed during loading by a **shutter blade
@@ -90,7 +95,7 @@ matters only for the last cards.
 | Seated card outer edge | 85.5 | |
 | Beam S, "card seated" | 86.8 | oblique like beam E. It is blocked only while a card still bridges the plate and the slot |
 | Entry nip axis (Ø16 roller, 4 O-rings 10 × 3) | 96 | nearest point r 88.3; the deck plate starts at the nip (r 88.5) |
-| Idler wheels | over the outer O-rings, Y ±27 | spring-loaded arm, pivot at r 107.75; pen springs bear on a crossbar |
+| Idler wheels | over the outer O-rings, Y ±27 | spring-loaded arm, pivot at r 107.75; pen springs bear on a `spring_bar` screwed across the pivot posts |
 | Beam B (gate beam) | 106.5 | detector in the idler arm's boss, emitter in the plate |
 | Gate lip | 118 | slotted clamp, feeler gauge, 0.45 mm nominal |
 | Feed roller axis (Ø27, 4 O-rings 20 × 3.5) | 129.5 | crown 0.7 mm above the floor |
@@ -112,7 +117,8 @@ gate. The gate geometry and thickness range are unchanged: t_max < gap <
 | Shroud window | 202°–214° | covered by the shutter blade while loading |
 | Exit nip axis (Ø16 roller) | 100.5 | everything at the exit starts at local r ≥ 95.5, clear of the shutter tab |
 | Beam X | 111 | detector in the exit idler arm (the same part as the entry arm) |
-| Chute floor | 109.5–182.5, 28 mm below the exit plane | inclined 28°; a 54-card thick deck stays below the exit plane |
+| Chute floor | 109.5–182.5, 28 mm below the exit plane | inclined 28°; a 54-card thick deck stays below the exit plane. It sits between the towers (\|Y\| ≤ 57.5) |
+| Chute mounting | nip housing at r 111 | 2 horizontal M3 × 20 per side, through the towers' chute cheeks into the housing |
 | End wall | 182.5 | felt-lined; the pile starts 8 mm past beam X |
 
 The deck forms against the end wall. The chute end overhangs the rear base
@@ -120,19 +126,23 @@ and clears the table by about 30 mm.
 
 ## 3.6 Towers, drive, base
 
-* **Towers.** Two 12 mm plates at |Y| = 58–70, printed flat with the inner
-  face down (200 × 200 mm, fits a 220 mm bed). Each has:
+* **Towers.** Two 12 mm plates at |Y| = 58–70, printed flat with the outer
+  face down (213 × 198 mm, fits a 220 mm bed). Each has:
   * a 608ZZ bearing pocket;
   * a foot on the base;
   * a crossbar carrying the shroud tabs;
-  * an arm under the feeder deck and an arm under the chute, each with two
-    vertical M3 holes;
+  * an arm under the feeder deck with two vertical M3 holes (the deck
+    screws down into it);
+  * a chute cheek with two horizontal holes (the chute screws to it from
+    outside);
   * a 4 mm inner-face boss holding the beam E and beam S emitters (+Y) or
     detectors (−Y).
 
-  The +Y tower also carries the hollow motor standoff and a post at
-  12 o'clock for the index bracket. The −Y tower has the shutter servo
-  pocket and horn recess.
+  The +Y tower also has a post at 12 o'clock for the index bracket and
+  four counterbored holes for the motor bolts. The separate `motor_mount`
+  (a hollow Ø50 × 28 standoff holding the coupler) sits on its outer face;
+  four M3 × 40 bolts go from the tower's inner face through both into the
+  NEMA 17. The −Y tower has the shutter servo pocket and horn recess.
 * **Drive.** NEMA 17 → 5–8 mm flexible coupler → M8 threaded rod, cut to
   165 mm, clamped to the wheel with nyloc nuts. The rod turns in the
   bearings: wrap one layer of tape on the thread at each bearing seat so it
@@ -145,33 +155,13 @@ and clears the table by about 30 mm.
 
 ## 3.7 Printed parts
 
-| # | Part | Qty | Size (mm) | Material | Print notes |
-|---|---|---|---|---|---|
-| 1 | wheel | 1 | 155 × 162 × 110 | PETG | axis vertical; 30 % infill; ≈ 24 h |
-| 2 | tower_R (motor side) | 1 | ≈ 205 × 199 × 44 | PETG | inner face down, standoff up; 40 % |
-| 3 | tower_L | 1 | ≈ 205 × 199 × 16 | PETG | inner face down |
-| 4 | shroud_A (window) | 1 | ≈ 99 × 112 × 116 | PETG | standing on an end face; brim |
-| 5 | shroud_B | 1 | ≈ 99 × 112 × 116 | PETG | |
-| 6 | shutter | 1 | ≈ 28 × 30 × 97 | PETG | standing; sand the outer face |
-| 7 | index_bracket | 1 | 24 × 36 × 8 | any | arms face down |
-| 8 | feeder_deck | 1 | ≈ 98 × 142 × 61 | PETG | plate on the bed |
-| 9 | gate_block | 1 | 107 × 15.5 × 6 | PETG | flange down; round the lip |
-| 10 | roller_feed | 1 | Ø24 × 72 | PLA | axis vertical, 0.15 mm |
-| 11 | roller_nip | 2 | Ø13 × 72 | PLA | axis vertical, 0.15 mm |
-| 12 | feeder_motor_bracket | 1 | 57 × 27.5 × 19 | PETG | |
-| 13 | feeder_bushing_bracket | 1 | 57 × 8 × 19 | PETG | |
-| 14 | idler_arm | 2 | 23.5 × 95 × 16 | PETG | upside down (entry and exit) |
-| 15 | idler_wheel | 4 | Ø12 × 6 | PLA | |
-| 16 | lid | 1 | 83 × 97 × 79 | PLA | upside down |
-| 17 | chute (with exit nip housing) | 1 | ≈ 93 × 142 × 64 | PETG | floor on the bed |
-| 18 | base_front | 1 | 193 × 210 × 45 | PLA | open bottom up |
-| 19 | base_rear | 1 | 40 × 210 × 45 | PLA | |
-| 20–21 | base_cover_front / rear | 1 + 1 | 2.5 mm plates | PLA | |
-
-21 STL files, 26 printed parts. Settings: 0.4 mm nozzle, 0.2 mm layers
-(0.15 for rollers), 3 perimeters, 25 % infill (40 % towers), PETG for
-structural parts. Total ≈ 900 g. All STLs rest on Z = 0 in their print
-orientation.
+The full list, with quantities, sizes, orientation, settings and
+post-processing, is `cad/print-settings.md`: **24 STL files, 30 printed
+pieces** (2 × `roller_nip`, 2 × `idler_arm`, 4 × `idler_wheel`,
+2 × `spring_bar`). Every STL rests on Z = 0 in its print orientation, and
+`cad/check_printability.py` confirms that each one is a closed solid that
+fits a 220 mm bed and prints without supports. Total ≈ 1.25 kg [EST]
+(≈ 0.9 kg PETG, ≈ 0.35 kg PLA).
 
 ## 3.8 Tolerances and adjustment points
 

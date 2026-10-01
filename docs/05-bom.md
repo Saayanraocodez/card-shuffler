@@ -43,7 +43,7 @@ Shipping and printing excluded.
 | M2 | O-ring ID 10 × 3.0 | 9 | nip rollers | | $2.25 | typical |
 | M3 | O-ring 9 × 2 | 4 | idlers | none | $0.80 | typical |
 | M4 | Self-adhesive felt 1.5 mm | 1 | chute wall, lid pad | EVA | $3 | typical |
-| M5 | M3 screw assortment | 1 | ~80 pcs + long screws, nuts, grubs | inserts | $8 | typical |
+| M5 | M3 screw assortment | 1 | ~80 pcs (6–20 mm) + M3 × 40 ×4, × 50 ×2, × 60 ×1, nuts, 3 grubs | inserts | $8 | typical |
 | M6 | M2 × 8 / M2 × 12 | 4 + 1 | servo flange, horn pin (12 mm) | | $0.60 | typical |
 | M7 | Pen springs | 4 | idler pressure | rubber bands | $0 | scrap |
 | M8 | Dead AA cells | 2 | lid ballast | coins | $0 | scrap |

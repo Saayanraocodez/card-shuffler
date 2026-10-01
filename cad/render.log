@@ -1,6 +1,8 @@
 == wheel
+== hub_spacer
 == tower_R
 == tower_L
+== motor_mount
 == shroud_A
 == shroud_B
 == shutter
@@ -13,60 +15,11 @@
 == feeder_bushing_bracket
 == idler_arm
 == idler_wheel
+== spring_bar
 == lid
 == chute
 == base_front
 == base_rear
 == base_cover_front
 == base_cover_rear
-Compiling design (CSG Products normalization)...
-Normalized CSG tree has 944 elements
-Geometries in cache: 186
-Geometry cache size in bytes: 4837304
-CGAL Polyhedrons in cache: 1
-CGAL cache size in bytes: 345152
-Total rendering time: 0:00:01.672
-Compiling design (CSG Products normalization)...
-Normalized CSG tree has 944 elements
-Geometries in cache: 186
-Geometry cache size in bytes: 4837304
-CGAL Polyhedrons in cache: 1
-CGAL cache size in bytes: 345152
-Total rendering time: 0:00:01.319
-Compiling design (CSG Products normalization)...
-Normalized CSG tree has 803 elements
-Geometries in cache: 187
-Geometry cache size in bytes: 4838032
-CGAL Polyhedrons in cache: 1
-CGAL cache size in bytes: 345152
-Total rendering time: 0:00:03.517
-Compiling design (CSG Products normalization)...
-Normalized CSG tree has 615 elements
-Geometries in cache: 82
-Geometry cache size in bytes: 622024
-CGAL Polyhedrons in cache: 1
-CGAL cache size in bytes: 345152
-Total rendering time: 0:00:00.673
-Compiling design (CSG Products normalization)...
-Normalized CSG tree has 199 elements
-Geometries in cache: 86
-Geometry cache size in bytes: 4175680
-CGAL Polyhedrons in cache: 0
-CGAL cache size in bytes: 0
-Total rendering time: 0:00:00.653
-Compiling design (CSG Products normalization)...
-Normalized CSG tree has 101 elements
-Geometries in cache: 48
-Geometry cache size in bytes: 1395232
-CGAL Polyhedrons in cache: 0
-CGAL cache size in bytes: 0
-Total rendering time: 0:00:00.330
-Compiling design (CSG Products normalization)...
-Normalized CSG tree has 944 elements
-Geometries in cache: 186
-Geometry cache size in bytes: 4837304
-CGAL Polyhedrons in cache: 1
-CGAL cache size in bytes: 345152
-Total rendering time: 0:00:01.531
 done
-exit 0

@@ -2,7 +2,7 @@
 # Renders every printable part to STL and the documentation views to PNG (OpenSCAD 2021.01).
 set -e
 cd "$(dirname "$0")"
-PARTS="wheel tower_R tower_L shroud_A shroud_B shutter index_bracket feeder_deck gate_block roller_feed roller_nip feeder_motor_bracket feeder_bushing_bracket idler_arm idler_wheel lid chute base_front base_rear base_cover_front base_cover_rear"
+PARTS="wheel hub_spacer tower_R tower_L motor_mount shroud_A shroud_B shutter index_bracket feeder_deck gate_block roller_feed roller_nip feeder_motor_bracket feeder_bushing_bracket idler_arm idler_wheel spring_bar lid chute base_front base_rear base_cover_front base_cover_rear"
 if [ "${1:-all}" != "png" ]; then
   for p in $PARTS; do echo "== $p"; openscad -q -D "part=\"$p\"" -o "stl/$p.stl" shuffler.scad 2>&1 | grep -E "WARNING|ERROR" || true; done
 fi
