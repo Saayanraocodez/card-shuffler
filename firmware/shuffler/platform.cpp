@@ -38,6 +38,7 @@ void adc_setup() {
     analogSetAttenuation(ADC_11db);           // 0..~3.1 V full scale
     analogSetPinAttenuation(PIN_BEAM_B, ADC_11db);
     analogSetPinAttenuation(PIN_BEAM_E, ADC_11db);
+    analogSetPinAttenuation(PIN_BEAM_S, ADC_11db);
     analogSetPinAttenuation(PIN_BEAM_X, ADC_11db);
     analogSetPinAttenuation(PIN_VBAT, ADC_11db);
 }

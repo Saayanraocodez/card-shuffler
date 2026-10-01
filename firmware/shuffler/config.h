@@ -18,10 +18,11 @@
 #define PIN_PIXEL      14      // WS2812B
 #define PIN_BUZZER     33
 #define PIN_BEAM_B     34      // ADC1  gate beam (feeder)
-#define PIN_BEAM_E     35      // ADC1  entry/occupancy beam (card in the slot at the entry)
+#define PIN_BEAM_E     35      // ADC1  entry beam: card present in the slot at the entry (oblique, tower to tower)
+#define PIN_BEAM_S     32      // ADC1  seat beam: blocked while a card still bridges the plate and the slot mouth
 #define PIN_BEAM_X     36      // ADC1  exit beam (card leaving through the chute)
 #define PIN_VBAT       39      // ADC1  battery divider
-#define PIN_INDEX      32      // slotted optical module, digital (LOW when the disc tab is in the slot)
+#define PIN_INDEX      19      // index phototransistor, digital, 10 k pull-down (LOW when the disc tab blocks the beam)
 #define PIN_BUTTON     21      // momentary to GND
 #define PIN_DECK       22      // optional TCRT5000 DO (unused by default)
 
@@ -32,9 +33,9 @@
 #define EXIT_FIN_DEG      208.333f  // fin k+1's CW face here → card leaves slot k
 #define INDEX_TAB_DEG     90.0f     // angle of the disc tab when the wheel reference (fin 0) is at 0°
 #define STEPS_PER_REV     3200.0f   // 200 full steps × 1/16 microstepping, direct drive
-#define WHEEL_VMAX_DPS    360.0f    // deg/s
+#define WHEEL_VMAX_DPS    360.0f    // deg/s. Keep ≤ 360: faster spins fling cards outward in the open upper half
 #define WHEEL_VMIN_DPS    20.0f
-#define WHEEL_ACC_DPS2    900.0f    // deg/s²
+#define WHEEL_ACC_DPS2    5000.0f   // deg/s². Mean index (90°) ≈ 0.25 s; needs ≈ 10 N·cm, so set TMC Vref ≈ 1.4 V (≈ 1.0 A RMS)
 #define WHEEL_V_HOME_DPS  90.0f
 #define WHEEL_V_SCAN_DPS  120.0f
 #define STEP_PULSE_US     3
@@ -56,12 +57,14 @@
 #define T_E_BLOCK_MS       900     // beam E must block (card reached the slot mouth)
 #define T_B_CLEAR_MS       900     // beam B must clear (trailing edge past the gate)
 #define T_SEAT_MS          250     // extra nip run after B clears (card slides to the hub)
+#define T_SEAT_WAIT_MS     400     // after the nip stops: time allowed for beam S to clear (card slid in)
+#define T_NUDGE_MS         150     // entry-nip pulse to push a card that stopped in the slot mouth
 #define T_X_BLOCK_MS       700     // unload: beam X must block after the nip starts
 #define T_X_CLEAR_MS       700     // unload: beam X must clear (card fully out)
 #define T_REVERSE_MS       150
 #define FEED_RETRIES       2
 #define PROBE_MS           600
-#define DOUBLE_FEED_RATIO  1.30f
+#define DOUBLE_FEED_RATIO  1.30f   // beam B (entry) or beam X (exit) block time vs running median → double-card suspect
 
 // ---------------- sensors ----------------
 #define BEAM_THRESH_DEFAULT 400
@@ -80,6 +83,7 @@
 #define USE_BOOTLOADER_RANDOM 1
 #define SCAN_AT_START      1       // rotate once and verify the wheel is empty before loading
 #define VERIFY_AFTER_INSERT 1      // read beam E after each insertion; search ±1 slot if not found
+#define ENTRY_TRIM_DEFAULT -0.3f  // deg: fin sits 0.4 mm below the card plane at its tip, so the card rides onto the lead-in
 
 // ---------------- calibration record (NVS) ----------------
 struct Calibration {
@@ -88,7 +92,7 @@ struct Calibration {
     float    entry_trim_deg;   // added to ENTRY_FIN_DEG
     float    exit_trim_deg;    // added to EXIT_FIN_DEG
     uint16_t shutter_closed_us, shutter_open_us;
-    uint16_t beam_thresh[3];   // B, E, X
+    uint16_t beam_thresh[4];   // B, E, S, X
     uint8_t  feed_pwm, nipe_pwm, nipx_pwm;
     uint8_t  expected_cards;
     float    vbat_gain;
@@ -97,4 +101,4 @@ struct Calibration {
     uint32_t total_cards, total_jams, total_corrections;
     uint32_t last_shuffle_ms;
 };
-#define CAL_MAGIC 0xCA11B0A8u
+#define CAL_MAGIC 0xCA11B0A9u   // changed whenever the record layout changes (old records are discarded)

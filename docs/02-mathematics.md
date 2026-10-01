@@ -74,10 +74,10 @@ sequence and the predicted output order on the host.
 | **W2 neighbour slot, biased** | entry plane trim wrong (always the same side) | realised = intended + 1 always when empty | As W1; the *direction statistics* of the corrections reveal it; `cal entry` trim |
 | **W3 uncorrected W1/W2** | firmware not verifying | later card sent to an actually occupied slot: collision (jam) or deflection to a free neighbour | Only by the final count or a jam |
 | **W4 double feed** | two cards through the gate | both cards in one slot, original order kept → adjacent in the output | Beam-B block-time heuristic; end count (52 loaded); the slot holds two cards, the exit pulls them together |
-| **W5 card lost / not seated** | card stops in the mouth, falls back | beam E clear after the feed and not found in the neighbours → ERROR 8 | Sensor |
+| **W5 card stuck / lost** | card stops in the slot mouth, or falls back | Stuck: beam S stays blocked. The nip nudges it, then a reverse pulse and a retry into the same slot (no effect on the law). If it is still stuck, ERROR 3, and the wheel refuses to turn while beam S is blocked. Lost: beam E is clear after the feed and the card is not in either neighbour, giving ERROR 8 | Beams S and E |
 | **W6 eject failure** | card does not come out of a slot | beam X never blocks → retry, then ERROR 9; the deck is short | Sensor + count |
 | **W7 missed feed / retry** | roller slips | same card into the same (still empty, still chosen) slot: **no effect on the law** [PROOF] | — |
-| **W8 lost steps / wrong home** | stepper stall, index misread | all subsequent slots offset by a constant → still an injective assignment: the *output order* is unchanged (slot k+1 for all cards is the same order) unless the offset crosses the two empty slots or the wheel end; unload uses the same offset | Homing before every shuffle; the start-of-run scan |
+| **W8 lost steps / wrong home** | stepper stall, index misread | An offset present for the whole load and unload changes nothing, because the order of the slots is preserved. Steps lost mid-load send later cards toward slots that may already hold a card | Before every feed the firmware checks with beam E that the target slot is empty. If it is not, it re-homes. If the slot is still occupied, it stops with ERROR 11 rather than guess. The machine also homes and scans before every shuffle |
 
 **[PROOF] Symmetric, independent neighbour errors with map correction
 preserve uniformity.** Let E be the set of truly empty slots when card i is

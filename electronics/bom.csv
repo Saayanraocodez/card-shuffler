@@ -16,11 +16,10 @@ E14,Toggle switch SPST,1,">= 3 A DC, 6 mm bushing",rocker,1.50,1.50,"any",unveri
 E15,Push button momentary 12 mm,1,"panel mount",arcade button,2.00,2.00,"any",unverified
 E16,WS2812B pixel breakout,1,"single pixel",3 LEDs,1.00,1.00,"any",unverified
 E17,Passive piezo buzzer,1,"5 V passive",active buzzer,1.00,1.00,"any",unverified
-E18,IR LED 940 nm 3 mm,3,"TSAL4400 / IR204",5 mm (enlarge holes),0.35,1.05,"DigiKey/RS $0.25-0.45",verified (range)
-E19,IR phototransistor 3 mm,3,"TEFT4300 / PT204-6B",5 mm PT334,0.40,1.20,"DigiKey/RS ~$0.30",verified (range)
-E20,Slotted optical sensor module (index),1,"LM393 comparator module, 5 mm slot, digital out","bare TCST2103 + 10 k pull-up on GPIO32",1.00,1.00,"'IR speed sensor module' listings",unverified
+E18,IR LED 940 nm 3 mm,5,"TSAL4400 / IR204",5 mm (enlarge holes),0.35,1.75,"DigiKey/RS $0.25-0.45",verified (range)
+E19,IR phototransistor 3 mm,5,"TEFT4300 / PT204-6B",5 mm PT334,0.40,2.00,"DigiKey/RS ~$0.30",verified (range)
 E21,NPN transistor 2N2222 / BC547,1,"TO-92",logic-level N-MOSFET,0.20,0.20,"any",unverified
-E22,Resistor set,1,"150 x3, 1 k, 10 k x4, 100 k, 33 k, 330, 100 ohm",—,1.00,1.00,"any",unverified
+E22,Resistor set,1,"150 x2, 68 x2, 330 x2, 470, 10 k x5, 100 k, 33 k, 100 ohm",—,1.00,1.00,"any",unverified
 E23,Capacitors,1,"100 uF 25 V x3, 470 uF 10 V, 100 nF x3",—,1.00,1.00,"any",unverified
 E24,Perfboard 70x50 + headers + JST-XH kit + wire,1,"female headers, JST-XH 2.54 crimp kit, 22-24 AWG",Dupont,8.00,8.00,"any",unverified
 E25,Polyfuse 3 A,1,"resettable, or blade fuse holder + 3 A",—,1.00,1.00,"any",unverified
@@ -29,7 +28,7 @@ M2,O-rings ID 10 x CS 3.0 mm nitrile,9,"two nip rollers (8 + spare)",—,0.25,2.
 M3,O-rings 9 x 2 mm,4,"idler wheels",plain printed wheels,0.20,0.80,"assortment",unverified
 M4,Self-adhesive felt sheet 1.5 mm,1,"chute end wall, lid pad, optional shroud lining",EVA foam,3.00,3.00,"any",unverified
 M5,M3 screw assortment,1,"M3 x 6/8/10/12/16/20 (~80 pcs), M3 x 50 x2, M3 x 60 x1, nuts, 2 grub",heat-set inserts optional,8.00,8.00,"any",unverified
-M6,M2 x 8 screws,6,"servo tabs, index module, horn pin",—,0.10,0.60,"any",unverified
+M6,M2 screws,5,"M2 x 8 x4 servo flange, M2 x 12 x1 horn pin",—,0.10,0.60,"any",unverified
 M7,Compression springs from ballpoint pens,4,"~5 mm OD, 15 mm",rubber bands,0.00,0.00,"scrap",—
 M8,AA cells (dead) for lid ballast,2,"any",coins/washers,0.00,0.00,"scrap",—
 M9,Velcro strap + foam pad,1,"battery retention",zip ties,2.00,2.00,"any",unverified

@@ -21,10 +21,11 @@ static void help() {
         "commands:\n"
         "  status | last | cal show | cal save | cal default | bat\n"
         "  home | goto <deg> | jog <deg> | entry <slot> | exit <slot> | scan\n"
-        "  shutter open|close|off | feed | probe | rev | eject\n"
+        "  shutter open|close|off | feed | probe | rev | eject   (wheel moves are refused while beam S or X is blocked)\n"
         "  beams            print beam signals for 5 s (LED-on minus LED-off)\n"
         "  cal beams        auto-set thresholds (nothing in the beams)\n"
-        "  cal home <deg>   wheel angle at the index (adjust until `entry 0` shows fin 0 exactly on the feeder plate)\n"
+        "  cal home <deg>   wheel angle at the index (adjust until `entry 0` puts fin 0 on the feeder plate plane;\n"
+        "                   the default entry trim then lowers it 0.3 deg so cards meet the fin lead-in)\n"
         "  cal entry <deg>  trim for the entry plane (+ = CCW)   cal exit <deg>  trim for the exit plane\n"
         "  cal shutter closed|open <us>   set and move\n"
         "  cal pwm feed|nipe|nipx <0-255> | cal cards <52|54> | cal vbat <measured volts>\n"
@@ -35,12 +36,13 @@ static void help() {
         "  test ref         reference vector (must match rng_reference.py --selftest)");
 }
 static void cmd_beams() { uint32_t t0 = millis(); while (millis() - t0 < 5000) { beams_poll();
-    Serial.printf("B=%4d E=%4d X=%4d  blocked: %c%c%c  index=%d\n", beam_signal(BEAM_B), beam_signal(BEAM_E), beam_signal(BEAM_X),
-        beam_blocked(BEAM_B) ? 'B' : '-', beam_blocked(BEAM_E) ? 'E' : '-', beam_blocked(BEAM_X) ? 'X' : '-', index_active()); delay(200); } }
-static void cal_beams() { long acc[3] = {0,0,0};
-    for (int i = 0; i < 20; i++) { beams_poll(); for (int b = 0; b < 3; b++) acc[b] += beam_signal((Beam)b); delay(20); }
-    for (int b = 0; b < 3; b++) { int clear = acc[b] / 20; cal.beam_thresh[b] = (uint16_t)max(60, clear / 2);
-        Serial.printf("beam %c clear=%d threshold=%u %s\n", "BEX"[b], clear, cal.beam_thresh[b], clear < 150 ? "(WEAK: check LED/PT alignment)" : ""); } }
+    Serial.printf("B=%4d E=%4d S=%4d X=%4d  blocked: %c%c%c%c  index=%s\n", beam_signal(BEAM_B), beam_signal(BEAM_E), beam_signal(BEAM_S), beam_signal(BEAM_X),
+        beam_blocked(BEAM_B) ? 'B' : '-', beam_blocked(BEAM_E) ? 'E' : '-', beam_blocked(BEAM_S) ? 'S' : '-', beam_blocked(BEAM_X) ? 'X' : '-',
+        index_active() ? "TAB" : "clear"); delay(200); } }
+static void cal_beams() { long acc[N_BEAMS] = {0,0,0,0};
+    for (int i = 0; i < 20; i++) { beams_poll(); for (int b = 0; b < N_BEAMS; b++) acc[b] += beam_signal((Beam)b); delay(20); }
+    for (int b = 0; b < N_BEAMS; b++) { int clear = acc[b] / 20; cal.beam_thresh[b] = (uint16_t)max(60, clear / 2);
+        Serial.printf("beam %c clear=%d threshold=%u %s\n", "BESX"[b], clear, cal.beam_thresh[b], clear < 150 ? "(WEAK: check LED/PT alignment)" : ""); } }
 static void cmd_test_rng(int n) { Drbg d; uint8_t hw[64], jit[32]; hw_random_bytes(hw, 64); jitter_snapshot(jit);
     if (!drbg_seed(&d, hw, jit, cal.boot_counter, cal.shuffle_counter + 1)) { Serial.println("health test failed"); return; }
     uint8_t sl[MAX_CARDS];
@@ -62,16 +64,16 @@ static void exec(char* s) {
     else if (!strcmp(a[0], "last")) shuffle_print_last();
     else if (!strcmp(a[0], "bat")) Serial.printf("%.3f V (pin %lu mV)\n", battery_volts(), (unsigned long)analogReadMilliVolts(PIN_VBAT));
     else if (!strcmp(a[0], "home")) Serial.println(wheel_home() ? "homed" : "index NOT found");
-    else if (!strcmp(a[0], "goto") && na > 1) { wheel_goto(atof(a[1])); Serial.printf("wheel=%.2f\n", wheel_angle()); }
-    else if (!strcmp(a[0], "jog") && na > 1) { wheel_goto(wheel_angle() + atof(a[1])); Serial.printf("wheel=%.2f\n", wheel_angle()); }
-    else if (!strcmp(a[0], "entry") && na > 1) { wheel_fin_to_entry((uint8_t)atoi(a[1])); Serial.printf("slot %d at the entry, wheel=%.2f, beam E %s\n", atoi(a[1]), wheel_angle(), beam_blocked_now(BEAM_E) ? "BLOCKED (card present)" : "clear"); }
-    else if (!strcmp(a[0], "exit") && na > 1) { wheel_fin_to_exit((uint8_t)atoi(a[1])); Serial.printf("slot %d at the exit, wheel=%.2f\n", atoi(a[1]), wheel_angle()); }
+    else if (!strcmp(a[0], "goto") && na > 1) { if (!wheel_goto(atof(a[1]))) return; Serial.printf("wheel=%.2f\n", wheel_angle()); }
+    else if (!strcmp(a[0], "jog") && na > 1) { if (!wheel_goto(wheel_angle() + atof(a[1]))) return; Serial.printf("wheel=%.2f\n", wheel_angle()); }
+    else if (!strcmp(a[0], "entry") && na > 1) { if (!wheel_fin_to_entry((uint8_t)atoi(a[1]))) return; Serial.printf("slot %d at the entry, wheel=%.2f, beam E %s\n", atoi(a[1]), wheel_angle(), beam_blocked_now(BEAM_E) ? "BLOCKED (card present)" : "clear"); }
+    else if (!strcmp(a[0], "exit") && na > 1) { if (!wheel_fin_to_exit((uint8_t)atoi(a[1]))) return; Serial.printf("slot %d at the exit, wheel=%.2f\n", atoi(a[1]), wheel_angle()); }
     else if (!strcmp(a[0], "scan")) { bool occ[N_SLOTS_HW]; int n = wheel_scan(occ); Serial.printf("%d occupied:", n); for (int i = 0; i < N_SLOTS_HW; i++) if (occ[i]) Serial.printf(" %d", i); Serial.println(); }
     else if (!strcmp(a[0], "shutter") && na > 1) { if (!strcmp(a[1], "open")) { shutter_power(true); shutter_set(SHUTTER_OPEN); } else if (!strcmp(a[1], "close")) { shutter_power(true); shutter_set(SHUTTER_CLOSED); } else shutter_power(false); }
     else if (!strcmp(a[0], "feed")) { FeedStats st; FeedResult r = feeder_feed_one(&st); Serial.printf("%s  B-block=%lu ms%s\n", feed_result_name(r), (unsigned long)st.b_block_ms, st.double_suspect ? " DOUBLE?" : ""); motors_sleep(true); }
     else if (!strcmp(a[0], "probe")) { Serial.println(feeder_probe_hopper() ? "card present" : "hopper empty"); motors_sleep(true); }
     else if (!strcmp(a[0], "rev")) { feeder_reverse_pulse(); motors_sleep(true); }
-    else if (!strcmp(a[0], "eject")) { EjectResult r = eject_one(); Serial.println(r == EJECT_OK ? "ejected" : r == EJECT_NO_CARD ? "no card" : "jam"); motors_sleep(true); }
+    else if (!strcmp(a[0], "eject")) { EjectStats es; EjectResult r = eject_one(&es); Serial.printf("%s  X-block=%lu ms%s\n", r == EJECT_OK ? "ejected" : r == EJECT_NO_CARD ? "no card" : "jam", (unsigned long)es.x_block_ms, es.double_suspect ? " DOUBLE?" : ""); motors_sleep(true); }
     else if (!strcmp(a[0], "beams")) cmd_beams();
     else if (!strcmp(a[0], "cal") && na > 1) {
         if (!strcmp(a[1], "show")) cal_print(cal);

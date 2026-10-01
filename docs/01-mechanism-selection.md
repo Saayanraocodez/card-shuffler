@@ -66,7 +66,7 @@ order (slot order) is exactly uniform (proof in `02-mathematics.md`).
 | Speed (est.) | 5 (5 s ×7 manual) | 3 | 2 (70 s) | 3 (38 s) | **4 (35–45 s; ~30 s tuned)** |
 | Precision demanded of the build | 4 | 4 | 1 (±0.15 mm) | 1 | **4 (±1 mm)** |
 | Cost | 5 | 3 | 3 | 2 | **3** |
-| Footprint | 4 | 3 | 4 | 2 | **3 (284 × 213 mm)** |
+| Footprint | 4 | 3 | 4 | 2 | **3 (298 × 231 mm)** |
 | Mechanical complexity | 4 | 2 | 3 | 2 | **4** |
 | Card wear | 2 | 4 | 5 | 5 | **4** |
 | One-button | 1 | 2 | 5 | 4 | **5** |
@@ -107,13 +107,14 @@ order (slot order) is exactly uniform (proof in `02-mathematics.md`).
 * **Wheel module**: cage (Ø155 mm, 98 mm wide, hub tube Ø44, fins from
   r 22 to 77.5), two towers with 608 bearings on an M8 rod, NEMA 17 on the
   +Y tower through a flexible coupler, two shroud segments (lower half),
-  sliding shutter, index bracket.
+  a shutter blade sliding on the inside of the shroud, index bracket.
 * **Feeder module** (at 50°): the v1 hopper turned so cards travel along
-  their 63.5 mm edge; feed roller (Ø27), adjustable gate, entry nip (Ø16)
-  with spring idlers, gate beam B, entry beam E, weighted lid.
-* **Exit module** (at 205°): shutter window in the shroud, exit nip
-  (Ø16) with idlers, exit beam X, chute inclined 28° with a felt-lined end
-  wall; the deck is lifted out of the open chute.
+  their 63.5 mm edge. It has a feed roller (Ø27), an adjustable gate, an
+  entry nip (Ø16) with spring idlers, gate beam B and a weighted lid. The
+  "card in slot" beam E and "card seated" beam S run between the towers.
+* **Exit module** (at 205°): exit window in the shroud, exit nip (Ø16)
+  with idlers, exit beam X, and a chute inclined 28° with a felt-lined end
+  wall. The deck is lifted out of the open chute.
 * **Base**: two boxes (front/rear) holding the battery and the perfboard,
   with the panel (button, LED, switch, charge jack).
 * **Controller**: ESP32 DevKitC; TMC2208 for the wheel, two DRV8833 for the
@@ -121,21 +122,25 @@ order (slot order) is exactly uniform (proof in `02-mathematics.md`).
 
 ## 1.5 Card handling in the wheel
 
-Cards lie flat on a fin at the entry (fin at 46.7° above horizontal) and
-slide down the fin face into the slot under gravity; the entry nip pushes
-until 9 mm before the hub, gravity does the rest. In the upper half of the
-wheel gravity keeps each card seated against the hub; in the lower half the
-card slides outward by at most 1.5 mm onto the fixed shroud. Fins are 1.4 mm
-thick and lightened with windows; the card overhangs the fin tips by 8 mm
-so the two beams see the card edge outside the discs. At the exit (fin at
-208.3°, i.e. 28° below horizontal) the shutter opens, the card slides 7 mm
-out under gravity into the running nip and is pulled into the chute.
+Cards lie flat on a fin at the entry (fin at 46.7° above horizontal). The
+entry nip pushes each card until it is 10.5 mm from the hub, and the card
+slides the rest of the way down the fin face under gravity. In the upper
+half of the wheel, gravity keeps each card seated against the hub. In the
+lower half, the card slides outward by up to 3 mm onto the fixed shroud.
+Fins are 1.4 mm thick, lightened with windows and chamfered at the tip.
+
+A seated card's outer edge is at r 85.5. Every fixed part near the wheel
+stays outside r 86, so turning the wheel never drags a card into anything.
+`cad/check_clearance.sh` verifies this. The card overhangs the fin tips by
+8 mm, which lets the oblique beam E see it. At the exit (fin at 208.3°, 28°
+below horizontal), the shutter blade slides away. The card then slides out
+under gravity into the running nip and is pulled into the chute.
 
 ## 1.6 Cycle time: honest estimate
 
 | Phase | Per card | Basis |
 |---|---|---|
-| Wheel index to a random empty slot | 0.25 s | mean 90° shortest path; NEMA 17 direct drive, 900°/s², 360°/s max; wheel + cards I ≈ 1.2 × 10⁻³ kg·m² → 19 N·cm peak |
+| Wheel index to a random empty slot | 0.25 s | mean 90° shortest path at 5000°/s² and 360°/s max. Inertia with cards ≈ 1.2 × 10⁻³ kg·m², so about 10.5 N·cm peak. The driver must be set to ≈ 1.0 A RMS. At the earlier 900°/s² setting the mean index was 0.6 s and the shuffle ≈ 60–65 s |
 | Card push from the pre-staged gate into the slot (85 mm at 0.3 m/s) | 0.30 s | overlaps ~0.05 s with the index |
 | **Load, 52 cards** | **≈ 26 s** | |
 | Unload: step 6.7° + pull 63.5 mm at 0.5 m/s + settle | 0.22 s | 52 occupied slots |
@@ -154,7 +159,7 @@ before a build. The v1 design could not get below ~45 s.
   faces slide on the fins; both are gentler than a riffle.
 * Two extra sensors and one extra DC motor compared with v1, in exchange
   for removing the blades, the lead screw, the rods and one servo.
-* Height ≈ 290 mm (the hopper stands at 50°).
+* Height ≈ 331 mm (the hopper stands at 50° on top of a 145 mm axis).
 
 ## References
 

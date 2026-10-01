@@ -6,14 +6,14 @@ Regenerate with `./render.sh stl` after editing `params.scad` / `shuffler.scad`.
 | Part | Qty | Material | Layer | Infill | Supports | Notes |
 |---|---|---|---|---|---|---|
 | wheel | 1 | PETG | 0.2 | 30 % | none | axis vertical; ~24 h; check every slot with a card |
-| tower_R / tower_L | 1 + 1 | PETG | 0.2 | 40 % | none | flat, 219 × 192 mm: needs a 220 mm bed (rotate 45° on smaller beds is not possible; scale is not allowed) |
+| tower_R / tower_L | 1 + 1 | PETG | 0.2 | 40 % | none | inner face (with the 4 mm beam bosses) down; ≈ 205 × 199 mm, needs a 220 mm bed |
 | shroud_A / shroud_B | 1 + 1 | PETG | 0.2 | 30 % | none | standing on an end face (116 mm tall thin arcs): brim |
-| shutter | 1 | PETG | 0.2 | 50 % | none | standing; sand the sliding faces |
-| shutter_servo_bracket, index_bracket | 1 + 1 | PETG | 0.2 | 40 % | none | |
+| shutter | 1 | PETG | 0.2 | 100 % | none | standing on its end; 1.2 mm blade: 3 perimeters make it solid; sand the outer face |
+| index_bracket | 1 | PETG | 0.2 | 40 % | none | arms face down |
 | feeder_deck | 1 | PETG | 0.2 | 25 % | none | plate on the bed; brim |
 | gate_block | 1 | PETG | 0.15 | 50 % | none | flange down; round the lip |
 | roller_feed, roller_nip ×2 | 3 | PLA | 0.15 | 30 % | none | axis vertical |
-| feeder brackets, retainers | | PETG | 0.2 | 30 % | none | |
+| feeder_motor_bracket, feeder_bushing_bracket | 1 + 1 | PETG | 0.2 | 30 % | none | |
 | idler_arm ×2, idler_wheel ×4 | | PETG / PLA | 0.2 / 0.15 | 30 / 50 % | none | arms printed upside down |
 | lid | 1 | PLA | 0.2 | 20 % | none | upside down; troughs bridge 15 mm |
 | chute | 1 | PETG | 0.2 | 25 % | none | floor on the bed; the nip housing bridges 20 mm |

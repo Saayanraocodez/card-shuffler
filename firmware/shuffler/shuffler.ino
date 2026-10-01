@@ -20,7 +20,7 @@ Calibration cal;
 enum State { ST_IDLE, ST_LOADING, ST_UNLOADING, ST_DONE, ST_ERROR };
 static State state = ST_IDLE;
 static int error_code = 0;
-enum { E_NONE = 0, E_HOME = 1, E_NO_DECK = 2, E_JAM_FEED = 3, E_WHEEL_NOT_EMPTY = 4, E_RNG = 5, E_LOWBAT = 6, E_TOO_MANY = 7, E_LOST_CARD = 8, E_JAM_EJECT = 9, E_COUNT = 10 };
+enum { E_NONE = 0, E_HOME = 1, E_NO_DECK = 2, E_JAM_FEED = 3, E_WHEEL_NOT_EMPTY = 4, E_RNG = 5, E_LOWBAT = 6, E_TOO_MANY = 7, E_LOST_CARD = 8, E_JAM_EJECT = 9, E_COUNT = 10, E_MAP = 11 };
 
 struct ShuffleLog {
     uint8_t  n;                        // cards loaded
@@ -28,7 +28,7 @@ struct ShuffleLog {
     uint8_t  intended[MAX_CARDS];      // slot drawn by the RNG
     uint8_t  order[MAX_CARDS];         // predicted output order (bottom..top, input index)
     uint8_t  retries[MAX_CARDS];
-    uint8_t  corrections, double_suspects, ejected;
+    uint8_t  corrections, double_suspects, eject_double_suspects, ejected;
     uint32_t ms_load, ms_unload;
     uint8_t  key[32]; uint64_t counter; bool fixed_seed;
 } last;
@@ -62,10 +62,12 @@ static bool seed_drbg(Drbg* d, bool fixed, uint32_t fixed_seed) {
 static bool feed_with_retries(uint8_t i, FeedResult* out) {
     FeedStats st; FeedResult r = FEED_OK;
     for (int attempt = 0; attempt <= FEED_RETRIES; attempt++) {
+        last.retries[i] = attempt;
         r = feeder_feed_one(&st);
-        if (r == FEED_OK) { if (st.double_suspect) last.double_suspects++; last.retries[i] = attempt; *out = r; return true; }
-        if (r == FEED_NO_CARD) { *out = r; return false; }
-        if (r == FEED_NOT_SEATED) { *out = r; return false; }        // card went somewhere: caller searches the neighbours
+        if (r == FEED_OK) { if (st.double_suspect) last.double_suspects++; *out = r; return true; }
+        if (r == FEED_NO_CARD || r == FEED_NOT_SEATED) { *out = r; return false; }   // hopper empty / card in a neighbour slot
+        // jam or card stuck in the mouth: pull it back with a reverse pulse and try the same slot again.
+        // (Retrying into the same, still empty slot does not change the output distribution.)
         Serial.printf("# card %u: %s, retry %d\n", i, feed_result_name(r), attempt + 1);
         feeder_reverse_pulse();
     }
@@ -79,7 +81,8 @@ static int locate_card(uint8_t s, bool occupied[N_SLOTS_HW]) {
     int cands[2] = { (s + 1) % N_SLOTS_HW, (s + N_SLOTS_HW - 1) % N_SLOTS_HW };
     for (int c = 0; c < 2; c++) {
         if (occupied[cands[c]]) continue;                    // was already occupied: a card there is not the new one
-        wheel_fin_to_entry((uint8_t)cands[c]); delay(30);
+        if (!wheel_fin_to_entry((uint8_t)cands[c])) return -1;
+        delay(30);
         if (beam_blocked_now(BEAM_E)) return cands[c];
     }
     return -1;
@@ -102,10 +105,13 @@ static void run_shuffle(bool fixed, uint32_t fixed_seed) {
     }
 
     shutter_power(true); shutter_set(SHUTTER_CLOSED);
+    if (!wheel_path_clear()) { set_error(E_JAM_FEED, "a card bridges the wheel and the feeder or chute: remove it"); return; }
     if (!wheel_home()) { set_error(E_HOME, "wheel index not found"); return; }
     bool occupied[N_SLOTS_HW] = {false};
 #if SCAN_AT_START
-    if (wheel_scan(occupied) != 0) { set_error(E_WHEEL_NOT_EMPTY, "cards left in the wheel: hold the button to unload"); return; }
+    int found_cards = wheel_scan(occupied);
+    if (found_cards < 0) { set_error(E_JAM_FEED, "a card bridges the wheel and the feeder or chute"); return; }
+    if (found_cards != 0) { set_error(E_WHEEL_NOT_EMPTY, "cards left in the wheel: hold the button to unload"); return; }
 #endif
     if (!feeder_probe_hopper()) { set_error(E_NO_DECK, "no deck in the hopper"); return; }
 
@@ -116,7 +122,14 @@ static void run_shuffle(bool fixed, uint32_t fixed_seed) {
         uint8_t idx = (uint8_t)drbg_uniform(&d, n_empty);
         uint8_t s = empty[idx];
         last.intended[i] = s;
-        wheel_fin_to_entry(s);
+        if (!wheel_fin_to_entry(s)) { set_error(E_JAM_FEED, "a card bridges the wheel and a fixed part"); return; }
+        // The target must be empty. If not, the map is wrong (lost steps or an unnoticed misplaced card):
+        // re-home once (fixes lost steps); if it is still occupied, stop rather than guess.
+        if (beam_blocked_now(BEAM_E)) {
+            Serial.printf("# slot %u should be empty but beam E is blocked: re-homing\n", s);
+            if (!wheel_home() || !wheel_fin_to_entry(s)) { set_error(E_HOME, "re-homing failed"); return; }
+            if (beam_blocked_now(BEAM_E)) { set_error(E_MAP, "unexpected card in a slot the map says is empty"); return; }
+        }
         FeedResult r;
         if (!feed_with_retries(i, &r)) {
             if (r == FEED_NO_CARD) break;                                      // hopper empty
@@ -129,7 +142,7 @@ static void run_shuffle(bool fixed, uint32_t fixed_seed) {
 #else
                 set_error(E_LOST_CARD, "card not seen in the slot"); return;
 #endif
-            } else { set_error(E_JAM_FEED, feed_result_name(r)); return; }
+            } else { set_error(E_JAM_FEED, feed_result_name(r)); return; }   // wheel stays put; the interlock blocks moves while beam S is blocked
         }
         // remove the realised slot from the empty list (swap-remove; order irrelevant for uniformity)
         occupied[s] = true; last.slot_of_card[i] = s; n = i + 1;
@@ -150,17 +163,19 @@ static void run_shuffle(bool fixed, uint32_t fixed_seed) {
     uint8_t ejected = 0;
     for (uint8_t s = 0; s < N_SLOTS_HW; s++) {
         if (!occupied[s]) continue;
-        wheel_fin_to_exit(s);
-        EjectResult er = EJECT_OK;
+        if (!wheel_fin_to_exit(s)) { set_error(E_JAM_EJECT, "a card is still in the exit nip"); return; }
+        EjectResult er = EJECT_OK; EjectStats es;
         for (int attempt = 0; attempt < 3; attempt++) {
-            er = eject_one();
+            er = eject_one(&es);
             if (er == EJECT_OK) break;
             Serial.printf("# slot %u: eject %s, retry %d\n", s, er == EJECT_NO_CARD ? "no card" : "jam", attempt + 1);
-            motor_run(M_NIPX, -cal.nipx_pwm); delay(T_REVERSE_MS); eject_stop(); delay(60);
+            if (er == EJECT_JAM) { motor_run(M_NIPX, -cal.nipx_pwm); delay(T_REVERSE_MS); eject_stop(); delay(60); }
         }
         if (er == EJECT_JAM) { set_error(E_JAM_EJECT, "card stuck in the exit nip"); return; }
-        if (er == EJECT_OK) ejected++;
-        else Serial.printf("# slot %u: no card came out (map said occupied)\n", s);
+        // No card reached beam X. It may be hanging half out of the window, where turning the wheel would
+        // tear it, so stop and let the user look rather than rotate on.
+        if (er == EJECT_NO_CARD) { set_error(E_JAM_EJECT, "a card did not come out at the exit: check the exit window"); return; }
+        ejected++; if (es.double_suspect) last.eject_double_suspects++;
         ui_tick();
     }
     shutter_set(SHUTTER_CLOSED); shutter_power(false); motors_sleep(true); wheel_idle();
@@ -169,13 +184,14 @@ static void run_shuffle(bool fixed, uint32_t fixed_seed) {
     cal.total_cards += n; cal.last_shuffle_ms = millis() - t0; cal_save(cal);
 
     unsigned retries = 0; for (int i = 0; i < n; i++) retries += last.retries[i];
-    Serial.printf("DONE loaded=%u ejected=%u load=%lu ms unload=%lu ms retries=%u corrections=%u double_suspects=%u\n",
-                  n, ejected, (unsigned long)last.ms_load, (unsigned long)last.ms_unload, retries, last.corrections, last.double_suspects);
-    if (lowbat) { set_error(E_LOWBAT, "battery low: stopped early; deck is in the chute"); return; }
+    Serial.printf("DONE loaded=%u ejected=%u load=%lu ms unload=%lu ms retries=%u corrections=%u double_suspects in/out=%u/%u\n",
+                  n, ejected, (unsigned long)last.ms_load, (unsigned long)last.ms_unload, retries, last.corrections, last.double_suspects, last.eject_double_suspects);
+    if (lowbat) { set_error(E_LOWBAT, "battery low: stopped early; loaded cards are in the chute, the rest are still in the hopper"); return; }
     state = ST_DONE;
-    if (ejected != n || n != cal.expected_cards || last.double_suspects) {
+    if (ejected != n || n != cal.expected_cards || last.double_suspects || last.eject_double_suspects) {
         ui_blink(C_WARN, 400); ui_beep(2, 200, 1500);
-        Serial.printf("WARN expected %u, loaded %u, ejected %u (double-feed suspects %u): consider re-running\n", cal.expected_cards, n, ejected, last.double_suspects);
+        Serial.printf("WARN expected %u, loaded %u, ejected %u (double-card suspects in/out %u/%u): consider re-running\n",
+                      cal.expected_cards, n, ejected, last.double_suspects, last.eject_double_suspects);
     } else { ui_color(C_DONE); ui_beep(1, 250, 2600); }
 }
 
@@ -195,10 +211,15 @@ void shuffle_print_last() {
 static void unload_all() {
     ui_color(C_CAL); feeder_stop();
     shutter_power(true);
+    if (!wheel_path_clear()) { set_error(E_JAM_FEED, "a card bridges the wheel and a fixed part: remove it by hand first"); return; }
     if (!wheel_home()) { set_error(E_HOME, "wheel index not found"); return; }
     bool occ[N_SLOTS_HW]; int n = wheel_scan(occ);
+    if (n < 0) { set_error(E_JAM_FEED, "a card bridges the wheel and a fixed part: remove it by hand"); return; }
     shutter_set(SHUTTER_OPEN);
-    for (uint8_t s = 0; s < N_SLOTS_HW; s++) if (occ[s]) { wheel_fin_to_exit(s); eject_one(); }
+    for (uint8_t s = 0; s < N_SLOTS_HW; s++) if (occ[s]) {
+        EjectStats es;
+        if (!wheel_fin_to_exit(s) || eject_one(&es) != EJECT_OK) { set_error(E_JAM_EJECT, "unload stopped: check the exit window and nip"); return; }
+    }
     shutter_set(SHUTTER_CLOSED); shutter_power(false); motors_sleep(true); wheel_idle();
     Serial.printf("# unloaded %d cards\n", n);
     state = ST_IDLE; ui_color(C_IDLE);

@@ -6,14 +6,14 @@ before the next print job.
 
 ## Stage 0 — electronics on the bench (1 evening, ≈ $30)
 
-ESP32, two DRV8833, three N20, IR pairs, index module on a breadboard.
+ESP32, two DRV8833, three N20 and the IR pairs on a breadboard.
 Flash; `beams`, `feed` (motors spinning free), `test ref`. Purpose: the
 toolchain and sensors work; `test ref` matches the Python reference.
 
 ## Stage 1 — feeder module (1 weekend, ≈ $45 cumulative)
 
 Print feeder_deck, gate_block, roller_feed, one roller_nip, the two feeder
-brackets, retainers, one idler_arm, two idler_wheels, lid. Assemble steps
+brackets, one idler_arm, two idler_wheels, lid. Assemble steps
 1–12. Clamp the deck at 50° with a box under the tip.
 
 Tests: 100 single feeds; gate window (expect 0.40–0.50 mm for 0.30 mm
@@ -24,18 +24,18 @@ Fallback: cork retard strip on the gate lip.
 
 ## Stage 2 — wheel + towers, hand feeding (1 weekend, ≈ $75 cumulative)
 
-Print wheel, both towers, shroud_A/B, shutter, index_bracket, servo
-bracket; buy the stepper, driver, rod, bearings, coupler, servo. Assemble
+Print wheel, both towers, shroud_A/B, shutter, index_bracket; buy the stepper, driver, rod, bearings, coupler, servo. Assemble
 steps 13–22 on the joined base boxes (print them now or use a plywood
 board with the tower foot holes).
 
 Tests: homing repeatability (10 homes, `entry 0`, mark the rim: spread
 < 0.5 mm); `entry k` for 10 random k then a hand-pushed card: beam E
-blocked 50/50; rotate the loaded wheel 20 revolutions each way: no card
+blocked and beam S clear 50/50; the beam S interlock refuses `jog` with a
+card half in the mouth; rotate the loaded wheel 20 revolutions each way: no card
 lost, none touching the shroud in the upper half; the shutter opens and a
 card at `exit k` slides out into a hand-held box 50/50. Measure the index
 time for 90° (target ≤ 0.3 s) and the stall margin (increase
-`WHEEL_ACC_DPS2` until it skips, then back off 30 %).
+`WHEEL_ACC_DPS2` from 5000 until it skips, then back off 30 %).
 Exit criterion: 50/50 entries, 50/50 slide-outs, no lost cards.
 
 ## Stage 3 — feeder on the wheel (1 evening)

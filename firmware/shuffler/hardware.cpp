@@ -55,19 +55,20 @@ void motor_run(Motor m, int pwm) { pwm = constrain(pwm, -255, 255);
 void motors_sleep(bool sleep) { digitalWrite(PIN_DRV_SLEEP, sleep ? LOW : HIGH); if (!sleep) delay(2); }
 
 // ============================================================ sensors
-static int s_sig[3] = {0,0,0};
-static const int BEAM_PIN[3] = { PIN_BEAM_B, PIN_BEAM_E, PIN_BEAM_X };
+static int s_sig[N_BEAMS] = {0,0,0,0};
+static const int BEAM_PIN[N_BEAMS] = { PIN_BEAM_B, PIN_BEAM_E, PIN_BEAM_S, PIN_BEAM_X };
 void sensors_init() { pinMode(PIN_IR_EN, OUTPUT); digitalWrite(PIN_IR_EN, LOW);
-    pinMode(PIN_INDEX, INPUT_PULLUP); pinMode(PIN_BUTTON, INPUT_PULLUP); pinMode(PIN_DECK, INPUT_PULLUP); adc_setup(); }
+    pinMode(PIN_INDEX, INPUT);          // external 10 k pull-down; the index LED is always on
+    pinMode(PIN_BUTTON, INPUT_PULLUP); pinMode(PIN_DECK, INPUT_PULLUP); adc_setup(); }
 void beams_poll() {
-    int on[3] = {0,0,0}, off[3] = {0,0,0};
+    int on[N_BEAMS] = {0,0,0,0}, off[N_BEAMS] = {0,0,0,0};
     for (int s = 0; s < BEAM_SAMPLES; s++) {
         digitalWrite(PIN_IR_EN, HIGH); delayMicroseconds(BEAM_SETTLE_US);
-        for (int b = 0; b < 3; b++) on[b] += analogRead(BEAM_PIN[b]);
+        for (int b = 0; b < N_BEAMS; b++) on[b] += analogRead(BEAM_PIN[b]);
         digitalWrite(PIN_IR_EN, LOW); delayMicroseconds(BEAM_SETTLE_US);
-        for (int b = 0; b < 3; b++) off[b] += analogRead(BEAM_PIN[b]);
+        for (int b = 0; b < N_BEAMS; b++) off[b] += analogRead(BEAM_PIN[b]);
     }
-    for (int b = 0; b < 3; b++) { s_sig[b] = (on[b] - off[b]) / BEAM_SAMPLES; jitter_add((uint32_t)(on[b] ^ (off[b] << 12) ^ micros())); }
+    for (int b = 0; b < N_BEAMS; b++) { s_sig[b] = (on[b] - off[b]) / BEAM_SAMPLES; jitter_add((uint32_t)(on[b] ^ (off[b] << 12) ^ micros())); }
 }
 int  beam_signal(Beam b) { return s_sig[b]; }
 bool beam_blocked(Beam b) { return s_sig[b] < (int)cal.beam_thresh[b]; }

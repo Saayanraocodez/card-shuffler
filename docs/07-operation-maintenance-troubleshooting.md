@@ -25,11 +25,13 @@ cards after a mid-shuffle stop).
 
 * **Hopper / gate**: open the lid, lift the deck. The feed roller is under
   the floor slot.
-* **Between gate and wheel**: lift the entry idler arm and pull the card
-  back, or push it into the slot (the wheel is stationary after an error).
+* **Between gate and wheel**: lift the front of the entry idler arm
+  against its springs and pull the card back, or push it fully into the
+  slot. The wheel will not turn while a card bridges the mouth (beam S), so
+  nothing moves while your fingers are there.
 * **In the wheel**: hold the button 3 s (unload all). If a slot will not
-  eject, open the shutter (`shutter open`) and pull the card out of the
-  window by its edge; or reach in from the hopper side with the lid open.
+  eject, run `shutter open` and pull the card out of the window by its
+  edge. Or open the lid and reach in from the hopper side.
 * **In the exit nip / chute**: lift the exit idler arm and pull the card
   through.
 
@@ -51,20 +53,21 @@ Replaceable soft parts: roller and idler O-rings, felt strips, gate block.
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| ERROR 1 index not found | index module wiring/alignment, tab broken | `beams` shows `index=`; turn the wheel by hand past 12 o'clock |
+| ERROR 1 index not found | index LED or phototransistor wiring and alignment, tab broken | `beams` shows `index=TAB` when the tab is in the beam; turn the wheel by hand past 12 o'clock |
 | ERROR 2 no deck | roller not touching, O-rings dirty, gate too low, beam B threshold | `probe` while watching `beams`; `cal beams`; gate +0.05 |
-| ERROR 3 jam (feed) | wedge at the gate, idler too tight, card stops in the mouth | see 6.9; `cal entry`; `cal pwm nipe` |
+| ERROR 3 jam (feed) | wedge at the gate, idler too tight, or a card stuck in the slot mouth (beam S blocked; the wheel will not turn) | pull the card back or push it in; then see 6.9, `cal entry`, `cal pwm nipe` |
 | ERROR 4 cards left in the wheel | previous run stopped | hold 3 s (unload all) |
 | ERROR 5 RNG health | hardware RNG stuck | power-cycle; if persistent do not use for play |
 | ERROR 6 battery | < 9.6 V | charge; hold 3 s to unload cards left in the wheel |
 | ERROR 8 lost card | card left the feeder but is not in the slot or its neighbours | check the fin mouths; the card may be lying on the shroud: unload all |
-| ERROR 9 eject jam | card stuck in the exit nip | lift the exit idler; `cal pwm nipx` |
+| ERROR 9 eject problem | a card is stuck in the exit nip, or no card came out of a slot the map says is full | lift the exit idler; look in the exit window; `cal pwm nipx`, `cal exit` |
+| ERROR 11 map | a slot that should be empty holds a card even after re-homing | hold 3 s to unload, then shuffle again; if it repeats, check the index and `cal entry` |
 | Corrections logged in one direction (`last`) | entry plane trim | `cal entry ±0.1` |
 | Cards rub the shroud loudly | shroud too close (print) | shim the shroud tabs with washers |
 | Unload leaves a card in a slot | card seated too deep after sliding on the shroud, or exit trim | `cal exit`; check the slot mouth; the count warning tells you |
 | Output deck not square | chute end wall felt missing, cards bouncing | felt; reduce `cal pwm nipx` |
-| Shuffle > 60 s | retries (see `last`), slow wheel (Vref low), long timeouts | fix feeding first; Vref 1.0 V |
-| Stepper stalls on long moves | Vref low, wheel rubbing the shroud, nut loose | see above; `WHEEL_ACC_DPS2` down to 600 |
+| Shuffle > 60 s | retries (see `last`), slow wheel (`WHEEL_ACC_DPS2` still 900 from an old build), long timeouts | fix feeding first; acceleration 5000°/s² with Vref ≈ 1.4 V |
+| Stepper stalls on long moves | Vref low, wheel rubbing the shroud, nut loose | Vref ≈ 1.4 V; lower `WHEEL_ACC_DPS2` to 3500 (≈ 0.3 s per index) |
 
 ## 7.5 Safety notes
 

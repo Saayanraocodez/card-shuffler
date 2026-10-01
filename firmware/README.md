@@ -5,8 +5,9 @@ shuffler/
   shuffler.ino     state machine: LOAD (random empty slot per card, verified by beam E), UNLOAD (slot order)
   config.h         pins, wheel geometry, speeds, timeouts, calibration record
   platform.*       core 2.x / 3.x shims, hardware RNG with the ADC entropy source
-  hardware.*       wheel stepper, shutter servo, three N20 motors, beams B/E/X, index, battery, LED, buzzer
-  motion.*         wheel home / goto / fin-to-entry / fin-to-exit / scan; feeder; eject
+  hardware.*       wheel stepper, shutter servo, three N20 motors, beams B/E/S/X, index, battery, LED, buzzer
+  motion.*         wheel home / goto / fin-to-entry / fin-to-exit / scan (every move refused while beam S or X
+                   sees a card bridging the wheel); feeder with seat check and nudge; eject with double-card check
   rng.* sha256.* chacha20.*   entropy → SHA-256 → ChaCha20 → rejection sampling (portable)
   shuffle_core.*   empty-slot assignment + output prediction (pure, host-tested)
   storage.*        calibration in NVS
@@ -25,6 +26,7 @@ first-compile fixes and tune every timeout and PWM on hardware.
 
 ## Bring-up (see docs/06 §6.7)
 
+Set the TMC2208 Vref to ≈ 1.4 V first (the wheel accelerates at 5000°/s²).
 `bat` → `cal vbat`; `beams` → `cal beams`; `home`; `entry 0` + straight edge →
 `cal home`; `shutter open/close` → `cal shutter`; `feed` with `entry k`;
 `cal entry`; `exit k` + `eject` → `cal exit`; `test fixed 1` + button →

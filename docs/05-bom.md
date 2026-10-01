@@ -26,15 +26,14 @@ Shipping and printing excluded.
 | E15 | Push button 12 mm | 1 | | arcade | $2 | typical |
 | E16 | WS2812B pixel | 1 | | 3 LEDs | $1 | typical |
 | E17 | Passive piezo | 1 | | active | $1 | typical |
-| E18 | IR LED 3 mm 940 nm | 3 | TSAL4400 / IR204 | 5 mm | $1.05 | verified |
-| E19 | IR phototransistor 3 mm | 3 | TEFT4300 / PT204 | 5 mm | $1.20 | verified |
-| E20 | Slotted optical module (index) | 1 | LM393 type | bare TCST2103 | $1 | typical |
+| E18 | IR LED 3 mm 940 nm | 5 | TSAL4400 / IR204 (beams B, E, S, X, index) | 5 mm | $1.75 | verified |
+| E19 | IR phototransistor 3 mm | 5 | TEFT4300 / PT204 | 5 mm | $2.00 | verified |
 | E21 | NPN 2N2222 | 1 | | N-MOSFET | $0.20 | typical |
-| E22 | Resistors | set | 150×3, 1 k, 10 k×4, 100 k, 33 k, 330, 100 | | $1 | typical |
+| E22 | Resistors | set | 150×2, 68×2, 330×2, 470, 10 k×5, 100 k, 33 k, 100 | | $1 | typical |
 | E23 | Capacitors | set | 100 µF×3, 470 µF, 100 nF×3 | | $1 | typical |
 | E24 | Perfboard, headers, JST-XH kit, wire | 1 | | Dupont | $8 | typical |
 | E25 | Polyfuse 3 A | 1 | | blade | $1 | typical |
-| | **Electronics subtotal** | | | | **≈ $95** | |
+| | **Electronics subtotal** | | | | **≈ $95.50** | |
 
 ## 5.2 Mechanical
 
@@ -45,7 +44,7 @@ Shipping and printing excluded.
 | M3 | O-ring 9 × 2 | 4 | idlers | none | $0.80 | typical |
 | M4 | Self-adhesive felt 1.5 mm | 1 | chute wall, lid pad | EVA | $3 | typical |
 | M5 | M3 screw assortment | 1 | ~80 pcs + long screws, nuts, grubs | inserts | $8 | typical |
-| M6 | M2 × 8 | 6 | servo, index, pin | | $0.60 | typical |
+| M6 | M2 × 8 / M2 × 12 | 4 + 1 | servo flange, horn pin (12 mm) | | $0.60 | typical |
 | M7 | Pen springs | 4 | idler pressure | rubber bands | $0 | scrap |
 | M8 | Dead AA cells | 2 | lid ballast | coins | $0 | scrap |
 | M9 | Velcro strap + foam | 1 | battery | zip ties | $2 | typical |
@@ -61,8 +60,8 @@ Shipping and printing excluded.
 | Optional TCRT5000 | +$1 |
 
 Compared with v1: no brass blades, no lead screw, rods or LM8UU, one servo
-instead of two; one more N20, one more DRV8833, one more IR pair, an index
-module, an M8 rod and two bearings. Net ≈ −$7.
+instead of two; one more N20, one more DRV8833, two more IR pairs, an M8
+rod and two bearings. Net ≈ −$6.
 
 ## 5.4 Sourcing notes
 
@@ -70,5 +69,6 @@ module, an M8 rod and two bearings. Net ≈ −$7.
 * Skateboard bearings are 608 (any grade works).
 * N20 motors: choose the 9 mm D-shaft version; 3 identical motors keep the
   BOM simple, and the feed roller runs at lower PWM.
-* The index module is sold as an "IR speed sensor / slotted optocoupler
-  module" with an LM393; any with a 5 mm slot fits the 3 mm tab.
+* The index sensor is a bare LED and phototransistor pair in the printed
+  index bracket. A slotted module cannot straddle the tab without its inner
+  arm hitting the disc.

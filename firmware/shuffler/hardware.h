@@ -29,13 +29,14 @@ void motor_run(Motor m, int pwm);          // -255..255, 0 = coast
 void motors_sleep(bool sleep);
 
 // ---- sensors ----
-enum Beam { BEAM_B = 0, BEAM_E = 1, BEAM_X = 2 };
+enum Beam { BEAM_B = 0, BEAM_E = 1, BEAM_S = 2, BEAM_X = 3 };
+#define N_BEAMS 4
 void sensors_init();
 void beams_poll();
 int  beam_signal(Beam b);
 bool beam_blocked(Beam b);
 bool beam_blocked_now(Beam b);
-bool index_active();                       // disc tab inside the slotted sensor
+bool index_active();                       // disc tab blocks the index beam
 bool button_down();
 float battery_volts();
 

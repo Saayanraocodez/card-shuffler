@@ -4,7 +4,6 @@
 == shroud_A
 == shroud_B
 == shutter
-== shutter_servo_bracket
 == index_bracket
 == feeder_deck
 == gate_block
@@ -12,7 +11,6 @@
 == roller_nip
 == feeder_motor_bracket
 == feeder_bushing_bracket
-== motor_retainer
 == idler_arm
 == idler_wheel
 == lid
@@ -22,53 +20,53 @@
 == base_cover_front
 == base_cover_rear
 Compiling design (CSG Products normalization)...
-Normalized CSG tree has 822 elements
-Geometries in cache: 169
-Geometry cache size in bytes: 2765120
+Normalized CSG tree has 944 elements
+Geometries in cache: 186
+Geometry cache size in bytes: 4837304
 CGAL Polyhedrons in cache: 1
 CGAL cache size in bytes: 345152
-Total rendering time: 0:00:01.913
+Total rendering time: 0:00:01.672
 Compiling design (CSG Products normalization)...
-Normalized CSG tree has 822 elements
-Geometries in cache: 169
-Geometry cache size in bytes: 2765120
+Normalized CSG tree has 944 elements
+Geometries in cache: 186
+Geometry cache size in bytes: 4837304
 CGAL Polyhedrons in cache: 1
 CGAL cache size in bytes: 345152
-Total rendering time: 0:00:01.782
+Total rendering time: 0:00:01.319
 Compiling design (CSG Products normalization)...
-Normalized CSG tree has 676 elements
-Geometries in cache: 170
-Geometry cache size in bytes: 2765848
+Normalized CSG tree has 803 elements
+Geometries in cache: 187
+Geometry cache size in bytes: 4838032
 CGAL Polyhedrons in cache: 1
 CGAL cache size in bytes: 345152
-Total rendering time: 0:00:04.659
+Total rendering time: 0:00:03.517
 Compiling design (CSG Products normalization)...
-Normalized CSG tree has 482 elements
-Geometries in cache: 75
-Geometry cache size in bytes: 613824
+Normalized CSG tree has 615 elements
+Geometries in cache: 82
+Geometry cache size in bytes: 622024
 CGAL Polyhedrons in cache: 1
 CGAL cache size in bytes: 345152
-Total rendering time: 0:00:01.087
+Total rendering time: 0:00:00.673
 Compiling design (CSG Products normalization)...
-Normalized CSG tree has 207 elements
-Geometries in cache: 74
-Geometry cache size in bytes: 2084320
+Normalized CSG tree has 199 elements
+Geometries in cache: 86
+Geometry cache size in bytes: 4175680
 CGAL Polyhedrons in cache: 0
 CGAL cache size in bytes: 0
-Total rendering time: 0:00:00.742
+Total rendering time: 0:00:00.653
 Compiling design (CSG Products normalization)...
-Normalized CSG tree has 104 elements
-Geometries in cache: 44
-Geometry cache size in bytes: 1366400
+Normalized CSG tree has 101 elements
+Geometries in cache: 48
+Geometry cache size in bytes: 1395232
 CGAL Polyhedrons in cache: 0
 CGAL cache size in bytes: 0
-Total rendering time: 0:00:00.432
+Total rendering time: 0:00:00.330
 Compiling design (CSG Products normalization)...
-Normalized CSG tree has 822 elements
-Geometries in cache: 169
-Geometry cache size in bytes: 2765120
+Normalized CSG tree has 944 elements
+Geometries in cache: 186
+Geometry cache size in bytes: 4837304
 CGAL Polyhedrons in cache: 1
 CGAL cache size in bytes: 345152
-Total rendering time: 0:00:01.772
+Total rendering time: 0:00:01.531
 done
 exit 0

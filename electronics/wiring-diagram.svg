@@ -16,7 +16,7 @@
   <line x1="170" y1="90" x2="200" y2="90" class="vbat"/><line x1="290" y1="90" x2="320" y2="90" class="vbat"/><line x1="430" y1="90" x2="470" y2="90" class="vbat"/><text x="440" y="84" class="small">VBAT</text>
   <line x1="185" y1="145" x2="200" y2="145" class="vbat"/><line x1="185" y1="145" x2="185" y2="90" class="vbat"/>
   <line x1="450" y1="90" x2="450" y2="230" class="vbat"/><line x1="450" y1="230" x2="880" y2="230" class="vbat"/><line x1="450" y1="230" x2="450" y2="470" class="vbat"/>
-  <line x1="640" y1="90" x2="700" y2="90" class="v5"/><line x1="700" y1="90" x2="700" y2="130" class="v5"/><line x1="700" y1="130" x2="1330" y2="130" class="v5"/><text x="960" y="124" class="small">+5 V rail (ESP32 VIN, DRV8833 ×2 VM, servo, IR LEDs, index module, pixel)</text>
+  <line x1="640" y1="90" x2="700" y2="90" class="v5"/><line x1="700" y1="90" x2="700" y2="130" class="v5"/><line x1="700" y1="130" x2="1330" y2="130" class="v5"/><text x="960" y="124" class="small">+5 V rail (ESP32 VIN, DRV8833 ×2 VM, servo, IR LEDs, index LED, pixel)</text>
 
   <rect x="560" y="300" width="270" height="430" class="mcu"/><text x="600" y="322" class="h" font-size="15">ESP32 DevKitC (30-pin)</text><text x="600" y="338" class="small">USB only for programming / test dumps</text>
   <g class="t">
@@ -27,14 +27,14 @@
     <text x="568" y="635">GPIO18  SERVO (shutter)</text><text x="568" y="665">GPIO13  IR_LED_EN</text><text x="568" y="685">GPIO14  NEOPIXEL</text><text x="568" y="705">GPIO33  BUZZER</text>
   </g>
   <g class="t">
-    <text x="705" y="415">GPIO34  BEAM_B (ADC)</text><text x="705" y="435">GPIO35  BEAM_E (ADC)</text><text x="705" y="455">GPIO36  BEAM_X (ADC)</text>
-    <text x="705" y="485">GPIO39  VBAT_SENSE</text><text x="705" y="515">GPIO32  INDEX (digital)</text><text x="705" y="535">GPIO21  BUTTON</text>
+    <text x="705" y="405">GPIO34  BEAM_B (ADC)</text><text x="705" y="421">GPIO35  BEAM_E (ADC)</text><text x="705" y="437">GPIO32  BEAM_S (ADC)</text><text x="705" y="453">GPIO36  BEAM_X (ADC)</text>
+    <text x="705" y="485">GPIO39  VBAT_SENSE</text><text x="705" y="515">GPIO19  INDEX (digital)</text><text x="705" y="535">GPIO21  BUTTON</text>
     <text x="705" y="565">GPIO22  DECK_SENSE (opt.)</text><text x="705" y="595">3V3 → sensor pull-ups</text><text x="705" y="625">GND</text>
   </g>
   <line x1="700" y1="130" x2="700" y2="150" class="v5"/><line x1="700" y1="150" x2="545" y2="150" class="v5"/><line x1="545" y1="150" x2="545" y2="361" class="v5"/><line x1="545" y1="361" x2="566" y2="361" class="v5"/>
   <line x1="566" y1="381" x2="530" y2="381" class="gnd"/><text x="500" y="385" class="small">GND</text>
 
-  <rect x="880" y="200" width="200" height="120" class="drv"/><text x="890" y="220" class="h">TMC2208 stepstick</text><text x="890" y="236" class="t">VM = VBAT (+100 µF 25 V)</text><text x="890" y="250" class="t">VIO = 3V3, MS1 = MS2 = 3V3 (1/16)</text><text x="890" y="264" class="t">STEP / DIR / EN ← ESP32</text><text x="890" y="278" class="t">Vref ≈ 1.0 V → ≈ 0.7 A RMS</text><text x="890" y="292" class="small">A4988 (Vref 0.55 V) drop-in from a 3S pack</text><text x="890" y="308" class="small">1A/1B/2A/2B → NEMA 17</text>
+  <rect x="880" y="200" width="200" height="120" class="drv"/><text x="890" y="220" class="h">TMC2208 stepstick</text><text x="890" y="236" class="t">VM = VBAT (+100 µF 25 V)</text><text x="890" y="250" class="t">VIO = 3V3, MS1 = MS2 = 3V3 (1/16)</text><text x="890" y="264" class="t">STEP / DIR / EN ← ESP32</text><text x="890" y="278" class="t">Vref ≈ 1.4 V → ≈ 1.0 A RMS (heatsink)</text><text x="890" y="292" class="small">A4988 (Vref 0.55 V) drop-in from a 3S pack</text><text x="890" y="308" class="small">1A/1B/2A/2B → NEMA 17</text>
   <line x1="830" y1="411" x2="850" y2="411" class="sig"/><line x1="850" y1="411" x2="850" y2="300" class="sig"/><line x1="850" y1="300" x2="880" y2="300" class="sig"/><text x="836" y="405" class="small">3 wires</text>
   <rect x="1120" y="200" width="120" height="70" class="box"/><text x="1128" y="220" class="h">NEMA 17 (wheel)</text><text x="1128" y="236" class="t">17HS4401 class, 4-wire</text><text x="1128" y="250" class="small">5→8 mm coupler, M8 rod</text><line x1="1080" y1="240" x2="1120" y2="240" class="net"/>
 
@@ -50,13 +50,13 @@
   <rect x="880" y="590" width="200" height="60" class="drv"/><text x="890" y="610" class="h">MG90S shutter servo</text><text x="890" y="626" class="t">V+ = +5 V, GND, SIG ← GPIO18</text><text x="890" y="640" class="small">470 µF on the 5 V rail near the servo</text>
   <line x1="1000" y1="570" x2="1000" y2="590" class="v5"/><line x1="830" y1="631" x2="880" y2="631" class="sig"/>
 
-  <rect x="880" y="670" width="360" height="140" class="sen"/><text x="890" y="690" class="h">Beams B, E, X: 3 × (940 nm IR LED + phototransistor)</text>
-  <text x="890" y="706" class="t">LED anodes ← +5 V via 150 Ω each; cathodes → NPN collector (2N2222); base ← GPIO13 via 1 kΩ; emitter → GND</text>
-  <text x="890" y="720" class="t">Phototransistor collector → 3V3; emitter → GPIO34/35/36 and 10 kΩ to GND (input-only pins: pull-downs required)</text>
-  <text x="890" y="734" class="t">B = gate beam (feeder plate), E = entry/occupancy beam (plate tip, r 84.5), X = exit beam (chute, r 114)</text>
-  <text x="890" y="752" class="h">Index: slotted optical module (comparator, 3 pins)</text>
-  <text x="890" y="768" class="t">VCC ← +5 V (or 3V3 per module), GND, DO → GPIO32 (LOW when the disc tab is in the slot)</text>
-  <text x="890" y="784" class="small">Mount in index_bracket on the +Y tower at 12 o'clock; the tab on the +Y disc passes through the slot.</text>
+  <rect x="880" y="670" width="360" height="140" class="sen"/><text x="890" y="690" class="h">Beams B, E, S, X: 4 × (940 nm IR LED + phototransistor)</text>
+  <text x="890" y="706" class="t">LED anodes ← +5 V via 150 Ω (B, X) or 68 Ω (E, S: 116 mm beams); cathodes → NPN (2N2222), base ← GPIO13 via 470 Ω</text>
+  <text x="890" y="720" class="t">Phototransistor collector → 3V3; emitter → GPIO34/35/32/36 and 10 kΩ to GND (pull-downs required)</text>
+  <text x="890" y="734" class="t">B = gate (plate→idler arm), E = card in slot, S = card seated (both tower→tower, oblique), X = exit (chute→arm)</text>
+  <text x="890" y="752" class="h">Index: IR LED (always on, 330 Ω from +5 V) + phototransistor</text>
+  <text x="890" y="768" class="t">PT collector → 3V3, emitter → GPIO19 + 10 kΩ to GND (LOW when the disc tab blocks the beam)</text>
+  <text x="890" y="784" class="small">In index_bracket on the +Y tower post at 12 o'clock: LED at r 59 shines outward to the PT at r 83 across the tab (r 66–76).</text>
   <line x1="830" y1="411" x2="840" y2="411" class="sig"/><line x1="1000" y1="650" x2="1000" y2="670" class="v5"/>
 
   <rect x="380" y="440" width="150" height="80" class="sen"/><text x="388" y="460" class="h">VBAT sense</text><text x="388" y="476" class="t">100 kΩ / 33 kΩ → GPIO39</text><text x="388" y="490" class="t">100 nF to GND</text><text x="388" y="504" class="small">12.6 V → 3.13 V</text>
@@ -68,7 +68,7 @@
   <rect x="20" y="200" width="330" height="215" class="box"/><text x="30" y="220" class="h">Notes</text>
   <text x="30" y="238" class="t">1. Never hot-plug the stepper; TMC2208 needs GND before VM.</text>
   <text x="30" y="252" class="t">2. Set the buck to 5.00 V with nothing connected.</text>
-  <text x="30" y="266" class="t">3. Set TMC Vref = 1.0 V with the motor unplugged.</text>
+  <text x="30" y="266" class="t">3. Set TMC Vref ≈ 1.4 V (≈ 1.0 A RMS) with the motor unplugged.</text>
   <text x="30" y="280" class="t">4. GPIO15 and GPIO2 are strapping pins: the DRV8833 inputs do not</text>
   <text x="30" y="294" class="t">   load them, and nSLEEP is held low until setup() runs.</text>
   <text x="30" y="308" class="t">5. Charger wired to the pack terminals upstream of the switch.</text>
@@ -77,7 +77,7 @@
   <text x="30" y="350" class="t">8. External connectors: JST-XH 2.54 mm on the perfboard.</text>
   <text x="30" y="380" class="h">Connector list</text>
   <text x="30" y="396" class="small">J1 pack (2) J2 switch (2) J3 jack (2) J4 stepper (4) J5 feed (2) J6 entry nip (2) J7 exit nip (2) J8 servo (3)</text>
-  <text x="30" y="410" class="small">J9/J10/J11 beams B/E/X (4 each) J12 index (3) J13 button (2) J14 pixel (3) J15 buzzer (2) J16 TCRT (3)</text>
+  <text x="30" y="410" class="small">J9–J12 beams B/E/S/X (4 each) J13 index (4) J14 button (2) J15 pixel (3) J16 buzzer (2) J17 TCRT (3)</text>
 
   <line x1="530" y1="381" x2="530" y2="920" class="gnd"/><line x1="530" y1="920" x2="1330" y2="920" class="gnd"/><text x="1200" y="935" class="small">GND (common)</text>
 </svg>

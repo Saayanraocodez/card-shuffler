@@ -27,7 +27,7 @@
     <path d="M 175.2 -24.6 A 177 177 0 0 0 -164.7 64.6" class="shroud" transform="scale(1,-1)"/>
     <path d="M -177 0 A 177 177 0 0 0 -164.7 64.6" class="shroud"/>
     <path d="M -164.7 64.6 A 177 177 0 0 0 -156.2 83.2" class="shutter"/>
-    <text x="-300" y="120" class="small" fill="#e08a00">shutter (orange): closed during loading,</text><text x="-300" y="134" class="small" fill="#e08a00">slides 14° to open the exit window</text>
+    <text x="-300" y="120" class="small" fill="#e08a00">shutter blade (orange) inside the shroud: covers the</text><text x="-300" y="134" class="small" fill="#e08a00">window while loading (ramped ends), slides 17.5° to open</text>
     <path d="M -144.7 102.1 A 177 177 0 0 0 0 177 A 177 177 0 0 0 177 0" class="shroud"/>
     <text x="60" y="200" class="small">shroud, r 88.5–91.5, 172°–368°</text>
     <!-- entry feeder at 46.67° (fin) : draw plate along the fin direction from r=82 to r=178 -->
@@ -43,7 +43,7 @@
       <rect x="180" y="-32" width="100" height="0" />
     </g>
     <text x="180" y="-250" class="lbl">HOPPER at 50°: deck face down, slides against the gate under 0.77 g</text>
-    <text x="180" y="-234" class="small">gate (feeler-set 0.45 mm) → beam B → entry nip Ø16 → beam E (r 84.5) → card slides down fin k to the hub</text>
+    <text x="180" y="-234" class="small">gate (0.45 mm) → beam B → entry nip Ø16 (r 96) → card slides down fin k to the hub; beams E (r 81.5) and S (r 86.8) run tower to tower</text>
     <!-- exit at 208.33° -->
     <g transform="rotate(-208.333)">
       <rect x="164" y="-6" width="20" height="6" fill="none"/>
