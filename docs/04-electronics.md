@@ -109,8 +109,9 @@ Unchanged from v1 (`archive/v1-elevator-insertion/docs/04-electronics.md`
   idle with the shutter closed by its own friction (add the return spring
   post if the shutter drifts).
 * Any jam stops all motors within one sensor poll and waits for the
-  button. Holding the button for 3 s runs "unload all": home, scan, then
-  empty every occupied slot into the chute.
+  button. Holding the button for 3 s runs "unload all": close the
+  shutter, home, scan, bring the first occupied slot to the exit, open
+  the shutter, then empty every occupied slot into the chute.
 * **Interlock:** the wheel refuses to move while beam S (a card bridging
   the feeder and a slot) or beam X (a card in the exit nip) is blocked. A
   half-inserted card can therefore never be dragged into the frame.

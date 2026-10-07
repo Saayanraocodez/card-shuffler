@@ -95,6 +95,19 @@ Mistakes found and fixed in the review:
   carried on rotating; it now stops. The exit has a block-time double-card
   check.
 * **Docs:** the low-battery abort description did not match the firmware.
+* **Unload order:** the firmware opened the shutter before the first unload
+  move, with the wheel still at the last entry position. Two cards rested
+  over the window there and slid out against the stopped nip, unseen by
+  beam X, and the move to slot 0 (up to 180°) swept 11–14 more cards across
+  the open window, the snag the inner blade was meant to prevent. The
+  wheel now brings the first occupied slot to the exit with the shutter
+  closed, then opens it. With a full deck every later move carries only
+  empty slots past the window. "Unload all" also closes the shutter before
+  homing, since it can follow an ERROR 9 with the shutter still open. The
+  bench test (6.5) and C8 (6.7) now move first and open second. Still
+  open: on a wheel holding a few cards, a run of more than 27 empty slots
+  makes the move to the next card take the short way back over the
+  window, carrying any later card across it.
 
 ## 10.4.1 Print-readiness sweep
 

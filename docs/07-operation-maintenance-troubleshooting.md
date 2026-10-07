@@ -7,7 +7,8 @@
    the wheel, resting against the gate; close the lid.
 3. The chute must be empty (previous deck removed).
 4. Press the button. Blue = loading (the wheel indexes for each card;
-   about 26 s). Cyan = unloading (the wheel steps through the slots and
+   about 26 s). Cyan = unloading (the wheel brings the first full slot to
+   the exit, the shutter opens, then the wheel steps through the slots and
    cards slide into the chute; about 12 s).
 5. Green + one beep: done. Lift the deck out of the chute.
 
@@ -15,9 +16,10 @@ Amber blinking + two beeps: the counts did not match (fewer cards loaded
 than expected, fewer ejected than loaded, or a double-feed suspicion). The
 deck is a valid ordering; re-run if it matters (re-running from any order
 is uniform). Red blinking + three beeps: error; the serial console shows
-the code. Press to clear. Hold 3 s: "unload all" — the wheel is scanned
-and every occupied slot is emptied into the chute (also the way to retrieve
-cards after a mid-shuffle stop).
+the code. Press to clear. Hold 3 s: "unload all" — the shutter closes, the
+wheel is homed and scanned, the first occupied slot is brought to the exit,
+the shutter opens, and every occupied slot is emptied into the chute (also
+the way to retrieve cards after a mid-shuffle stop).
 
 `cal cards 54` for decks with jokers.
 
@@ -31,7 +33,8 @@ cards after a mid-shuffle stop).
   nothing moves while your fingers are there.
 * **In the wheel**: hold the button 3 s (unload all). If a slot will not
   eject, run `shutter open` and pull the card out of the window by its
-  edge. Or open the lid and reach in from the hopper side.
+  edge; run `shutter close` before the wheel turns again. Or open the lid
+  and reach in from the hopper side.
 * **In the exit nip / chute**: lift the exit idler arm and pull the card
   through.
 

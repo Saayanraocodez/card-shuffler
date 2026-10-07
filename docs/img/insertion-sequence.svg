@@ -50,7 +50,7 @@
       <line x1="150" y1="-20" x2="150" y2="4" class="shutter"/>
       <rect x="225" y="18" width="70" height="4" fill="#d9e2ef" stroke="#2b3a55"/>
     </g>
-    <text x="0" y="300" class="t">Shutter open; fin s+1 on the exit plane;</text><text x="0" y="316" class="t">the card slides out (0.47 g) into the nip;</text><text x="0" y="332" class="t">beam X counts it into the chute. Repeat.</text>
+    <text x="0" y="300" class="t">First full slot to the exit, then the shutter</text><text x="0" y="316" class="t">opens. Fin s+1 on the exit plane: the card</text><text x="0" y="332" class="t">slides out (0.47 g) into the nip. Next slot.</text>
   </g>
   <text x="20" y="410" fill="#444">Retries: a feed timeout triggers a reverse pulse and up to 2 retries into the same slot (no effect on the output law); an eject timeout retries 3 times. Persistent faults stop the machine; hold the button 3 s to unload everything.</text>
 </svg>

@@ -162,11 +162,13 @@ then everything else (`09-prototype-plan.md`). Part names refer to
     clears each tower face by 0.5 mm) and screw it to the tower cheeks:
     4 × M3 × 20, horizontal, from the towers' outer faces into the nip
     housing.
-28. **Bench test (Stage 3).** With cards in the wheel, run
-    `shutter open`, `exit 5`, then `eject`. The card slides out and is
+28. **Bench test (Stage 3).** With cards in the wheel, run `exit 5`,
+    then `shutter open`, then `eject`. The card slides out and is
     pulled through, beam X blocks then clears, and the card lands in the
     chute. Adjust `cal exit` and `cal pwm nipx`. Repeat for slots 0, 27
-    and 53.
+    and 53, with `shutter close` before each `exit k`. Never turn the
+    wheel with the shutter open: the cards over the window slide out
+    and the move drags them across its edge.
 29. **Full shuffle.** Run `test fixed 1` and press the button. Compare the
     result with `analyze_physical.py --compare`.
 
@@ -215,7 +217,7 @@ then everything else (`09-prototype-plan.md`). Part names refer to
 | C5 | `cal shutter closed` / `cal shutter open` | blade over the window / window clear |
 | C6 | deck in the hopper; `feed` ×20 with `entry k` | 20 × "ok", no double-feed suspects |
 | C7 | `cal entry ±0.1` if cards stop in the mouth or land in a neighbour | beam E blocked and beam S clear after every feed |
-| C8 | cards in the wheel; `shutter open`; `exit k`; `eject` | pulled out cleanly; adjust `cal exit` |
+| C8 | cards in the wheel; `exit k`; `shutter open`; `eject`; `shutter close` | pulled out cleanly; adjust `cal exit` |
 | C9 | `test fixed 1`, then press the button | `last` shows 0 corrections; compare the deck |
 
 ## 6.8 First-use checks

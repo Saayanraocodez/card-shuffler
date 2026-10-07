@@ -1,6 +1,6 @@
 // shuffler.ino — main state machine for the WHEEL card shuffler (ESP32 DevKitC).
 //
-// One button: press = start / acknowledge; hold 3 s = open the shutter, home and stop (jam access).
+// One button: press = start / acknowledge; hold 3 s = unload all (home, scan, empty every occupied slot).
 // Serial console at 115200: type `help`.
 //
 // Shuffle = LOAD phase (each card from the hopper into a uniformly random empty slot of the 54-slot
@@ -88,6 +88,14 @@ static int locate_card(uint8_t s, bool occupied[N_SLOTS_HW]) {
     return -1;
 }
 
+// Open only with the first occupied slot at the exit: opened elsewhere, cards over the window slide out and the next move drags them.
+static bool unload_open(const bool occupied[N_SLOTS_HW]) {
+    for (uint8_t s = 0; s < N_SLOTS_HW; s++)
+        if (occupied[s]) { if (!wheel_fin_to_exit(s)) return false; break; }
+    shutter_set(SHUTTER_OPEN);
+    return true;
+}
+
 static void run_shuffle(bool fixed, uint32_t fixed_seed) {
     uint32_t t0 = millis();
     state = ST_LOADING; ui_color(C_BUSY);
@@ -159,7 +167,7 @@ static void run_shuffle(bool fixed, uint32_t fixed_seed) {
     // ---- UNLOAD: slots in increasing order into the chute
     state = ST_UNLOADING; ui_color(C_UNLOAD);
     uint32_t t1 = millis();
-    shutter_set(SHUTTER_OPEN);
+    if (!unload_open(occupied)) { set_error(E_JAM_EJECT, "a card is still in the exit nip"); return; }
     uint8_t ejected = 0;
     for (uint8_t s = 0; s < N_SLOTS_HW; s++) {
         if (!occupied[s]) continue;
@@ -210,12 +218,12 @@ void shuffle_print_last() {
 // ---------------------------------------------------------------- recovery: unload whatever is in the wheel
 static void unload_all() {
     ui_color(C_CAL); feeder_stop();
-    shutter_power(true);
+    shutter_power(true); shutter_set(SHUTTER_CLOSED);   // may still be open after ERROR 9 or `shutter open`
     if (!wheel_path_clear()) { set_error(E_JAM_FEED, "a card bridges the wheel and a fixed part: remove it by hand first"); return; }
     if (!wheel_home()) { set_error(E_HOME, "wheel index not found"); return; }
     bool occ[N_SLOTS_HW]; int n = wheel_scan(occ);
     if (n < 0) { set_error(E_JAM_FEED, "a card bridges the wheel and a fixed part: remove it by hand"); return; }
-    shutter_set(SHUTTER_OPEN);
+    if (!unload_open(occ)) { set_error(E_JAM_EJECT, "unload stopped: check the exit window and nip"); return; }
     for (uint8_t s = 0; s < N_SLOTS_HW; s++) if (occ[s]) {
         EjectStats es;
         if (!wheel_fin_to_exit(s) || eject_one(&es) != EJECT_OK) { set_error(E_JAM_EJECT, "unload stopped: check the exit window and nip"); return; }
