@@ -21,7 +21,7 @@
 * **No physical build, no measurements.** Every [EST] value is an estimate.
   What can be claimed today: the algorithm is uniform (proof); the firmware
   RNG core is bit-exact with the reference and passes its tests; the CAD
-  passes 17 automated collision checks against the wheel's swept volume
+  passes 24 automated collision checks against the wheel's swept volume
   and between neighbouring parts; the fault models are simulated. What cannot: feeding reliability,
   slot-entry and slide-out reliability, the cycle time, battery life.
 * **ESP32 compile.** The Espressif toolchain could not be downloaded in the
@@ -136,9 +136,20 @@ checks found:
   the 2 × `idler_arm` carry 4 × `idler_wheel`. Filament is ≈ 1.25 kg, not
   900 g.
 
+## 10.4.2 Simulation review
+
+* **Entry: card play carried up the right side.** On the shroud a card
+  sits 3 mm out, but the clearance checks modelled every card as seated.
+  Counter-clockwise moves carried that play from the shroud's end (8°) to
+  the entry nip roller (r 88.3 at 42.2°). With card-to-PETG friction above
+  about 0.37, gravity cannot pull the card back in time
+  (`simulation/card_slip.js`). `shroud_B` now ends in a re-seating ramp
+  (§3.3). The new `feeder_shroud` check found a first version of the ramp
+  that overlapped the feeder bushing bracket; the ramp now ends at 32°.
+
 ## 10.5 Environment record
 
-* OpenSCAD 2021.01 rendered all 24 STL files with no warnings; `cad/check_clearance.sh`: 19 OK + 4 face contacts, no collisions (`cad/clearance.log`); `cad/check_printability.py`: all 24 parts OK (`cad/printability.log`).
+* OpenSCAD 2021.01 rendered all 24 STL files with no warnings; `cad/check_clearance.sh`: 20 OK + 4 face contacts, no collisions (`cad/clearance.log`); `cad/check_printability.py`: all 24 parts OK (`cad/printability.log`).
 * Simulation: `simulation/results/full_results.txt` and
   `simulation/results/corrected_runs.txt` (numpy 2.4, scipy 1.17).
 * Host test: all pass. Syntax check: pass (two style warnings fixed).

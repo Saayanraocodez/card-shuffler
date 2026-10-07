@@ -25,7 +25,7 @@ complete in `archive/v1-elevator-insertion/`.
 |---|---|
 | Mechanism comparison and selection | `docs/01-mechanism-selection.md` |
 | Mathematics: uniformity proof, RNG, fault analysis, riffle theory, validation plan | `docs/02-mathematics.md` |
-| Simulation and results | `simulation/shuffle_sim.py`, `simulation/results/`; animated shuffle `simulation/wheel_sim.html` (open in a browser) |
+| Simulation and results | `simulation/shuffle_sim.py`, `simulation/results/`; animated shuffle `simulation/wheel_sim.html` (open in a browser); card slip at the entry `simulation/card_slip.js` |
 | Bit-exact RNG reference, physical-test analysis | `simulation/rng_reference.py`, `simulation/analyze_physical.py` |
 | Parametric CAD, 24 STL files (print list in `cad/print-settings.md`), views, collision and printability checks | `cad/params.scad`, `cad/shuffler.scad`, `cad/stl/`, `cad/png/`, `cad/check_clearance.sh`, `cad/check_printability.py` |
 | Mechanical design document | `docs/03-mechanical-design.md`, `cad/print-settings.md` |
@@ -63,6 +63,7 @@ complete in `archive/v1-elevator-insertion/`.
 pip install numpy scipy
 python3 simulation/shuffle_sim.py --quick
 python3 simulation/rng_reference.py --selftest
+node simulation/card_slip.js        # Node 18+
 cd firmware/test_host && make run && ./syntax_check.sh
 cd cad && ./render.sh && ./check_clearance.sh   # OpenSCAD 2021.01 + xvfb-run
 pip install trimesh shapely scipy networkx rtree && python3 check_printability.py

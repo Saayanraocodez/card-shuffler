@@ -34,6 +34,16 @@ r_shroud_in = r_seat_out + 3;          // 88.5
 shroud_t    = 3;
 shroud_w    = 92;                      // axial width: covers the card edges (|Y| <= 46 incl. play); discs are inside r 77.5
 shroud_a0   = 172;  shroud_a1 = 368;   // arc covered (two segments split at 270°)
+// Re-seating ramp on the end of shroud_B.  In the lower half cards slide 3 mm out onto the shroud; a counter-clockwise
+// move would carry that 3 mm up the right side into the entry nip roller (nearest point r 88.3 at 42.2°), and friction on
+// the fin can stop gravity pulling the card back in time.  The ramp continues the shroud past 8° and pushes cards back to
+// ramp_r_min before the entry, then flares out so cards arriving clockwise from the top slide under it.
+ramp_a0     = shroud_a1;               // 368° (8°): starts at r_shroud_in, flush with the shroud
+ramp_a1     = shroud_a1 + 18;          // 386° (26°): down to ramp_r_min
+ramp_a2     = shroud_a1 + 21;          // 389° (29°): flat
+ramp_a3     = shroud_a1 + 24;          // 392° (32°): flared to ramp_r_end; clear of the feeder bushing bracket (34°) and nip roller (37.4°)
+ramp_r_min  = r_seat_out + 0.5;        // 86.0: 0.5 mm outside a seated card (clearance rule 0.4)
+ramp_r_end  = r_seat_out + 2;          // 87.5
 win_a0      = 202;  win_a1 = 214;      // exit window
 // Shutter: a thin curved blade riding on the shroud's INNER surface.  Closed, it covers the window so a
 // card edge rides over it on ramps (no edge to catch); open, it slides counter-clockwise past the window.

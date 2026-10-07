@@ -4,13 +4,15 @@
 
 ## A. Parts and mechanics
 
-- [ ] `cad/check_clearance.sh` reports OK for all 17 checks after any CAD change.
+- [ ] `cad/check_clearance.sh` reports no COLLISION in any of its 24 checks after any CAD change.
 - [ ] `cad/check_printability.py` reports ALL PARTS OK and `cad/check_clearance.sh` reports no COLLISION after any CAD change.
 - [ ] All 24 STL files printed (30 pieces with duplicates, `cad/print-settings.md`); the feeder deck and the chute flat on glass (< 0.3 mm).
 - [ ] The gate-window print ribs are cut off and filed flush; the gate block slides in freely.
 - [ ] Every one of the 54 slots accepts a card by hand to the hub and releases it.
 - [ ] Wheel spins freely on the rod, axial play < 0.5 mm, no wobble > 0.5 mm at the rim.
 - [ ] With cards seated, no card touches the shroud in the upper half; in the lower half cards slide out ≤ 1.5 mm and ride the shroud without catching.
+- [ ] Feeder mounted, wheel full: `jog 170` six times (counter-clockwise at full speed). Cards ride up the `shroud_B` ramp and pass the entry with no card touching the entry nip roller or the deck tip.
+- [ ] A card laid on a printed PETG surface starts to slide at a tilt of ≤ 30° (friction ≤ 0.6, the range `simulation/card_slip.js` covers with the ramp).
 - [ ] Index tab passes the sensor with ≥ 1 mm clearance each side.
 - [ ] Rollers turn freely; crowns 0.7 / 0.5 mm above their plates.
 - [ ] Gate set by feeler gauge (0.40 passes, 0.55 blocked).

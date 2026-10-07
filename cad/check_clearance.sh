@@ -1,7 +1,7 @@
 #!/bin/bash
 # Runs every collision check in check_clearance.scad. An empty intersection = OK.
 cd "$(dirname "$0")"
-CHECKS="sweep_feeder sweep_motors sweep_exit sweep_towers sweep_shroud sweep_shutter_closed sweep_shutter_open sweep_index motors_towers brackets_towers idler_deck idler_chute shutter_open_vs_fixed shutter_closed_vs_fixed shutter_mid_vs_fixed chute_shroud deck_shroud chute_towers deck_towers shroud_towers index_towers lid_deck motor_mount_tower"
+CHECKS="sweep_feeder sweep_motors sweep_exit sweep_towers sweep_shroud feeder_shroud sweep_shutter_closed sweep_shutter_open sweep_index motors_towers brackets_towers idler_deck idler_chute shutter_open_vs_fixed shutter_closed_vs_fixed shutter_mid_vs_fixed chute_shroud deck_shroud chute_towers deck_towers shroud_towers index_towers lid_deck motor_mount_tower"
 fail=0
 for c in ${1:-$CHECKS}; do
   out=$(openscad -D "check=\"$c\"" -o /tmp/clear_$c.stl check_clearance.scad 2>&1)

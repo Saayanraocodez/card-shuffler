@@ -16,7 +16,7 @@ motor_mount                 50 x   50 x   28    31.3 cm3  contact   1418 mm2  OK
 roller_feed                 24 x   24 x   72    26.8 cm3  contact    444 mm2  OK
 roller_nip                  13 x   13 x   72     7.8 cm3  contact    125 mm2  OK
 shroud_A                    99 x  112 x  116    52.1 cm3  contact    613 mm2  OK
-shroud_B                    99 x  112 x  116    59.4 cm3  contact    613 mm2  OK
+shroud_B                    99 x  147 x  116    70.9 cm3  contact    725 mm2  OK
 shutter                     17 x   25 x   97     2.9 cm3  contact     90 mm2  OK
 spring_bar                  16 x  110 x    4     7.1 cm3  contact   1777 mm2  OK
 tower_L                    213 x  198 x   16   210.0 cm3  contact  17915 mm2  OK

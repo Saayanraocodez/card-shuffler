@@ -17,7 +17,7 @@ towers are 213 × 198 mm).
 | 4 | tower_L | 1 | PETG | 0.2 | 40 % | 213 × 198 × 16 | as tower_R |
 | 5 | motor_mount | 1 | PETG | 0.2 | 40 % | Ø50 × 28 | tower face down |
 | 6 | shroud_A | 1 | PETG | 0.2 | 30 % | 99 × 112 × 116 | standing on its +Y edge; 5 mm brim (tall and thin) |
-| 7 | shroud_B | 1 | PETG | 0.2 | 30 % | 99 × 112 × 116 | as shroud_A |
+| 7 | shroud_B | 1 | PETG | 0.2 | 30 % | 99 × 147 × 116 | as shroud_A; carries the re-seating ramp at its 8° end |
 | 8 | shutter | 1 | PETG | 0.2 | 100 % | 17 × 25 × 97 | standing on its end; 5 mm brim; sand the outer face smooth |
 | 9 | index_bracket | 1 | PETG | 0.2 | 40 % | 24 × 36 × 8 | back plate down |
 | 10 | feeder_deck | 1 | PETG | 0.2 | 25 % | 106 × 142 × 61 | plate down. Has 3 thin ribs in the gate window: **cut them off** after printing |

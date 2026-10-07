@@ -3,6 +3,7 @@ OK         sweep_motors
 OK         sweep_exit
 OK         sweep_towers
 OK         sweep_shroud
+OK         feeder_shroud
 OK         sweep_shutter_closed
 OK         sweep_shutter_open
 OK         sweep_index

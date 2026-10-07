@@ -41,7 +41,10 @@ Exit criterion: 50/50 entries, 50/50 slide-outs, no lost cards.
 ## Stage 3 — feeder on the wheel (1 evening)
 
 Mount the feeder deck (step 23). `feed` with `entry k`: 100 cards, 0
-corrections, 0 lost; `scan` confirms the map. Tune `cal entry`.
+corrections, 0 lost; `scan` confirms the map. Tune `cal entry`. Then, with
+the wheel full, `jog 170` six times: cards that rode the shroud must climb
+the `shroud_B` ramp and pass the entry nip without touching it. (The Stage 2
+spin test runs before the feeder is mounted, so it cannot show this.)
 Exit criterion: 200 feeds, ≤ 1 correction, all in the intended slot after
 correction.
 

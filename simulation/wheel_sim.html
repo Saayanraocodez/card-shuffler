@@ -348,6 +348,7 @@ const SIM = (() => {
     R_GATE: 118, R_FEED: 129.5, R_HOP1: 183, HOP_H: 50, PRESTAGE: 108,
     R_NIPX: 100.5, R_NIPX_GRAB: 92.5, R_BEAM_X: 111, R_CHUTE0: 109.5, R_CHUTE1: 182.5, CHUTE_DROP: 28,
     INDEX_SENSOR: 90, INDEX_TAB_W: 6,
+    RAMP_A0: 8, RAMP_A1: 26, RAMP_A2: 29, RAMP_A3: 32, RAMP_RMIN: 86.0, RAMP_REND: 87.5,   // re-seating ramp on shroud_B
   };
   G.CARD_LEAN_FIN = Math.atan2(G.FIN_T, 77.5) * 180 / Math.PI;  // ≈1.03°: a card resting on a fin's CW face
 
@@ -937,6 +938,14 @@ const SIM = (() => {
     // shroud (two segments around the exit window) and the window strap
     sector(G.R_SHROUD, G.R_SHROUD + G.SHROUD_T, G.SHROUD_A0, G.WIN_A0, C["accent-soft"], C.accent);
     sector(G.R_SHROUD, G.R_SHROUD + G.SHROUD_T, G.WIN_A1, G.SHROUD_A1, C["accent-soft"], C.accent);
+    { // re-seating ramp: continues shroud_B past 8° and eases cards back to r 86 before the entry
+      const rin = a => a <= G.RAMP_A1 ? G.R_SHROUD - (G.R_SHROUD - G.RAMP_RMIN) * (a - G.RAMP_A0) / (G.RAMP_A1 - G.RAMP_A0) : a <= G.RAMP_A2 ? G.RAMP_RMIN : G.RAMP_RMIN + (G.RAMP_REND - G.RAMP_RMIN) * (a - G.RAMP_A2) / (G.RAMP_A3 - G.RAMP_A2);
+      const pts = [];
+      for (let a = G.RAMP_A0; a <= G.RAMP_A3 + 1e-9; a += 0.5) pts.push(P(rin(a), a));
+      for (let a = G.RAMP_A3; a >= G.RAMP_A0 - 1e-9; a -= 0.5) pts.push(P(rin(a) + G.SHROUD_T, a));
+      poly(pts, C["accent-soft"], C.accent);
+      tag("ramp", P(99, 22), "left", C.accent, true);
+    }
     ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.arc(X(0), Y(0), (G.R_SHROUD + 1.5) * k, -G.WIN_A0 * D2R, -G.WIN_A1 * D2R, true); ctx.strokeStyle = C.accent; ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
     tag("shroud", P(97, 300), "center", C.accent, true);
 
@@ -969,7 +978,7 @@ const SIM = (() => {
     // labels for the fixed parts
     tag("hopper · 50°", P(150, AE, G.HOP_H + 9), "center");
     tag("gate 0.45", P(104, AE, 21), "center", C.muted, true);
-    tag("feed roller", P(141, AE, -27), "left", C.muted, true);
+    tag("feed roller", [98, 64], "center", C.muted, true);
     tag("entry nip", P(96, AE, -24), "center", C.muted, true);
     tag("exit nip · 205°", P(103, AXP, -19), "center");
     tag("chute", P(150, AXP, G.CHUTE_DROP + 13), "center");

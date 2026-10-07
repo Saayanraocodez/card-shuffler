@@ -35,6 +35,7 @@ if (check == "sweep_motors")   intersection() { sweep_all(); union() { feeder_mo
 if (check == "sweep_exit")     intersection() { sweep_all(); exit_parts(); }
 if (check == "sweep_towers")   intersection() { sweep_all(); towers(); }
 if (check == "sweep_shroud")   intersection() { sweep_all(); shrouds(); }
+if (check == "feeder_shroud")  intersection() { shrouds(); union() { feeder_parts(); feeder_motors(); } }   // the shroud_B ramp ends just short of the entry nip
 if (check == "sweep_shutter_closed") intersection() { sweep_all(); shutter_at(false); }
 if (check == "sweep_shutter_open")   intersection() { sweep_all(); shutter_at(true); }
 if (check == "sweep_index")    intersection() { sweep_all(); index_bracket(); }

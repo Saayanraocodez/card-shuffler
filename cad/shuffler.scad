@@ -94,12 +94,25 @@ module shroud_segment(a0, a1, window=false) {
             arc_y(ri, ro, a0, a1, -shroud_w/2, ye);
             if (window) { arc_y(ri, ro, a0, win_a0 - 1, -ye, -shroud_w/2 + 0.01); arc_y(ri, ro, shut_skirt_a1, a1, -ye, -shroud_w/2 + 0.01); }
             else arc_y(ri, ro, a0, a1, -ye, -shroud_w/2 + 0.01);
+            if (a1 == shroud_a1) shroud_ramp();
             for (a=[a0 + 4, a1 - 4], s=[-1,1]) rotate([0,-a,0]) hull() {                                                       // tabs to the towers,
                 box([ri, s*(shroud_w/2 - 9), -6], [ro, s*tower_y_in, 6]); box([ri, s*(shroud_w/2 - 2), -6], [ri + 10, s*tower_y_in, 6]); }   // 45° underneath
         }
         if (window) arc_y(ri - 1, ro + 1, win_a0, win_a1, -shroud_w/2 - 1, shroud_w/2 + 1);
         for (a=[a0 + 4, a1 - 4], s=[-1,1]) rotate([0,-a,0]) hole_y(r_shroud_in + 5, 0, hole_m3_free, s*(tower_y_in - 8), s*(tower_y_in + 1));
     }
+}
+// Re-seating ramp (part of shroud_B): inner radius r_shroud_in -> ramp_r_min -> ramp_r_end, wall shroud_t thick.
+// Same Y span as the arc's +Y side, so it prints as part of the same prism (+Y edge down, no overhang).
+function ramp_rin(a) = a <= ramp_a0 ? r_shroud_in
+                     : a <= ramp_a1 ? r_shroud_in - (r_shroud_in - ramp_r_min)*(a - ramp_a0)/(ramp_a1 - ramp_a0)
+                     : a <= ramp_a2 ? ramp_r_min
+                     : ramp_r_min + (ramp_r_end - ramp_r_min)*(a - ramp_a2)/(ramp_a3 - ramp_a2);
+module shroud_ramp() {
+    n = 56; b0 = ramp_a0 - 1;   // starts 1° inside the shroud so the union is one solid
+    xz_extrude(-shroud_w/2, tower_y_in) polygon(concat(
+        [for (i=[0:n]) let(a = b0 + (ramp_a3 - b0)*i/n) [ramp_rin(a)*cos(a), ramp_rin(a)*sin(a)]],
+        [for (i=[n:-1:0]) let(a = b0 + (ramp_a3 - b0)*i/n, ro = ramp_rin(a) + shroud_t) [ro*cos(a), ro*sin(a)]]));
 }
 // Blade profile (XZ): outer radius constant, inner radius ramps from 87.8 at the tips to 87.0.
 function shut_rin(a) = a < shut_a0 + shut_ramp ? 87.8 - 0.8*(a - shut_a0)/shut_ramp
