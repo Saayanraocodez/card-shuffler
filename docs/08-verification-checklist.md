@@ -5,7 +5,7 @@
 ## A. Parts and mechanics
 
 - [ ] `cad/check_clearance.sh` reports no COLLISION in any of its 24 checks after any CAD change.
-- [ ] `cad/check_printability.py` reports ALL PARTS OK and `cad/check_clearance.sh` reports no COLLISION after any CAD change.
+- [ ] `cad/check_printability.py` reports ALL PARTS OK, `cad/check_clearance.sh` reports no COLLISION, and (on an Ultimaker 3) `cad/check_um3_fit.py` reports ALL PARTS FIT after any CAD change.
 - [ ] All 24 STL files printed (30 pieces with duplicates, `cad/print-settings.md`); the feeder deck and the chute flat on glass (< 0.3 mm).
 - [ ] The gate-window print ribs are cut off and filed flush; the gate block slides in freely.
 - [ ] Every one of the 54 slots accepts a card by hand to the hub and releases it.

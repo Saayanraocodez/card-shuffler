@@ -149,9 +149,9 @@ module tower(side=1) {   // side=+1: motor side (+Y). Plate in the XZ plane, thi
     difference() {
         union() {
             hull() { cyl_y(30, y0, y1); box([tower_x0, y0, tower_z_bot], [tower_x1, y1, tower_z_bot + 8]); }   // upright
-            box([-102, y0, -8], [102, y1, 8]);                                                                  // crossbar (shroud ends)
-            at_fin(entry_fin_ang, 1)  box([40, y0, -14], [gate_r + 20, y1, -plate_t]);                          // feeder arm (plate sits on it)
-            at_fin(exit_fin_ang, -1)  box([40, y0, -chute_drop - plate_t - 11], [chute_r0 + 16, y1, -6]);      // chute cheek (chute screws in from the side)
+            box([-99, y0, -8], [99, y1, 8]);                                                                    // crossbar (shroud ends; tab screws at x ±93.3)
+            at_fin(entry_fin_ang, 1)  box([40, y0, -14], [gate_r + 16, y1, -plate_t]);                          // feeder arm (plate sits on it; last screw at gate_r + 12)
+            at_fin(exit_fin_ang, -1)  box([40, y0, -chute_drop - plate_t - 11], [chute_screw_x + 7, y1, -6]);  // chute cheek (chute screws in from the side)
             beam_boss(side, [beamE_r, beamS_r]);
             at_fin(entry_fin_ang, 1) box([76, y0, -14], [deck_tip_r - 0.1, y1, 7]);                             // plate behind the beam boss
             if (side < 0) rotate([0, -shut_mid_a, 0]) box([servo_ax_r - 12, y0, -16], [servo_ax_r + 25, y1, 16]);  // servo boss
@@ -353,14 +353,14 @@ module base_half(x0, x1) {
         for (x=[-92, -62, -30, 10, 42, 82], y=[-(tower_y_in + tower_t/2), tower_y_in + tower_t/2]) if (x > x0 && x < x1) hole_z(x, y, hole_m3, base_h - 10, base_h + 1);   // tower feet
     }
 }
-module base_front() { difference() { base_half(-60, base_x1);
+module base_front() { difference() { base_half(base_split, base_x1);
     // panel: button, LED, switch, jack, USB
     translate([base_x1, 0, 25]) rotate([0,90,0]) cylinder(d=12.5, h=10, center=true);
     translate([base_x1, -30, 25]) rotate([0,90,0]) cylinder(d=6, h=10, center=true);
     translate([base_x1, 30, 25]) rotate([0,90,0]) cylinder(d=6.5, h=10, center=true);
     translate([base_x1, 60, 22]) rotate([0,90,0]) cylinder(d=8.5, h=10, center=true);
     translate([60, -base_hw - 2, 12]) cube([14, 6, 9]); } }
-module base_rear() { base_half(base_x0, -60); }
+module base_rear() { base_half(base_x0, base_split); }
 module base_cover(x0, x1) { difference() { translate([x0 + 3.5, -base_hw + 3.5, 0]) cube([x1 - x0 - 7, 2*base_hw - 7, 2.5]);
     for (x=[x0 + 8, x1 - 8], y=[-base_hw + 8, base_hw - 8]) hole_z(x, y, hole_m3_free, -1, 4); } }
 
@@ -445,8 +445,8 @@ else if (part == "lid") translate([0,0,hop_h + 8 + 4]) rotate([180,0,0]) lid(); 
 else if (part == "chute") translate([0,0,chute_drop + plate_t]) chute();
 else if (part == "base_front") translate([0,0,base_h]) rotate([180,0,0]) base_front();
 else if (part == "base_rear") translate([0,0,base_h]) rotate([180,0,0]) base_rear();
-else if (part == "base_cover_front") base_cover(-60, base_x1);
-else if (part == "base_cover_rear") base_cover(base_x0, -60);
+else if (part == "base_cover_front") base_cover(base_split, base_x1);
+else if (part == "base_cover_rear") base_cover(base_x0, base_split);
 else if (part == "wheel_module") wheel_module(explode);
 else if (part == "feeder_module") feeder_module(explode);
 else if (part == "exit_module") exit_module(explode);

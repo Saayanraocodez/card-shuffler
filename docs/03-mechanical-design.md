@@ -36,8 +36,8 @@ the entry nip roller (nearest point r 88.3).
 
 | | mm |
 |---|---|
-| Footprint, overall | ≈ 298 × 231 (11.7 × 9.1 in, under the 12 × 12 in limit) |
-| Base boxes | 233 × 210 × 45 |
+| Footprint, overall | ≈ 298 × 240 (11.7 × 9.4 in, under the 12 × 12 in limit), measured on the rendered assembly |
+| Base boxes | 233 × 204 × 45 (front 153, rear 80) |
 | Height | ≈ 331 (axis 145 above the table, hopper lid top 186 above the axis) |
 | Wheel outer diameter (fin tips / discs) | 155 |
 | Shroud outer diameter | 183 |
@@ -144,7 +144,7 @@ and clears the table by about 30 mm.
 ## 3.6 Towers, drive, base
 
 * **Towers.** Two 12 mm plates at |Y| = 58–70, printed flat with the outer
-  face down (213 × 198 mm, fits a 220 mm bed). Each has:
+  face down (203 × 195 mm, fits a 215 mm bed). Each has:
   * a 608ZZ bearing pocket;
   * a foot on the base;
   * a crossbar carrying the shroud tabs;
@@ -165,7 +165,7 @@ and clears the table by about 30 mm.
   bearings: wrap one layer of tape on the thread at each bearing seat so it
   does not rattle. Direct drive, 3200 µsteps per revolution, 0.11° per
   microstep.
-* **Base.** Front and rear boxes (193 and 40 mm long, 210 wide, 45 tall)
+* **Base.** Front and rear boxes (153 and 80 mm long, 204 wide, 45 tall)
   with bottom covers. The tower feet screw to the base top, so the axis is
   100 mm above it. The battery and perfboard go inside, and the panel is on
   the front face.
@@ -177,7 +177,9 @@ post-processing, is `cad/print-settings.md`: **24 STL files, 30 printed
 pieces** (2 × `roller_nip`, 2 × `idler_arm`, 4 × `idler_wheel`,
 2 × `spring_bar`). Every STL rests on Z = 0 in its print orientation, and
 `cad/check_printability.py` confirms that each one is a closed solid that
-fits a 220 mm bed and prints without supports. Total ≈ 1.25 kg [EST]
+fits a 215 mm bed and prints without supports, and `cad/check_um3_fit.py`
+confirms that each one fits an Ultimaker 3 plate inside Cura's clip keep-outs.
+Total ≈ 1.25 kg [EST]
 (≈ 0.9 kg PETG, ≈ 0.35 kg PLA).
 
 ## 3.8 Tolerances and adjustment points

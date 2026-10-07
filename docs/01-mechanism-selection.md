@@ -66,7 +66,7 @@ order (slot order) is exactly uniform (proof in `02-mathematics.md`).
 | Speed (est.) | 5 (5 s ×7 manual) | 3 | 2 (70 s) | 3 (38 s) | **4 (35–45 s; ~30 s tuned)** |
 | Precision demanded of the build | 4 | 4 | 1 (±0.15 mm) | 1 | **4 (±1 mm)** |
 | Cost | 5 | 3 | 3 | 2 | **3** |
-| Footprint | 4 | 3 | 4 | 2 | **3 (298 × 231 mm)** |
+| Footprint | 4 | 3 | 4 | 2 | **3 (298 × 240 mm)** |
 | Mechanical complexity | 4 | 2 | 3 | 2 | **4** |
 | Card wear | 2 | 4 | 5 | 5 | **4** |
 | One-button | 1 | 2 | 5 | 4 | **5** |

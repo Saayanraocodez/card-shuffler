@@ -87,7 +87,7 @@ Mistakes found and fixed in the review:
 * **Placement:** the mechanism was placed 45 mm too low, sinking into the
   base. The chute passed through the rear base box.
 * **Footprint:** it was 320 mm, over the 12 in (305 mm) limit. It is now
-  about 298 × 231 mm.
+  about 298 × 240 mm (measured; see 10.4.3).
 * **Firmware safety:** nothing stopped the wheel turning with a card half
   in a slot. There is now a beam S / beam X interlock on every move.
   There was also no check that the target slot was empty before feeding.
@@ -147,9 +147,33 @@ checks found:
   (§3.3). The new `feeder_shroud` check found a first version of the ramp
   that overlapped the feeder bushing bracket; the ramp now ends at 32°.
 
+## 10.4.3 Ultimaker 3 fit
+
+The builder's printer is an Ultimaker 3: 215 × 215 mm for one print core,
+glass clips that Cura keeps out of, and a 3 mm edge keep-out whenever both
+print cores are enabled (Cura's `travel_avoid_distance`).
+
+* **Towers** (212.5 × 198.3) did not fit with both cores enabled. Three
+  features now end a few mm past their last screw hole: the crossbar
+  (±102 → ±99, shroud tab screws at ±93.3), the feeder arm (r 138 → 134,
+  deck screw at r 130) and the chute cheek (r 125.5 → 118, chute screw at
+  r 111). The towers are 203.2 × 195.4 and fit with a brim, about 1 mm
+  clear of the clips.
+* **Base:** `base_front` (193 × 210) did not fit at all; next to the clips
+  only about 192 mm is free. The base is 204 wide (`base_hw` 105 → 102)
+  and the joint between the boxes moved from x −60 to x −20
+  (`base_split`), so the boxes are 153 and 80 long. Every base part fits
+  with a brim with ≥ 2 mm to spare. The tower-foot screws (x −30 and 10)
+  stay clear of the joint.
+* `cad/check_um3_fit.py` checks every STL against Cura's UM3 plate
+  definition (`cad/um3_fit.log`).
+* **Footprint**, measured on the rendered assembly: 298 × 240 mm (the
+  motor reaches y +138, the base y −102). Before the base change it was
+  298 × 243; the 298 × 231 quoted earlier did not match the assembly.
+
 ## 10.5 Environment record
 
-* OpenSCAD 2021.01 rendered all 24 STL files with no warnings; `cad/check_clearance.sh`: 20 OK + 4 face contacts, no collisions (`cad/clearance.log`); `cad/check_printability.py`: all 24 parts OK (`cad/printability.log`).
+* OpenSCAD 2021.01 rendered all 24 STL files with no warnings; `cad/check_clearance.sh`: 20 OK + 4 face contacts, no collisions (`cad/clearance.log`); `cad/check_printability.py`: all 24 parts OK (`cad/printability.log`); `cad/check_um3_fit.py`: all 24 parts fit an Ultimaker 3 with both cores enabled and a brim (`cad/um3_fit.log`).
 * Simulation: `simulation/results/full_results.txt` and
   `simulation/results/corrected_runs.txt` (numpy 2.4, scipy 1.17).
 * Host test: all pass. Syntax check: pass (two style warnings fixed).

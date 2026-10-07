@@ -117,4 +117,6 @@ hole_m3 = 2.6; hole_m3_free = 3.4; hole_m2 = 1.7; hole_m4_free = 4.4;
 $fn = 64;
 
 // ---- base ------------------------------------------------------------------------
-base_x0 = -100; base_x1 = 133; base_hw = 105; base_h = 45;   // the chute end overhangs the rear base and clears the table by ~30 mm
+base_x0 = -100; base_x1 = 133; base_hw = 102; base_h = 45;
+base_split = -20;   // front box base_split..base_x1 (153), rear box base_x0..base_split (80): with base_hw 102 every
+                    // base part fits an Ultimaker 3 plate (215 mm, clip keep-outs) with both print cores enabled and a brim   // the chute end overhangs the rear base and clears the table by ~30 mm

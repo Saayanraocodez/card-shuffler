@@ -27,7 +27,7 @@ complete in `archive/v1-elevator-insertion/`.
 | Mathematics: uniformity proof, RNG, fault analysis, riffle theory, validation plan | `docs/02-mathematics.md` |
 | Simulation and results | `simulation/shuffle_sim.py`, `simulation/results/`; animated shuffle `simulation/wheel_sim.html` (open in a browser); card slip at the entry `simulation/card_slip.js` |
 | Bit-exact RNG reference, physical-test analysis | `simulation/rng_reference.py`, `simulation/analyze_physical.py` |
-| Parametric CAD, 24 STL files (print list in `cad/print-settings.md`), views, collision and printability checks | `cad/params.scad`, `cad/shuffler.scad`, `cad/stl/`, `cad/png/`, `cad/check_clearance.sh`, `cad/check_printability.py` |
+| Parametric CAD, 24 STL files (print list in `cad/print-settings.md`), views, collision, printability and Ultimaker 3 fit checks | `cad/params.scad`, `cad/shuffler.scad`, `cad/stl/`, `cad/png/`, `cad/check_clearance.sh`, `cad/check_printability.py`, `cad/check_um3_fit.py` |
 | Mechanical design document | `docs/03-mechanical-design.md`, `cad/print-settings.md` |
 | Electronics, battery, wiring, pins | `docs/04-electronics.md`, `electronics/wiring-diagram.svg` |
 | Bill of materials | `docs/05-bom.md`, `electronics/bom.csv` |
@@ -45,7 +45,7 @@ complete in `archive/v1-elevator-insertion/`.
 | Parts cost, excluding printing | ≈ $114 new; ≈ $96 with a parts drawer; ≈ $88 minimum |
 | Cycle time, 52 cards | 40–45 s first build; 28–32 s tuned (target 30 s: within reach, not promised) |
 | Randomness | exact uniform in the ideal model (proof §2.2); symmetric slot errors provably harmless with the firmware's map correction; biased errors measured by the machine's own log |
-| Size | ≈ 298 × 231 mm footprint (under 12 × 12 in), ≈ 331 mm tall |
+| Size | ≈ 298 × 240 mm footprint (under 12 × 12 in), ≈ 331 mm tall |
 | Battery | 3S Li-ion 2200 mAh with BMS; ≈ 0.05 Wh per shuffle |
 | Cards | 52–54, thickness 0.22–0.42 mm |
 
@@ -66,7 +66,7 @@ python3 simulation/rng_reference.py --selftest
 node simulation/card_slip.js        # Node 18+
 cd firmware/test_host && make run && ./syntax_check.sh
 cd cad && ./render.sh && ./check_clearance.sh   # OpenSCAD 2021.01 + xvfb-run
-pip install trimesh shapely scipy networkx rtree && python3 check_printability.py
+pip install trimesh shapely scipy networkx rtree && python3 check_printability.py && python3 check_um3_fit.py
 ```
 
 ## Licence

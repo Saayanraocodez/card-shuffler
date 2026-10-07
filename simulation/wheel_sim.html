@@ -917,7 +917,7 @@ const SIM = (() => {
 
     // base boxes and table
     poly([[-100, -145], [133, -145], [133, -100], [-100, -100]], C.metal, C.part);
-    seg2([-60, -145], [-60, -100], C.part, 1);
+    seg2([-20, -145], [-20, -100], C.part, 1);   // joint between the base boxes (params.scad base_split)
     seg2([VIEW.x0, -145], [VIEW.x1, -145], C.muted, 1.5);
     tag("base · battery + controller", [16, -122], "center", C.muted, true);
 

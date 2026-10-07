@@ -6,15 +6,18 @@ load it, do not rotate it, do not add supports. Regenerate with
 `python3 check_printability.py` (mesh, floating pieces, bed size and
 support-free overhangs, slice by slice) and `./check_clearance.sh`.
 
-**24 files, 30 pieces.** Printer: 0.4 mm nozzle, bed ≥ 220 × 220 mm (the
-towers are 213 × 198 mm).
+**24 files, 30 pieces.** Printer: 0.4 mm nozzle, bed ≥ 215 × 215 mm (the
+towers are 203 × 195 mm). On an Ultimaker 3 every part fits inside Cura's
+glass-clip keep-outs with both print cores enabled and a brim; the towers
+have about 1 mm to spare, so let Cura place them or rotate them until they
+clear the grey areas (`python3 check_um3_fit.py`, results in `um3_fit.log`).
 
 | # | File | Qty | Material | Layer | Infill | Size (mm) | Notes |
 |---|---|---|---|---|---|---|---|
 | 1 | wheel | 1 | PETG | 0.2 | 30 % | 155 × 155 × 104 | solid disc on the bed; ≈ 24 h, ≈ 375 g (the 54 fins print solid). Print it first and test it (below) |
 | 2 | hub_spacer | 1 | PETG | 0.2 | 40 % | Ø30 × 6 | goes on the rod between the −Y disc and its nut |
-| 3 | tower_R | 1 | PETG | 0.2 | 40 % | 213 × 198 × 16 | outer face down. Skirt off or ≤ 3 mm (it nearly fills a 220 bed) |
-| 4 | tower_L | 1 | PETG | 0.2 | 40 % | 213 × 198 × 16 | as tower_R |
+| 3 | tower_R | 1 | PETG | 0.2 | 40 % | 203 × 195 × 16 | outer face down. The largest part: alone on the plate |
+| 4 | tower_L | 1 | PETG | 0.2 | 40 % | 203 × 195 × 16 | as tower_R |
 | 5 | motor_mount | 1 | PETG | 0.2 | 40 % | Ø50 × 28 | tower face down |
 | 6 | shroud_A | 1 | PETG | 0.2 | 30 % | 99 × 112 × 116 | standing on its +Y edge; 5 mm brim (tall and thin) |
 | 7 | shroud_B | 1 | PETG | 0.2 | 30 % | 99 × 147 × 116 | as shroud_A; carries the re-seating ramp at its 8° end |
@@ -31,10 +34,10 @@ towers are 213 × 198 mm).
 | 18 | spring_bar | **2** | PETG | 0.2 | 40 % | 16 × 110 × 4 | one per idler arm; screws onto the pivot posts |
 | 19 | lid | 1 | PLA | 0.2 | 20 % | 83 × 97 × 62 | top face down, pressure boss up |
 | 20 | chute | 1 | PETG | 0.2 | 25 % | 90 × 115 × 54 | floor down |
-| 21 | base_front | 1 | PLA | 0.28 | 15 % | 193 × 210 × 45 | top face down (open side up) |
-| 22 | base_rear | 1 | PLA | 0.28 | 15 % | 40 × 210 × 45 | as base_front |
-| 23 | base_cover_front | 1 | PLA | 0.2 | 20 % | 186 × 203 × 2.5 | |
-| 24 | base_cover_rear | 1 | PLA | 0.2 | 20 % | 33 × 203 × 2.5 | |
+| 21 | base_front | 1 | PLA | 0.28 | 15 % | 153 × 204 × 45 | top face down (open side up) |
+| 22 | base_rear | 1 | PLA | 0.28 | 15 % | 80 × 204 × 45 | as base_front |
+| 23 | base_cover_front | 1 | PLA | 0.2 | 20 % | 146 × 197 × 2.5 | |
+| 24 | base_cover_rear | 1 | PLA | 0.2 | 20 % | 73 × 197 × 2.5 | |
 
 Only the feed roller drives without an idler: the hopper's weight and the
 lid press the bottom card onto it. The two nips (entry and exit) each have
