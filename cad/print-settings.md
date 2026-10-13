@@ -49,6 +49,19 @@ rollers (they carry O-rings), idler wheels, lid and base.
 The wheel alone is ≈ 375 g. One 1 kg PETG spool is just enough if nothing
 fails; buy a second if the wheel might need a reprint.
 
+## Bearing fit test (optional, before the towers)
+
+`stl/bearing_fit_test.stl` (from `bearing_fit_test.scad`): five copies of the
+tower's 608ZZ pocket, Ø22.0 to 22.4 in 0.1 steps (22.2 is what the towers
+use). PETG, 0.2 mm, 3 perimeters, 40 % infill, pocket side up, like the
+towers. About 146 × 34 × 10 mm, ≈ 25 g [EST].
+
+Press a 608ZZ into each pocket. Use the smallest pocket it goes into by hand
+or with a small clamp without cracking the rim. The bearing must stay put when
+the coupon is turned upside down and shaken; push it out through the Ø9 hole.
+If that pocket is not 22.2, set `bearing_d` in `params.scad` to its size and
+run `./render.sh stl` before printing the towers.
+
 ## Suggested order
 
 1. **wheel**, then check it before printing anything else: slide a real
