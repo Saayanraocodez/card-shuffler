@@ -43,9 +43,9 @@ complete in `archive/v1-elevator-insertion/`.
 
 | | |
 |---|---|
-| Parts cost, excluding printing | ≈ $114 new; ≈ $96 with a parts drawer; ≈ $88 minimum |
+| Parts cost, excluding printing | ≈ $117 new; ≈ $98 with a parts drawer; ≈ $88 minimum |
 | Cycle time, 52 cards | 40–45 s first build; 28–32 s tuned (target 30 s: within reach, not promised) |
-| Randomness | exact uniform in the ideal model (proof §2.2); symmetric slot errors provably harmless with the firmware's map correction; biased errors measured by the machine's own log |
+| Randomness | ESP32 hardware RNG plus an avalanche-noise board, hashed together; exact uniform in the ideal model (proof §2.2); symmetric slot errors provably harmless with the firmware's map correction; biased errors measured by the machine's own log |
 | Size | ≈ 298 × 231 mm footprint (under 12 × 12 in), ≈ 331 mm tall |
 | Battery | 3S Li-ion 2200 mAh with BMS; ≈ 0.05 Wh per shuffle |
 | Cards | 52–54, thickness 0.22–0.42 mm |

@@ -24,11 +24,11 @@
     <text x="568" y="415">GPIO25  STEP</text><text x="568" y="435">GPIO26  DIR</text><text x="568" y="455">GPIO27  EN (act. low)</text>
     <text x="568" y="485">GPIO16  FEED_IN1</text><text x="568" y="505">GPIO17  FEED_IN2</text><text x="568" y="525">GPIO4   NIPE_IN1</text><text x="568" y="545">GPIO5   NIPE_IN2</text>
     <text x="568" y="565">GPIO15  NIPX_IN1</text><text x="568" y="585">GPIO2   NIPX_IN2</text><text x="568" y="605">GPIO23  DRV nSLEEP (both)</text>
-    <text x="568" y="635">GPIO18  SERVO (shutter)</text><text x="568" y="665">GPIO13  IR_LED_EN</text><text x="568" y="685">GPIO14  NEOPIXEL</text><text x="568" y="705">GPIO33  BUZZER</text>
+    <text x="568" y="635">GPIO18  SERVO (shutter)</text><text x="568" y="665">GPIO13  IR_LED_EN</text><text x="568" y="685">GPIO14  NEOPIXEL</text><text x="568" y="705">GPIO12  BUZZER</text>
   </g>
   <g class="t">
     <text x="705" y="405">GPIO34  BEAM_B (ADC)</text><text x="705" y="421">GPIO35  BEAM_E (ADC)</text><text x="705" y="437">GPIO32  BEAM_S (ADC)</text><text x="705" y="453">GPIO36  BEAM_X (ADC)</text>
-    <text x="705" y="485">GPIO39  VBAT_SENSE</text><text x="705" y="515">GPIO19  INDEX (digital)</text><text x="705" y="535">GPIO21  BUTTON</text>
+    <text x="705" y="469">GPIO33  AVAL (ADC)</text><text x="705" y="485">GPIO39  VBAT_SENSE</text><text x="705" y="515">GPIO19  INDEX (digital)</text><text x="705" y="535">GPIO21  BUTTON</text>
     <text x="705" y="565">GPIO22  DECK_SENSE (opt.)</text><text x="705" y="595">3V3 → sensor pull-ups</text><text x="705" y="625">GND</text>
   </g>
   <line x1="700" y1="130" x2="700" y2="150" class="v5"/><line x1="700" y1="150" x2="545" y2="150" class="v5"/><line x1="545" y1="150" x2="545" y2="361" class="v5"/><line x1="545" y1="361" x2="566" y2="361" class="v5"/>
@@ -62,10 +62,10 @@
   <rect x="380" y="440" width="150" height="80" class="sen"/><text x="388" y="460" class="h">VBAT sense</text><text x="388" y="476" class="t">100 kΩ / 33 kΩ → GPIO39</text><text x="388" y="490" class="t">100 nF to GND</text><text x="388" y="504" class="small">12.6 V → 3.13 V</text>
   <line x1="450" y1="470" x2="380" y2="470" class="vbat"/>
   <rect x="380" y="540" width="150" height="55" class="sen"/><text x="388" y="560" class="h">Start button</text><text x="388" y="576" class="t">momentary to GND ← GPIO21</text>
-  <rect x="380" y="610" width="150" height="80" class="box"/><text x="388" y="630" class="h">Indicators</text><text x="388" y="646" class="t">WS2812B ← GPIO14 (330 Ω)</text><text x="388" y="660" class="small">pixel V+ via 1N4001 from 5 V</text><text x="388" y="674" class="t">piezo ← GPIO33 (100 Ω)</text>
+  <rect x="380" y="610" width="150" height="80" class="box"/><text x="388" y="630" class="h">Indicators</text><text x="388" y="646" class="t">WS2812B ← GPIO14 (330 Ω)</text><text x="388" y="660" class="small">pixel V+ via 1N4001 from 5 V</text><text x="388" y="674" class="t">piezo ← GPIO12 (100 Ω)</text>
   <rect x="380" y="705" width="150" height="50" class="box"/><text x="388" y="725" class="h">Optional TCRT5000</text><text x="388" y="741" class="t">deck-loaded ← GPIO22</text>
 
-  <rect x="20" y="200" width="330" height="215" class="box"/><text x="30" y="220" class="h">Notes</text>
+  <rect x="20" y="200" width="330" height="232" class="box"/><text x="30" y="220" class="h">Notes</text>
   <text x="30" y="238" class="t">1. Never hot-plug the stepper; TMC2208 needs GND before VM.</text>
   <text x="30" y="252" class="t">2. Set the buck to 5.00 V with nothing connected.</text>
   <text x="30" y="266" class="t">3. Set TMC Vref ≈ 1.4 V (≈ 1.0 A RMS) with the motor unplugged.</text>
@@ -78,6 +78,20 @@
   <text x="30" y="380" class="h">Connector list</text>
   <text x="30" y="396" class="small">J1 pack (2) J2 switch (2) J3 jack (2) J4 stepper (4) J5 feed (2) J6 entry nip (2) J7 exit nip (2) J8 servo (3)</text>
   <text x="30" y="410" class="small">J9–J12 beams B/E/S/X (4 each) J13 index (4) J14 button (2) J15 pixel (3) J16 buzzer (2) J17 TCRT (3)</text>
+  <text x="30" y="424" class="small">J18 noise board (4: +5 V, 3V3, GND, OUT)</text>
 
+  <rect x="20" y="450" width="340" height="250" class="sen"/><text x="30" y="470" class="h">Noise board (avalanche entropy, docs/04 §4.9)</text>
+  <text x="30" y="488" class="t">+5 V → MT3608 boost, set 15.0 V (10 µF 25 V)</text>
+  <text x="30" y="504" class="t">15 V → R1 22 kΩ → Q1 emitter; Q1 base → GND</text>
+  <text x="30" y="518" class="small">Q1 2N3904, collector clipped: E–B junction in avalanche</text>
+  <text x="30" y="536" class="t">Q1 emitter → C1 100 nF → Q2 base</text>
+  <text x="30" y="552" class="t">3V3 → 100 Ω (10 µF) → Rc 4.7 kΩ → Q2 collector</text>
+  <text x="30" y="568" class="t">Q2 collector → Rf 470 kΩ → Q2 base; emitter → GND</text>
+  <text x="30" y="584" class="t">Q2 collector → 1 kΩ → GPIO33 (ADC1)</text>
+  <text x="30" y="606" class="small">Amplifier on 3V3, so GPIO33 never sees more than 3.3 V.</text>
+  <text x="30" y="620" class="small">60 × 40 perfboard on the M2 standoffs in the front base;</text>
+  <text x="30" y="634" class="small">≥ 100 mm from the TMC2208, J18 lead twisted, ≤ 20 cm.</text>
+  <text x="30" y="652" class="small">Check: `test aval 4096` → span ≥ 400, ≥ 128 distinct.</text>
+  <text x="30" y="666" class="small">Optional: USE_AVALANCHE 0 in config.h if not fitted.</text>
   <line x1="530" y1="381" x2="530" y2="920" class="gnd"/><line x1="530" y1="920" x2="1330" y2="920" class="gnd"/><text x="1200" y="935" class="small">GND (common)</text>
 </svg>

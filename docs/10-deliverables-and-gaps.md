@@ -55,6 +55,9 @@
 8. The oblique beams E and S: signal margin over 116 mm with a 1.2 mm
    aperture, and how cleanly beam S separates "seated" (edge at r 85.5)
    from "bridging" (card across r 86.8).
+9. The noise board: whether the avalanche junction gives a usable span at
+   15 V and whether the health-test limits (span 400, 128 distinct) suit
+   the real ESP32 ADC. Tune them from `test aval` dumps.
 
 ## 10.4 Review log (design review after the wheel redesign)
 

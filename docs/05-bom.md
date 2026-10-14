@@ -33,7 +33,11 @@ Shipping and printing excluded.
 | E23 | Capacitors | set | 100 µF×3, 470 µF, 100 nF×3 | | $1 | typical |
 | E24 | Perfboard, headers, JST-XH kit, wire | 1 | | Dupont | $8 | typical |
 | E25 | Polyfuse 3 A | 1 | | blade | $1 | typical |
-| | **Electronics subtotal** | | | | **≈ $95.50** | |
+| E26 | MT3608 boost module | 1 | noise board, set 15.0 V | any 12–18 V boost | $1 | typical |
+| E27 | NPN 2N3904 | 2 | noise board: avalanche junction + amplifier | BC547 | $0.20 | typical |
+| E28 | Noise board passives | set | 22 k, 4.7 k, 470 k, 1 k, 100 Ω; 100 nF; 10 µF 25 V ×2 | | $0.50 | typical |
+| E29 | Perfboard 60 × 40 mm | 1 | noise board, M2 corner holes | cut from a larger board | $1 | typical |
+| | **Electronics subtotal** | | | | **≈ $98** | |
 
 ## 5.2 Mechanical
 
@@ -44,7 +48,7 @@ Shipping and printing excluded.
 | M3 | O-ring 9 × 2 | 4 | idlers | none | $0.80 | typical |
 | M4 | Self-adhesive felt 1.5 mm | 1 | chute wall, lid pad | EVA | $3 | typical |
 | M5 | M3 screw assortment | 1 | ~80 pcs (6–20 mm) + M3 × 40 ×4, × 50 ×2, × 60 ×1, nuts, 3 grubs | inserts | $8 | typical |
-| M6 | M2 × 8 / M2 × 12 | 4 + 1 | servo flange, horn pin (12 mm) | | $0.60 | typical |
+| M6 | M2 × 8 / M2 × 12 | 8 + 1 | servo flange, noise board, horn pin (12 mm) | | $0.90 | typical |
 | M7 | Pen springs | 4 | idler pressure | rubber bands | $0 | scrap |
 | M8 | Dead AA cells | 2 | lid ballast | coins | $0 | scrap |
 | M9 | Velcro strap + foam | 1 | battery | zip ties | $2 | typical |
@@ -54,9 +58,9 @@ Shipping and printing excluded.
 
 | | |
 |---|---|
-| Everything new, single quantities | **≈ $114** |
-| With a normal parts drawer (E22–E24, M5) | ≈ $96 |
-| Cheapest configuration (A4988, SG90, 17HS4023, skate bearings, printed idlers) | ≈ $88 |
+| Everything new, single quantities | **≈ $117** |
+| With a normal parts drawer (E22–E24, E28, M5) | ≈ $98 |
+| Cheapest configuration (A4988, SG90, 17HS4023, skate bearings, printed idlers, no noise board) | ≈ $88 |
 | Optional TCRT5000 | +$1 |
 
 Compared with v1: no brass blades, no lead screw, rods or LM8UU, one servo
@@ -67,6 +71,8 @@ rod and two bearings. Net ≈ −$6.
 
 * "Ender-3 Z-axis kit" listings contain the 5→8 mm coupler.
 * Skateboard bearings are 608 (any grade works).
+* The noise board (E26–E29) is optional: without it, set `USE_AVALANCHE 0`
+  in `firmware/shuffler/config.h`. See `04-electronics.md` §4.9.
 * N20 motors: choose the 9 mm D-shaft version; 3 identical motors keep the
   BOM simple, and the feed roller runs at lower PWM.
 * The index sensor is a bare LED and phototransistor pair in the printed

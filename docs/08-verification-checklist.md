@@ -31,6 +31,7 @@
 - [ ] `firmware/test_host` `make run` passes; `firmware/test_host/syntax_check.sh` passes.
 - [ ] `test ref` on the ESP32 = `rng_reference.py --selftest` slot list. ★
 - [ ] `test raw 65536` → `ent`: ≈ 8.0 bits/byte. ★
+- [ ] `test aval 4096`: span ≥ 400 counts, ≥ 128 distinct values, no spike or pile-up at a rail.
 - [ ] `test seed 20`: 20 different keys. ★
 - [ ] `test rng 100000` → `analyze_physical.py --slots`: all statistics within the uniform reference. ★
 - [ ] Low-battery behaviour with a bench supply: warn 9.9 V, refuse 9.6 V, abort 9.3 V then unload-all recovers the cards.

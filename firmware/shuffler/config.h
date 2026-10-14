@@ -16,7 +16,7 @@
 #define PIN_SERVO      18      // shutter servo
 #define PIN_IR_EN      13      // NPN base: switches the three IR emitters
 #define PIN_PIXEL      14      // WS2812B
-#define PIN_BUZZER     33
+#define PIN_BUZZER     12      // piezo via 100 Ω: DC-open, so the internal pull-down keeps strapping pin GPIO12 low at boot
 #define PIN_BEAM_B     34      // ADC1  gate beam (feeder)
 #define PIN_BEAM_E     35      // ADC1  entry beam: card present in the slot at the entry (oblique, tower to tower)
 #define PIN_BEAM_S     32      // ADC1  seat beam: blocked while a card still bridges the plate and the slot mouth
@@ -25,6 +25,7 @@
 #define PIN_INDEX      19      // index phototransistor, digital, 10 k pull-down (LOW when the disc tab blocks the beam)
 #define PIN_BUTTON     21      // momentary to GND
 #define PIN_DECK       22      // optional TCRT5000 DO (unused by default)
+#define PIN_AVAL       33      // ADC1  avalanche noise board output (docs/04-electronics.md §4.9)
 
 // ---------------- wheel geometry (see cad/params.scad) ----------------
 #define N_SLOTS_HW        54
@@ -81,6 +82,10 @@
 #define IDLE_DISABLE_MS    2000
 #define KEEPALIVE_MS       0
 #define USE_BOOTLOADER_RANDOM 1
+#define USE_AVALANCHE      1       // avalanche noise board fitted: its samples are mixed into every seed; 0 if not fitted
+#define AVAL_SAMPLES       1024    // ADC reads per seed (≈ 10 ms)
+#define AVAL_MIN_SPAN      400     // health: max - min of the samples, ADC counts (dead diode or saturated amp → small span)
+#define AVAL_MIN_DISTINCT  128     // health: distinct values among the samples. Both are starting values: check with `test aval`
 #define SCAN_AT_START      1       // rotate once and verify the wheel is empty before loading
 #define VERIFY_AFTER_INSERT 1      // read beam E after each insertion; search ±1 slot if not found
 #define ENTRY_TRIM_DEFAULT -0.3f  // deg: fin sits 0.4 mm below the card plane at its tip, so the card rides onto the lead-in

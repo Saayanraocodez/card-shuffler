@@ -3,6 +3,7 @@
 #include "platform.h"
 #include "rng.h"
 #include <math.h>
+#include <string.h>
 
 // ============================================================ stepper
 static long s_pos = 0; static bool s_enabled = false;
@@ -75,6 +76,20 @@ bool beam_blocked(Beam b) { return s_sig[b] < (int)cal.beam_thresh[b]; }
 bool beam_blocked_now(Beam b) { beams_poll(); return beam_blocked(b); }
 bool index_active() { return digitalRead(PIN_INDEX) == LOW; }
 bool button_down() { return digitalRead(PIN_BUTTON) == LOW; }
+bool aval_collect(int n, AvalStats* st, uint16_t* out) {
+    static uint8_t seen[4096 / 8]; memset(seen, 0, sizeof seen);
+    uint16_t lo = 4095, hi = 0, distinct = 0;
+    for (int i = 0; i < n; i++) {
+        uint16_t v = (uint16_t)analogRead(PIN_AVAL) & 0x0FFF;
+        jitter_add(((uint32_t)v << 16) ^ micros());
+        if (!(seen[v >> 3] & (1 << (v & 7)))) { seen[v >> 3] |= 1 << (v & 7); distinct++; }
+        if (v < lo) lo = v;
+        if (v > hi) hi = v;
+        if (out) out[i] = v;
+    }
+    st->min = lo; st->max = hi; st->distinct = distinct;
+    return n > 0 && hi - lo >= AVAL_MIN_SPAN && distinct >= AVAL_MIN_DISTINCT;
+}
 float battery_volts() { uint32_t mv = 0; for (int i = 0; i < 8; i++) mv += analogReadMilliVolts(PIN_VBAT); return (mv / 8) * 0.001f * VBAT_DIVIDER * cal.vbat_gain; }
 
 // ============================================================ indicators

@@ -32,6 +32,7 @@ then everything else (`09-prototype-plan.md`). Part names refer to
 | Wheel on the rod | M8 nyloc nuts + washers | 4 + 6 |
 | Servo flange | M2 × 8 | 2 |
 | Shutter drive pin (through the horn) | M2 × 12 | 1 |
+| Noise board to the base standoffs | M2 × 8 | 4 |
 
 ## 6.3 Stage A: feeder module (steps 1–12)
 
@@ -181,7 +182,12 @@ then everything else (`09-prototype-plan.md`). Part names refer to
     * five 10 kΩ pull-downs;
     * 100 kΩ/33 kΩ divider with 100 nF;
     * capacitors: 100 µF × 3 and 470 µF;
-    * JST-XH headers J1–J17.
+    * JST-XH headers J1–J18.
+
+    Then build the noise board to `04-electronics.md` §4.9 on a
+    60 × 40 mm perfboard. Set the MT3608 to 15.0 V before fitting Q1.
+    Screw the board to the four standoffs under the front base top
+    (M2 × 8, components facing down).
 31. **Set the voltages.** Set the buck to 5.00 V with nothing connected.
     Set the TMC2208 Vref to ≈ 1.4 V (≈ 1.0 A RMS on 0.11 Ω-sense modules)
     with the motor unplugged. Tie MS1 and MS2 to 3V3.
@@ -190,7 +196,8 @@ then everything else (`09-prototype-plan.md`). Part names refer to
     * servo (3-pin);
     * beams B, E, S and X (4-pin each);
     * index (4-pin);
-    * button, pixel and buzzer.
+    * button, pixel and buzzer;
+    * noise board (4-pin, twisted, ≤ 20 cm).
 
     Label every lead.
 33. **Battery.** Put the fuse in the positive lead, then the switch, then
@@ -199,7 +206,8 @@ then everything else (`09-prototype-plan.md`). Part names refer to
 34. **Flash.** Flash the firmware with the battery disconnected (USB
     power).
 35. **First power-up** on battery, motor connectors unplugged. Run `bat`,
-    then `cal vbat <meter>`, then `beams`, then `cal beams`.
+    then `cal vbat <meter>`, then `beams`, then `cal beams`, then
+    `test aval 4096` (noise board: span ≥ 400, ≥ 128 distinct values).
 36. **Connect the rest.** Plug in the sensors, servo and N20s. Power off
     before plugging in the stepper.
 37. **Finish.** Route cables along the towers and close the base covers.

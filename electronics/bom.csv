@@ -23,12 +23,16 @@ E22,Resistor set,1,"150 x2, 68 x2, 330 x2, 470, 10 k x5, 100 k, 33 k, 100 ohm",�
 E23,Capacitors,1,"100 uF 25 V x3, 470 uF 10 V, 100 nF x3",—,1.00,1.00,"any",unverified
 E24,Perfboard 70x50 + headers + JST-XH kit + wire,1,"female headers, JST-XH 2.54 crimp kit, 22-24 AWG",Dupont,8.00,8.00,"any",unverified
 E25,Polyfuse 3 A,1,"resettable, or blade fuse holder + 3 A",—,1.00,1.00,"any",unverified
+E26,MT3608 boost module (noise board),1,"2-24 V in, adjustable, set to 15.0 V",any small adjustable boost to 12-18 V,1.00,1.00,"any",unverified
+E27,2N3904 NPN transistor (noise board),2,"TO-92; Q1 avalanche junction, Q2 amplifier",BC547 (check its E-B breakdown),0.10,0.20,"any",unverified
+E28,Noise board passives,1,"22 k, 4.7 k, 470 k, 1 k, 100 ohm; 100 nF; 10 uF 25 V x2",—,0.50,0.50,"any",unverified
+E29,Perfboard 60 x 40 mm (noise board),1,"2.54 mm pitch, corner holes for M2 (56 x 36 mm pitch)",cut from a larger board,1.00,1.00,"any",unverified
 M1,O-rings ID 20 x CS 3.5 mm nitrile,5,"feed roller (4 + spare)",silicone,0.40,2.00,"metric O-ring assortment ~$8 covers M1-M3",unverified
 M2,O-rings ID 10 x CS 3.0 mm nitrile,9,"two nip rollers (8 + spare)",—,0.25,2.25,"assortment",unverified
 M3,O-rings 9 x 2 mm,4,"idler wheels",plain printed wheels,0.20,0.80,"assortment",unverified
 M4,Self-adhesive felt sheet 1.5 mm,1,"chute end wall, lid pad, optional shroud lining",EVA foam,3.00,3.00,"any",unverified
 M5,M3 screw assortment,1,"M3 x 6/8/10/12/16/20 (~80 pcs), M3 x 40 x4, M3 x 50 x2, M3 x 60 x1, nuts, 3 grub",heat-set inserts optional,8.00,8.00,"any",unverified
-M6,M2 screws,5,"M2 x 8 x4 servo flange, M2 x 12 x1 horn pin",—,0.10,0.60,"any",unverified
+M6,M2 screws,9,"M2 x 8 x4 servo flange, M2 x 8 x4 noise board, M2 x 12 x1 horn pin",—,0.10,0.90,"any",unverified
 M7,Compression springs from ballpoint pens,4,"~5 mm OD, 15 mm",rubber bands,0.00,0.00,"scrap",—
 M8,AA cells (dead) for lid ballast,2,"any",coins/washers,0.00,0.00,"scrap",—
 M9,Velcro strap + foam pad,1,"battery retention",zip ties,2.00,2.00,"any",unverified

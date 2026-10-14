@@ -41,6 +41,9 @@ void adc_setup() {
     analogSetPinAttenuation(PIN_BEAM_S, ADC_11db);
     analogSetPinAttenuation(PIN_BEAM_X, ADC_11db);
     analogSetPinAttenuation(PIN_VBAT, ADC_11db);
+#if USE_AVALANCHE
+    analogSetPinAttenuation(PIN_AVAL, ADC_11db);
+#endif
 }
 
 void hw_random_bytes(uint8_t* out, size_t n) {

@@ -27,7 +27,7 @@ first-compile fixes and tune every timeout and PWM on hardware.
 ## Bring-up (see docs/06 §6.7)
 
 Set the TMC2208 Vref to ≈ 1.4 V first (the wheel accelerates at 5000°/s²).
-`bat` → `cal vbat`; `beams` → `cal beams`; `home`; `entry 0` + straight edge →
+`bat` → `cal vbat`; `beams` → `cal beams`; `test aval 4096` (noise board); `home`; `entry 0` + straight edge →
 `cal home`; `shutter open/close` → `cal shutter`; `feed` with `entry k`;
 `cal entry`; `exit k` + `eject` → `cal exit`; `test fixed 1` + button →
 `analyze_physical.py --compare`; `last` → `analyze_physical.py --log`.

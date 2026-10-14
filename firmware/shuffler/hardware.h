@@ -40,6 +40,12 @@ bool index_active();                       // disc tab blocks the index beam
 bool button_down();
 float battery_volts();
 
+// ---- avalanche noise board (USE_AVALANCHE) ----
+struct AvalStats { uint16_t min, max, distinct; };
+// Reads n ADC samples from PIN_AVAL, mixes each into the jitter pool and returns true if they pass the
+// health test (span and distinct-value count). `out`, if given, receives the raw samples.
+bool aval_collect(int n, AvalStats* st, uint16_t* out = nullptr);
+
 // ---- indicators ----
 enum UiColor { C_OFF, C_IDLE, C_BUSY, C_UNLOAD, C_DONE, C_WARN, C_ERROR, C_CAL, C_LOWBAT };
 void ui_init();

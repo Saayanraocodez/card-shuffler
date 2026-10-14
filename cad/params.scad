@@ -108,3 +108,6 @@ $fn = 64;
 
 // ---- base ------------------------------------------------------------------------
 base_x0 = -100; base_x1 = 133; base_hw = 105; base_h = 45;   // the chute end overhangs the rear base and clears the table by ~30 mm
+// noise board (avalanche entropy source, docs/04 §4.9): 60 × 40 mm perfboard hanging from four M2 standoffs under the
+// base_front top, clear of the tower-foot screws (|y| = 64) and ≥ 100 mm from the stepper driver on the main perfboard
+noise_c = [-20, 0];  noise_hole_sp = [56, 36];  noise_standoff_d = 6;  noise_standoff_h = 8;   // check your board's hole pitch

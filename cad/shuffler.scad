@@ -340,7 +340,11 @@ module base_half(x0, x1) {
         for (x=[-92, -62, -30, 10, 42, 82], y=[-(tower_y_in + tower_t/2), tower_y_in + tower_t/2]) if (x > x0 && x < x1) hole_z(x, y, hole_m3, base_h - 10, base_h + 1);   // tower feet
     }
 }
-module base_front() { difference() { base_half(-60, base_x1);
+module base_front() { difference() { union() { base_half(-60, base_x1);
+        for (dx=[-1, 1], dy=[-1, 1]) translate([noise_c[0] + dx*noise_hole_sp[0]/2, noise_c[1] + dy*noise_hole_sp[1]/2, base_h - 3 - noise_standoff_h])
+            cylinder(d=noise_standoff_d, h=noise_standoff_h + 0.5); }                                       // noise board standoffs
+    for (dx=[-1, 1], dy=[-1, 1]) hole_z(noise_c[0] + dx*noise_hole_sp[0]/2, noise_c[1] + dy*noise_hole_sp[1]/2, hole_m2,
+        base_h - 3 - noise_standoff_h - 1, base_h - 4);                                                     // blind M2 pilots (M2 × 8)
     // panel: button, LED, switch, jack, USB
     translate([base_x1, 0, 25]) rotate([0,90,0]) cylinder(d=12.5, h=10, center=true);
     translate([base_x1, -30, 25]) rotate([0,90,0]) cylinder(d=6, h=10, center=true);

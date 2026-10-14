@@ -57,7 +57,7 @@ Replaceable soft parts: roller and idler O-rings, felt strips, gate block.
 | ERROR 2 no deck | roller not touching, O-rings dirty, gate too low, beam B threshold | `probe` while watching `beams`; `cal beams`; gate +0.05 |
 | ERROR 3 jam (feed) | wedge at the gate, idler too tight, or a card stuck in the slot mouth (beam S blocked; the wheel will not turn) | pull the card back or push it in; then see 6.9, `cal entry`, `cal pwm nipe` |
 | ERROR 4 cards left in the wheel | previous run stopped | hold 3 s (unload all) |
-| ERROR 5 RNG health | hardware RNG stuck | power-cycle; if persistent do not use for play |
+| ERROR 5 RNG health | hardware RNG stuck, or the noise board failed its health test (the console prints which) | power-cycle; run `test aval 4096` (docs/04 §4.9); if persistent do not use for play |
 | ERROR 6 battery | < 9.6 V | charge; hold 3 s to unload cards left in the wheel |
 | ERROR 8 lost card | card left the feeder but is not in the slot or its neighbours | check the fin mouths; the card may be lying on the shroud: unload all |
 | ERROR 9 eject problem | a card is stuck in the exit nip, or no card came out of a slot the map says is full | lift the exit idler; look in the exit window; `cal pwm nipx`, `cal exit` |

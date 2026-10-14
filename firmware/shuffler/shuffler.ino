@@ -52,6 +52,13 @@ static bool seed_drbg(Drbg* d, bool fixed, uint32_t fixed_seed) {
         memcpy(last.key, key, 32); last.fixed_seed = true; last.counter = cal.shuffle_counter; return true; }
     uint8_t hw[64], jit[32];
     jitter_add(micros()); jitter_add((uint32_t)(battery_volts() * 100000.0f)); jitter_add(esp_random());
+#if USE_AVALANCHE
+    AvalStats av;                      // sampled before hw_random_bytes(): the ADC is not ours while that runs
+    if (!aval_collect(AVAL_SAMPLES, &av)) {
+        Serial.printf("avalanche source failed its health test: span %u, %u distinct (need %d, %d)\n",
+                      (unsigned)(av.max - av.min), (unsigned)av.distinct, AVAL_MIN_SPAN, AVAL_MIN_DISTINCT);
+        return false; }
+#endif
     hw_random_bytes(hw, sizeof hw); jitter_snapshot(jit);
     bool ok = drbg_seed(d, hw, jit, cal.boot_counter, cal.shuffle_counter);
     memcpy(last.key, d->key, 32); last.fixed_seed = false; last.counter = cal.shuffle_counter;
@@ -95,7 +102,7 @@ static void run_shuffle(bool fixed, uint32_t fixed_seed) {
     if (battery_volts() < VBAT_REFUSE) { set_error(E_LOWBAT, "battery too low to start"); return; }
 
     Drbg d;
-    if (!seed_drbg(&d, fixed, fixed_seed)) { set_error(E_RNG, "hardware RNG health test failed"); return; }
+    if (!seed_drbg(&d, fixed, fixed_seed)) { set_error(E_RNG, "RNG health test failed (hardware RNG or avalanche source)"); return; }
     if (fixed) {   // predicted-vs-actual test: print the plan before moving
         uint8_t sl[MAX_CARDS], o[MAX_CARDS]; Drbg dd = d; uint8_t n = cal.expected_cards;
         slots_assign(&dd, n, N_SLOTS_HW, sl); predict_order_from_slots(n, sl, o);

@@ -32,6 +32,7 @@ static void help() {
         "  test rng <n>     dump n slot assignments (52 slots each) from one hardware-seeded DRBG\n"
         "  test raw <n>     dump n raw hardware-random bytes (hex)\n"
         "  test seed <n>    print n keys from fresh hardware seeds\n"
+        "  test aval <n>    dump n raw avalanche-board ADC samples (max 4096) and the health result\n"
         "  test fixed <seed> next button press: fixed-seed shuffle, plan printed first\n"
         "  test ref         reference vector (must match rng_reference.py --selftest)");
 }
@@ -51,6 +52,16 @@ static void cmd_test_rng(int n) { Drbg d; uint8_t hw[64], jit[32]; hw_random_byt
 static void cmd_test_raw(int n) { uint8_t b[64]; while (n > 0) { int k = min(n, 64); hw_random_bytes(b, k); for (int i = 0; i < k; i++) Serial.printf("%02x", b[i]); Serial.println(); n -= k; } }
 static void cmd_test_seed(int n) { for (int s = 0; s < n; s++) { Drbg d; uint8_t hw[64], jit[32]; hw_random_bytes(hw, 64); jitter_snapshot(jit);
     drbg_seed(&d, hw, jit, cal.boot_counter, cal.shuffle_counter + 1 + s); for (int i = 0; i < 32; i++) Serial.printf("%02x", d.key[i]); Serial.println(); } }
+static void cmd_test_aval(int n) {
+#if USE_AVALANCHE
+    static uint16_t buf[4096]; n = constrain(n, 1, 4096); AvalStats st; bool ok = aval_collect(n, &st, buf);
+    for (int i = 0; i < n; i++) Serial.println(buf[i]);
+    Serial.printf("# span=%u distinct=%u -> %s (need span >= %d, distinct >= %d)\n", (unsigned)(st.max - st.min), (unsigned)st.distinct,
+                  ok ? "OK" : "FAIL", AVAL_MIN_SPAN, AVAL_MIN_DISTINCT);
+#else
+    (void)n; Serial.println("avalanche board disabled (USE_AVALANCHE 0)");
+#endif
+}
 static void cmd_test_ref() { uint8_t key[32]; sha256((const uint8_t*)"card-shuffler-test-key", 22, key);
     Drbg d; drbg_seed_key(&d, key, 1); uint8_t sl[MAX_CARDS]; slots_assign(&d, 52, N_SLOTS_HW, sl);
     Serial.print("ref slots:"); for (int i = 0; i < 52; i++) Serial.printf(" %u", sl[i]); Serial.println();
@@ -94,6 +105,7 @@ static void exec(char* s) {
         if (!strcmp(a[1], "rng")) cmd_test_rng(na > 2 ? atoi(a[2]) : 10);
         else if (!strcmp(a[1], "raw")) cmd_test_raw(na > 2 ? atoi(a[2]) : 256);
         else if (!strcmp(a[1], "seed")) cmd_test_seed(na > 2 ? atoi(a[2]) : 5);
+        else if (!strcmp(a[1], "aval")) cmd_test_aval(na > 2 ? atoi(a[2]) : 1024);
         else if (!strcmp(a[1], "fixed")) { s_fixed_seed = na > 2 ? strtoul(a[2], NULL, 10) : 1; s_fixed_pending = true; Serial.printf("next button press: fixed-seed shuffle, seed %lu\n", (unsigned long)s_fixed_seed); }
         else if (!strcmp(a[1], "ref")) cmd_test_ref();
         else help();

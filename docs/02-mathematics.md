@@ -55,8 +55,8 @@ Pipeline (`firmware/shuffler/rng.cpp`; bit-exact reference in
 
 | Stage | What |
 |---|---|
-| Entropy | ESP32 hardware RNG with `bootloader_random_enable()` (SAR-ADC noise source) enabled during seeding; Espressif documents the output as true-random only while RF or this source is enabled. Plus timing jitter of sensor edges and button presses, ADC noise, boot and shuffle counters. |
-| Health test | Repetition-count test on the raw 32-bit samples (4 identical in a row → abort with ERROR 5). Simplified NIST SP 800-90B §4.4. |
+| Entropy | ESP32 hardware RNG with `bootloader_random_enable()` (SAR-ADC noise source) enabled during seeding; Espressif documents the output as true-random only while RF or this source is enabled. Plus the avalanche noise board (`04-electronics.md` §4.9): 1024 ADC samples of a reverse-biased transistor junction per seed, mixed into the jitter pool. Plus timing jitter of sensor edges and button presses, ADC noise, boot and shuffle counters. |
+| Health test | Repetition-count test on the raw 32-bit samples (4 identical in a row → abort with ERROR 5). Simplified NIST SP 800-90B §4.4. Noise board: span ≥ 400 counts and ≥ 128 distinct values in its 1024 samples, else ERROR 5. |
 | Conditioning | key = SHA-256(64 B hardware ‖ 32 B jitter ‖ boot counter ‖ shuffle counter). |
 | Generator | ChaCha20 keystream (RFC 8439); nonce = "SHF\x01" ‖ shuffle counter; block counter from 1. Reseeded per shuffle; no keystream reuse. |
 | Sampling | `uniform(m)`: draw a 32-bit word x, accept iff x < 2³² − (2³² mod m), return x mod m. **[PROOF]** exact, no modulo bias; rejection probability ≤ 54/2³². (Lemire 2019 gives a faster variant, unnecessary here.) |
@@ -181,7 +181,9 @@ to the wheel; it is slower and needs the user to combine two stacks.
 2. **RNG statistics on the chip** — `test rng 100000` →
    `analyze_physical.py --gaps` (slot sequences; every statistic in the
    uniform ranges) ★
-3. **Entropy health** — `test raw 1000000` → `ent` / NIST STS ≈ 8.0 bits/byte ★
+3. **Entropy health** — `test raw 1000000` → `ent` / NIST STS ≈ 8.0 bits/byte;
+   `test aval 4096` → span, distinct values and a histogram with no spike
+   or pile-up at either rail ★
 4. **Insertion accuracy from the machine's own log** — after every shuffle
    `last` prints intended and realised slots. Over 20 shuffles (1040
    insertions) the acceptance target **[EST]** is ≤ 1 % corrections with no

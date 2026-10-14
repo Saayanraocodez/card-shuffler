@@ -149,7 +149,9 @@ and clears the table by about 30 mm.
   does not rattle. Direct drive, 3200 µsteps per revolution, 0.11° per
   microstep.
 * **Base.** Front and rear boxes (193 and 40 mm long, 210 wide, 45 tall)
-  with bottom covers. The tower feet screw to the base top, so the axis is
+  with bottom covers. The front box has four M2 standoffs under its top
+  for the noise board (`04-electronics.md` §4.9). The tower feet screw to
+  the base top, so the axis is
   100 mm above it. The battery and perfboard go inside, and the panel is on
   the front face.
 

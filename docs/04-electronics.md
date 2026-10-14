@@ -14,7 +14,8 @@ energies are **estimates [EST]**.
                                                                 ├─► DRV8833 #2 ─► N20 exit nip
                                                                 ├─► MG90S shutter servo
                                                                 ├─► 4 × IR LED (NPN switched) + index LED (always on)
-                                                                └─► WS2812B
+                                                                ├─► WS2812B
+                                                                └─► noise board: MT3608 → 15 V avalanche junction, amp on 3V3 ─► GPIO33
  Sensors (3V3): 4 phototransistors ─► GPIO34/35/32/36 (B, E, S, X); index phototransistor ─► GPIO19; button ─► GPIO21
 ```
 
@@ -32,6 +33,7 @@ energies are **estimates [EST]**.
 | Battery | 3S Li-ion 11.1 V 2200–2600 mAh with BMS | 12.6 V 1 A barrel charger |
 | 5 V rail | MP1584/LM2596 buck, ≥ 3 A | |
 | Indicators | WS2812B pixel, passive piezo | |
+| Second entropy source | noise board: 2N3904 emitter–base junction in avalanche at 15 V (MT3608 boost from 5 V), 2N3904 amplifier on 3V3 | GPIO33 (ADC1); §4.9 |
 
 ## 4.3 ESP32 pin assignment
 
@@ -45,13 +47,14 @@ energies are **estimates [EST]**.
 | 18 | SERVO | out (50 Hz) | shutter MG90S |
 | 13 | IR_LED_EN | out | NPN base via 1 kΩ (three emitters) |
 | 14 | PIXEL | out | WS2812B DIN via 330 Ω |
-| 33 | BUZZER | out (tone) | piezo via 100 Ω |
+| 12 | BUZZER | out (tone) | piezo via 100 Ω. GPIO12 is a strapping pin that must be low at boot: the piezo is DC-open, so the internal pull-down holds it |
 | 34 / 35 / 32 / 36 | BEAM_B / BEAM_E / BEAM_S / BEAM_X | ADC1 | phototransistor emitters, 10 kΩ pull-downs |
 | 39 | VBAT | ADC1 | 100 kΩ / 33 kΩ divider, 100 nF |
+| 33 | AVAL | ADC1 | noise board output via 1 kΩ (§4.9) |
 | 19 | INDEX | in | index phototransistor emitter, 10 kΩ pull-down (LOW when the tab blocks the beam) |
 | 21 | BUTTON | in (pull-up) | start button to GND |
 | 22 | DECK_SENSE | in (opt.) | TCRT5000 DO |
-| 12, 0 | avoid | | GPIO12 must not be pulled high at boot |
+| 0 | avoid | | boot-mode strapping pin |
 
 ## 4.4 Power budget [EST]
 
@@ -68,6 +71,7 @@ Assumptions: 3S at 11.1 V, buck 85 %, wheel driver disabled between moves
 | N20 feed + entry nip | 0.5 s per card during loading | 1.5 W | 45 % (of the load phase ≈ 30 % of total) | 0.45 W |
 | N20 exit nip | 0.15 s per card during unloading | 0.75 W | 20 % of total | 0.15 W |
 | Servo | holding open during unload | 0.5 W | 30 % | 0.15 W |
+| Noise board (boost, junction, amplifier) | always | 0.02 W | 100 % | 0.02 W |
 | **Total from the pack while shuffling** | | | | **≈ 4.7 W** |
 | Idle | | | | ≈ 0.8 W |
 
@@ -126,6 +130,52 @@ Unchanged from v1 (`archive/v1-elevator-insertion/docs/04-electronics.md`
 female headers, buck module, NPN with a 470 Ω base resistor, LED resistors
 (150 Ω for B and X, 68 Ω for E and S, 330 Ω for the always-on index LED),
 five 10 kΩ pull-downs, divider, capacitors (100 µF on TMC VM, 100 µF on
-each DRV VM, 470 µF on 5 V), JST-XH headers J1–J17 (see the wiring
+each DRV VM, 470 µF on 5 V), JST-XH headers J1–J18 (see the wiring
 diagram). Mount in the front base box with
 the ESP32's USB reachable through the side cut-out.
+
+## 4.9 Noise board (avalanche entropy source)
+
+A second, independent source of physical randomness. Every seed mixes 1024
+samples from it into the jitter pool, alongside the ESP32's own hardware
+RNG. The uniformity proof (`02-mathematics.md` §2.2) only needs an
+unpredictable seed, and the ESP32 source is documented to give one, so this
+board is defence in depth: the seed stays unpredictable even if one source
+is weaker than claimed. It can only add entropy, never remove it, because
+everything is hashed together with SHA-256. Build without it by setting
+`USE_AVALANCHE 0` in `firmware/shuffler/config.h`.
+
+All values are starting values **[EST]**; the circuit has not been built.
+
+```
+ +5 V ─► MT3608 boost, set 15.0 V ─┬─ 10 µF 25 V ─ GND
+                                   └─ R1 22 kΩ ─┬─ Q1 emitter     Q1 2N3904: collector clipped off, base to GND.
+                                                │                  Its emitter–base junction is reverse-biased
+                                                │                  into avalanche (≈ 7–10 V, ≈ 0.3 mA)
+                                                └─ C1 100 nF ─┐
+ 3V3 ─ 100 Ω ─┬─ 10 µF ─ GND                                  │
+              └─ Rc 4.7 kΩ ─┬─ Q2 collector ── Rf 470 kΩ ─────┴─ Q2 base     Q2 2N3904, emitter to GND,
+                            └─ 1 kΩ ─► GPIO33 (ADC1)                         self-biased: collector ≈ 1.5–1.8 V
+```
+
+* **Why 15 V.** A 2N3904's emitter–base breakdown varies from about 7 V to
+  10 V between parts, and the pack drops to 9.3 V, so running the junction
+  from VBAT would stop the noise on some transistors when the battery is
+  low. The boost keeps 5 V or more of headroom. Set it to 15.0 V with
+  nothing connected, as with the buck.
+* **Safe for the ESP32.** The amplifier runs from 3V3, so GPIO33 can never
+  see more than 3.3 V. The 15 V side reaches the amplifier only through C1.
+* **Board.** A 60 × 40 mm perfboard on four M2 × 8 screws into the
+  standoffs under the front base top (`noise_c` in `cad/params.scad`),
+  components facing down. That spot is clear of the tower-foot screws and
+  more than 100 mm from the stepper driver. Keep the boost module's
+  inductor at the far end from Q2. Connect it to the main board with a
+  4-wire lead (J18: +5 V, 3V3, GND, OUT) no longer than 20 cm, twisted.
+* **Bring-up.** `test aval 4096` prints raw samples and the health result.
+  Expect a span of 400 counts or more and at least 128 distinct values.
+  A narrow spike means no avalanche: check the 15 V and swap Q1. Values
+  pinned near 4095 mean Q2 is off: lower Rf to 220 kΩ. Values pinned near
+  0 mean Q2 is saturated: raise Rf to 1 MΩ.
+* **Health test.** Before each seed the firmware checks the same span and
+  distinct-value limits (`AVAL_MIN_SPAN`, `AVAL_MIN_DISTINCT`). If they fail
+  it refuses to shuffle with ERROR 5, the same as a hardware RNG failure.
