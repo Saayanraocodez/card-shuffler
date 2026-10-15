@@ -8,34 +8,57 @@
 // ============================================================ stepper
 static long s_pos = 0; static bool s_enabled = false;
 void stepper_init() { pinMode(PIN_STEP, OUTPUT); pinMode(PIN_DIR, OUTPUT); pinMode(PIN_STEP_EN, OUTPUT);
-    digitalWrite(PIN_STEP, LOW); digitalWrite(PIN_DIR, LOW); digitalWrite(PIN_STEP_EN, HIGH); }
+    digitalWrite(PIN_STEP, LOW); digitalWrite(PIN_DIR, LOW); digitalWrite(PIN_STEP_EN, HIGH);
+#if DEALER
+    pinMode(PIN_TT_STEP, OUTPUT); digitalWrite(PIN_TT_STEP, LOW);
+#endif
+}
 void stepper_enable(bool on) { digitalWrite(PIN_STEP_EN, on ? LOW : HIGH); if (on && !s_enabled) delay(5); s_enabled = on; }
 long stepper_pos() { return s_pos; }
 void stepper_set_pos(long steps) { s_pos = steps; }
 
+// Trapezoidal step train on one STEP pin (DIR already set). Returns the steps made (unsigned).
+static long step_train(int pin, float spd, long n, float vmax_dps, float vmin_dps, float acc_dps2, bool (*stop_if)()) {
+    long made = 0;
+    for (long i = 0; i < n; i++) {
+        if (stop_if && stop_if()) break;
+        float s_deg = (float)i / spd, r_deg = (float)(n - i) / spd;
+        float v = vmax_dps;
+        float va = sqrtf(2.0f * acc_dps2 * s_deg + vmin_dps * vmin_dps);
+        float vd = sqrtf(2.0f * acc_dps2 * r_deg + vmin_dps * vmin_dps);
+        if (va < v) { v = va; }
+        if (vd < v) { v = vd; }
+        if (v < vmin_dps) { v = vmin_dps; }
+        uint32_t period_us = (uint32_t)(1e6f / (v * spd));
+        digitalWrite(pin, HIGH); delayMicroseconds(STEP_PULSE_US); digitalWrite(pin, LOW);
+        if (period_us > STEP_PULSE_US) delayMicroseconds(period_us - STEP_PULSE_US);
+        made++;
+    }
+    return made;
+}
 long stepper_move(long steps, float vmax_dps, float acc_dps2, bool (*stop_if)()) {
     if (steps == 0) return 0;
     stepper_enable(true);
     bool fwd = steps > 0;
     digitalWrite(PIN_DIR, fwd ? HIGH : LOW); delayMicroseconds(10);
-    const float spd = STEPS_PER_REV / 360.0f;        // steps per degree
-    long n = labs(steps), made = 0;
-    for (long i = 0; i < n; i++) {
-        if (stop_if && stop_if()) break;
-        float s_deg = (float)i / spd, r_deg = (float)(n - i) / spd;
-        float v = vmax_dps;
-        float va = sqrtf(2.0f * acc_dps2 * s_deg + WHEEL_VMIN_DPS * WHEEL_VMIN_DPS);
-        float vd = sqrtf(2.0f * acc_dps2 * r_deg + WHEEL_VMIN_DPS * WHEEL_VMIN_DPS);
-        if (va < v) { v = va; }
-        if (vd < v) { v = vd; }
-        if (v < WHEEL_VMIN_DPS) { v = WHEEL_VMIN_DPS; }
-        uint32_t period_us = (uint32_t)(1e6f / (v * spd));
-        digitalWrite(PIN_STEP, HIGH); delayMicroseconds(STEP_PULSE_US); digitalWrite(PIN_STEP, LOW);
-        if (period_us > STEP_PULSE_US) delayMicroseconds(period_us - STEP_PULSE_US);
-        s_pos += fwd ? 1 : -1; made++;
-    }
+    long made = step_train(PIN_STEP, STEPS_PER_REV / 360.0f, labs(steps), vmax_dps, WHEEL_VMIN_DPS, acc_dps2, stop_if);
+    s_pos += fwd ? made : -made;
     return fwd ? made : -made;
 }
+#if DEALER
+static long s_tt_pos = 0;
+long tt_stepper_pos() { return s_tt_pos; }
+void tt_stepper_set_pos(long steps) { s_tt_pos = steps; }
+long tt_stepper_move(long steps, float vmax_dps, float acc_dps2, bool (*stop_if)()) {
+    if (steps == 0) return 0;
+    stepper_enable(true);
+    bool fwd = steps > 0;
+    digitalWrite(PIN_DIR, (fwd ^ (TT_DIR_INVERT != 0)) ? HIGH : LOW); delayMicroseconds(10);
+    long made = step_train(PIN_TT_STEP, TT_STEPS_PER_REV / 360.0f, labs(steps), vmax_dps, TT_VMIN_DPS, acc_dps2, stop_if);
+    s_tt_pos += fwd ? made : -made;
+    return fwd ? made : -made;
+}
+#endif
 
 // ============================================================ shutter servo
 static ShutterState s_shutter = SHUTTER_CLOSED;
@@ -60,7 +83,11 @@ static int s_sig[N_BEAMS] = {0,0,0,0};
 static const int BEAM_PIN[N_BEAMS] = { PIN_BEAM_B, PIN_BEAM_E, PIN_BEAM_S, PIN_BEAM_X };
 void sensors_init() { pinMode(PIN_IR_EN, OUTPUT); digitalWrite(PIN_IR_EN, LOW);
     pinMode(PIN_INDEX, INPUT);          // external 10 k pull-down; the index LED is always on
-    pinMode(PIN_BUTTON, INPUT_PULLUP); pinMode(PIN_DECK, INPUT_PULLUP); adc_setup(); }
+    pinMode(PIN_BUTTON, INPUT_PULLUP);
+#if !DEALER
+    pinMode(PIN_DECK, INPUT_PULLUP);
+#endif
+    adc_setup(); }
 void beams_poll() {
     int on[N_BEAMS] = {0,0,0,0}, off[N_BEAMS] = {0,0,0,0};
     for (int s = 0; s < BEAM_SAMPLES; s++) {

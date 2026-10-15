@@ -53,7 +53,7 @@ energies are **estimates [EST]**.
 | 33 | AVAL | ADC1 | noise board output via 1 kΩ (§4.9) |
 | 19 | INDEX | in | index phototransistor emitter, 10 kΩ pull-down (LOW when the tab blocks the beam) |
 | 21 | BUTTON | in (pull-up) | start button to GND |
-| 22 | DECK_SENSE | in (opt.) | TCRT5000 DO |
+| 22 | DECK_SENSE / TT_STEP | in (opt.) / out | TCRT5000 DO; in the dealer build the turntable TMC2208 STEP (`11-dealer.md` §11.5) |
 | 0 | avoid | | boot-mode strapping pin |
 
 ## 4.4 Power budget [EST]
@@ -179,3 +179,10 @@ All values are starting values **[EST]**; the circuit has not been built.
 * **Health test.** Before each seed the firmware checks the same span and
   distinct-value limits (`AVAL_MIN_SPAN`, `AVAL_MIN_DISTINCT`). If they fail
   it refuses to shuffle with ERROR 5, the same as a hardware RNG failure.
+
+## 4.10 Dealer build
+
+The dealer (`11-dealer.md`) adds one pin, GPIO22 for the turntable's STEP, and shares the rest: the
+turntable driver's DIR/EN with the wheel driver's, its hall switch with the wheel index (GPIO19), the
+throw roller's DRV8833 channel with the entry-nip signals (GPIO4/5), and beam L's phototransistor
+in series with beam B's (GPIO34). Details and reasons in §11.5.

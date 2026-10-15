@@ -29,7 +29,7 @@
   <g class="t">
     <text x="705" y="405">GPIO34  BEAM_B (ADC)</text><text x="705" y="421">GPIO35  BEAM_E (ADC)</text><text x="705" y="437">GPIO32  BEAM_S (ADC)</text><text x="705" y="453">GPIO36  BEAM_X (ADC)</text>
     <text x="705" y="469">GPIO33  AVAL (ADC)</text><text x="705" y="485">GPIO39  VBAT_SENSE</text><text x="705" y="515">GPIO19  INDEX (digital)</text><text x="705" y="535">GPIO21  BUTTON</text>
-    <text x="705" y="565">GPIO22  DECK_SENSE (opt.)</text><text x="705" y="595">3V3 → sensor pull-ups</text><text x="705" y="625">GND</text>
+    <text x="705" y="565">GPIO22  TT_STEP (dealer)</text><text x="705" y="595">3V3 → sensor pull-ups</text><text x="705" y="625">GND</text>
   </g>
   <line x1="700" y1="130" x2="700" y2="150" class="v5"/><line x1="700" y1="150" x2="545" y2="150" class="v5"/><line x1="545" y1="150" x2="545" y2="361" class="v5"/><line x1="545" y1="361" x2="566" y2="361" class="v5"/>
   <line x1="566" y1="381" x2="530" y2="381" class="gnd"/><text x="500" y="385" class="small">GND</text>
@@ -63,7 +63,7 @@
   <line x1="450" y1="470" x2="380" y2="470" class="vbat"/>
   <rect x="380" y="540" width="150" height="55" class="sen"/><text x="388" y="560" class="h">Start button</text><text x="388" y="576" class="t">momentary to GND ← GPIO21</text>
   <rect x="380" y="610" width="150" height="80" class="box"/><text x="388" y="630" class="h">Indicators</text><text x="388" y="646" class="t">WS2812B ← GPIO14 (330 Ω)</text><text x="388" y="660" class="small">pixel V+ via 1N4001 from 5 V</text><text x="388" y="674" class="t">piezo ← GPIO12 (100 Ω)</text>
-  <rect x="380" y="705" width="150" height="50" class="box"/><text x="388" y="725" class="h">Optional TCRT5000</text><text x="388" y="741" class="t">deck-loaded ← GPIO22</text>
+  <rect x="380" y="705" width="150" height="50" class="drv"/><text x="388" y="725" class="h">Turntable TMC2208</text><text x="388" y="741" class="t">STEP ← GPIO22</text>
 
   <rect x="20" y="200" width="330" height="232" class="box"/><text x="30" y="220" class="h">Notes</text>
   <text x="30" y="238" class="t">1. Never hot-plug the stepper; TMC2208 needs GND before VM.</text>
@@ -93,5 +93,16 @@
   <text x="30" y="634" class="small">≥ 100 mm from the TMC2208, J18 lead twisted, ≤ 20 cm.</text>
   <text x="30" y="652" class="small">Check: `test aval 4096` → span ≥ 400, ≥ 128 distinct.</text>
   <text x="30" y="666" class="small">Optional: USE_AVALANCHE 0 in config.h if not fitted.</text>
+  <rect x="20" y="715" width="340" height="200" class="drv"/><text x="30" y="735" class="h">Dealer additions (docs/11 §11.5)</text>
+  <text x="30" y="753" class="t">Turntable TMC2208: STEP ← GPIO22; DIR, EN in parallel</text>
+  <text x="30" y="767" class="t">   with the wheel driver (GPIO26, 27); VM = VBAT + 100 µF</text>
+  <text x="30" y="781" class="t">   1A/1B/2A/2B → NEMA 17 34 mm (Vref ≈ 1.0 V)</text>
+  <text x="30" y="799" class="t">Hall A3144: V+ 5 V, GND; OUT (open collector) → GPIO19,</text>
+  <text x="30" y="813" class="t">   joined to the index phototransistor (LOW = tab or magnet)</text>
+  <text x="30" y="831" class="t">Throw N20: DRV8833 #2 B outputs; BIN1/BIN2 ← GPIO4/5</text>
+  <text x="30" y="845" class="t">   (the entry-nip signals: both motors run together)</text>
+  <text x="30" y="863" class="t">Beam L: LED on the IR_EN string (150 Ω); phototransistor</text>
+  <text x="30" y="877" class="t">   in SERIES with beam B's (collector side) → GPIO34</text>
+  <text x="30" y="897" class="small">J19 turntable stepper (4), J20 hall (3), J21 throw motor (2), J22 beam L (4)</text>
   <line x1="530" y1="381" x2="530" y2="920" class="gnd"/><line x1="530" y1="920" x2="1330" y2="920" class="gnd"/><text x="1200" y="935" class="small">GND (common)</text>
 </svg>

@@ -20,6 +20,13 @@ words.
 The first iteration (elevator + separator blades, exact but slower) is kept
 complete in `archive/v1-elevator-insertion/`.
 
+**Dealer build (this branch).** The machine also stands on a turntable and throws each player's hole
+cards to their seat, then hands the dealer the rest of the deck, or the flop, turn and river one
+press at a time. Players, cards each, seat angles and throw power are set on a phone page served by
+the ESP32 itself. See `docs/11-dealer.md`. Also designed but unbuilt.
+
+![dealer](cad/png/dealer_assembly.png)
+
 ## What is here
 
 | Deliverable | Where |
@@ -37,6 +44,7 @@ complete in `archive/v1-elevator-insertion/`.
 | Operation, maintenance, troubleshooting | `docs/07-operation-maintenance-troubleshooting.md` |
 | Verification checklist, prototype plan | `docs/08-verification-checklist.md`, `docs/09-prototype-plan.md` |
 | Gaps and unknowns | `docs/10-deliverables-and-gaps.md` |
+| Dealer: turntable, launcher, phone page | `docs/11-dealer.md`, `cad/dealer_check.sh`, `firmware/shuffler/dealer.*`, `webui.*` |
 | Diagrams | `docs/img/` |
 
 ## Headline numbers (estimates unless stated)

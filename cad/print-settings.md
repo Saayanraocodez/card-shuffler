@@ -93,3 +93,20 @@ run `./render.sh stl` before printing the towers.
   600-grit.
 * **rollers:** check the stub axle is straight. Reprint if it bent while
   printing (slow down or add a cooling pause for the last 8 mm).
+
+## Dealer build (docs/11-dealer.md)
+
+Print these instead of / as well as the parts above. `base_front` and `base_rear` (rows 21–22)
+now carry corner bosses for the cover screws; in this branch `base_front`'s bosses stop 5 mm up for
+the thicker turntable cover (`dealer = false` in `params.scad` restores the 2.5 mm version).
+
+| File | Qty | Material | Layer | Infill | Size (mm) | Notes |
+|---|---|---|---|---|---|---|
+| tt_foot | 1 | PETG or PLA | 0.2 | 30 % | 180 × 182 × 21 | plate down; gear, race ring and magnet post up. 4 perimeters |
+| tt_cover_front | 1 | PETG | 0.2 | 40 % | 186 × 203 × 11 | **replaces base_cover_front**; top face down, race ring up. 4 perimeters |
+| tt_pinion | 1 | PETG | 0.12 | 100 % | Ø 20 × 11 | teeth down |
+| chute_dealer | 1 | PETG | 0.2 | 25 % | 119 × 135 × 54 | **replaces chute**; floor down; sand the ramp smooth (600 grit) |
+| throw_arm | 1 | PETG | 0.2 | 40 % | 46 × 122 × 26 | bridge down; pocket and U-slot up |
+| roller_feed | +1 | PLA | 0.15 | 30 % | Ø 24 × 72 | the throw roller (as row 12) |
+
+Filament for the dealer parts: ≈ 0.4 kg PETG [EST]. Check collisions with `./dealer_check.sh`.

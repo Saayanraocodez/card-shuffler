@@ -1,6 +1,7 @@
 // platform.cpp
 #include "platform.h"
 #include "config.h"
+#include "webui.h"
 #include "esp_system.h"
 #if __has_include("esp_random.h")
 #include "esp_random.h"
@@ -47,6 +48,11 @@ void adc_setup() {
 }
 
 void hw_random_bytes(uint8_t* out, size_t n) {
+#if DEALER
+    // Wi-Fi is running: the RF subsystem makes esp_random() true-random, and the ADC entropy source must not be
+    // enabled alongside it (Espressif: bootloader_random_enable() is not safe while RF is in use).
+    if (web_rf_on()) { esp_fill_random(out, n); return; }
+#endif
 #if USE_BOOTLOADER_RANDOM
     // Espressif: esp_random() is true-random only while the RF subsystem or this ADC-noise source is
     // enabled. The ADC must not be used by the application while the source is enabled, so we enable,

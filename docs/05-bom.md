@@ -67,7 +67,14 @@ Compared with v1: no brass blades, no lead screw, rods or LM8UU, one servo
 instead of two; one more N20, one more DRV8833, two more IR pairs, an M8
 rod and two bearings. Net ≈ −$6.
 
-## 5.4 Sourcing notes
+## 5.4 Dealer add-on
+
+The dealer build (`11-dealer.md`) adds ≈ $26: a 34 mm NEMA 17 and a second TMC2208 for the
+turntable, 70 × 6 mm balls, a hall switch and magnet, an N20 3000 rpm for the throw roller, one more
+IR pair (beam L), rubber pads, a few screws and a larger main board. Rows D1–D11 in
+`electronics/bom.csv`; the table is in `11-dealer.md` §11.10. Total with the dealer ≈ $143.
+
+## 5.5 Sourcing notes
 
 * "Ender-3 Z-axis kit" listings contain the 5→8 mm coupler.
 * Skateboard bearings are 608 (any grade works).

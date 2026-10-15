@@ -58,6 +58,8 @@
 9. The noise board: whether the avalanche junction gives a usable span at
    15 V and whether the health-test limits (span 400, 128 distinct) suit
    the real ESP32 ADC. Tune them from `test aval` dumps.
+10. The dealer (`11-dealer.md` §11.9): throw consistency and card flips off the ramp, the printed
+    ball race's wear, the turntable's torque margin, and homing with the shared index input.
 
 ## 10.4 Review log (design review after the wheel redesign)
 

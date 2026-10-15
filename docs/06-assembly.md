@@ -212,6 +212,8 @@ then everything else (`09-prototype-plan.md`). Part names refer to
     before plugging in the stepper.
 37. **Finish.** Route cables along the towers and close the base covers.
 
+Dealer build: also follow `11-dealer.md` §11.8 (turntable, launcher, seat calibration).
+
 ## 6.7 Calibration (first use)
 
 | Step | Command | Target |

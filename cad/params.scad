@@ -111,3 +111,35 @@ base_x0 = -100; base_x1 = 133; base_hw = 105; base_h = 45;   // the chute end ov
 // noise board (avalanche entropy source, docs/04 §4.9): 60 × 40 mm perfboard hanging from four M2 standoffs under the
 // base_front top, clear of the tower-foot screws (|y| = 64) and ≥ 100 mm from the stepper driver on the main perfboard
 noise_c = [-20, 0];  noise_hole_sp = [56, 36];  noise_standoff_d = 6;  noise_standoff_h = 8;   // check your board's hole pitch
+
+// ---- dealer: turntable + launcher (docs/11-dealer.md) ------------------------------
+// The whole machine turns on a printed ball race above a static foot, so the chute points at each seat in turn.
+// Cards slide down the chute as before; at its end a spinning top roller pinches each one against the floor and
+// throws it off a short ramp. With the roller stopped, cards pile against it exactly where the end wall was.
+dealer       = true;                 // assembly shows the turntable and the launcher
+// launcher (chute frame, card plane = chute floor top, x along the floor toward the lip)
+throw_r      = 185;                  // throw roller axis; its contact point (r 182.2) is where the end wall used to be
+throw_ang    = 5;                    // the card leaves the ramp this far below horizontal
+ramp_R       = 60;                   // ramp radius: bends the card from 28.3° down to throw_ang
+ramp_th      = (exit_fin_ang - 180) - throw_ang;   // 23.3° of turn
+ramp_x0      = 6;                    // ramp start, past the roller's contact point
+ramp_x1      = ramp_x0 + ramp_R*sin(ramp_th);      // ≈ 29.8: the lip
+piv_dx       = -32;  piv_z = 20;     // throw-arm pivot (relative to throw_r; z above the floor)
+arm_y0       = 50;   arm_y1 = 56;    // throw-arm side plates (|y|)
+launch_hw    = 62.5;                 // floor half-width under the arm and its posts
+beamL_dx     = -16;                  // beam L (card at the launcher) relative to throw_r
+// turntable (machine frame; z = 0 is the underside of base_front, which used to sit on the table)
+tt_c         = [22, 0];              // axis: under base_front, near the centre of mass
+tt_cover_t   = 5;                    // structural bottom cover (replaces base_cover_front)
+race_r       = 70;  race_r0 = 62;  race_r1 = 78;  race_h = 6;   // rotating race: ring under the cover
+ball_d       = 6;   groove_d = 3;    // 90° V-grooves 3 deep; 6 mm balls
+ball_off     = ball_d/2/sin(45) - groove_d;          // 1.24: ball centre beyond each race face
+race_bot_z   = -race_h - 2*ball_off;                // -8.48: static race face
+foot_top     = -14;  foot_t = 8;  foot_size = 180;  pad_h = 2;   // the groove for the motor shaft tip leaves a 2.4 mm floor
+table_z      = foot_top - foot_t - pad_h;            // -24: the table, dealer build
+gear_m       = 1.25; gear_z = 56;  pinion_z = 14;    // static gear on the foot, pinion on the motor: 4:1
+tt_cd        = gear_m*(gear_z + pinion_z)/2;         // 43.75 centre distance
+tt_motor_dir = 0;                    // motor azimuth around the axis (machine frame)
+tt_motor_len = 34;                   // NEMA 17, 34 mm body (fits under the base top)
+hall_r       = 86;  hall_dir = 90;   // hall switch under the cover; magnet in a post on the foot
+magnet_d     = 8.2; magnet_h = 3.2;  magnet_top = -7;

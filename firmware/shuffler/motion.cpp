@@ -1,6 +1,7 @@
 // motion.cpp
 #include "motion.h"
 #include "hardware.h"
+#include "dealer.h"
 #include <math.h>
 
 static const float SPD = STEPS_PER_REV / 360.0f;   // steps per degree
@@ -20,6 +21,9 @@ bool wheel_path_clear() {
 
 bool wheel_home() {
     if (!wheel_path_clear()) return false;
+#if DEALER
+    if (!tt_clear_of_index()) return false;     // the index input is shared with the turntable's hall switch
+#endif
     // leave the tab if we are on it, then rotate CCW until the tab blocks the index beam; approach slowly for repeatability
     if (index_active()) stepper_move((long)(15 * SPD), WHEEL_V_HOME_DPS, WHEEL_ACC_DPS2);
     stepper_move((long)(370 * SPD), WHEEL_V_HOME_DPS, WHEEL_ACC_DPS2, stop_on_index);

@@ -306,15 +306,18 @@ module lid() {
 
 // ================================================================== EXIT MODULE (exit fin frame, side = -1: card on local +Z)
 // Everything here starts at local x >= 95 so the shutter's drive tab (r <= 93.5) can travel past it.
-module chute() {
+module chute(launcher=false) {   // launcher: dealer build, the throw roller and ramp replace the end wall
     r1 = chute_r0 + chute_len; xs = nipX_r - 5;           // 95.5
+    re = launcher ? throw_r + ramp_x1 : r1 + wall;        // floor end
+    we = launcher ? throw_r + piv_dx - 6 : r1 + wall;     // side walls end (dealer: before the throw arm's pivot posts)
     difference() {
         union() {
-            box([xs, -(tower_y_in - 0.5), -chute_drop - plate_t], [r1 + wall, tower_y_in - 0.5, -chute_drop]);        // floor (between the towers)
+            box([xs, -(tower_y_in - 0.5), -chute_drop - plate_t], [re, tower_y_in - 0.5, -chute_drop]);        // floor (between the towers)
             box([xs, -(tower_y_in - 0.5), -chute_drop], [nipX_r + piv_x1, tower_y_in - 0.5, -plate_t]);              // nip housing
             box([xs, -side_in, -plate_t], [nipX_r + piv_x0, -side_out, 6]);            // short rail at the nip (-Y only: the +Y one would hang over the motor pocket)
-            for (s=[-1,1]) box([nipX_r + piv_x1, s*side_in, -chute_drop], [r1 + wall, s*side_out, chute_wall_h]);        // side walls (after the pivot)
-            box([r1, -side_out, -chute_drop], [r1 + wall, side_out, chute_wall_h - 6]);                                // end wall
+            for (s=[-1,1]) box([nipX_r + piv_x1, s*side_in, -chute_drop], [we, s*side_out, chute_wall_h]);        // side walls (after the pivot)
+            if (!launcher) box([r1, -side_out, -chute_drop], [r1 + wall, side_out, chute_wall_h - 6]);                // end wall
+            if (launcher) translate([0, 0, -chute_drop]) launcher_add();
             for (s=[-1,1]) box([nipX_r + piv_x0, s*(side_out + 0.5), -plate_t], [nipX_r + piv_x1, s*(side_out + 6.5), post_h]);   // idler pivot posts (spring_bar on top)
         }
         box([xs - 1, -roller_len/2 - 1, -chute_drop - 1], [nipX_r + 7.5, roller_len/2 + 1, 1]);                    // nip roller slot
@@ -327,20 +330,139 @@ module chute() {
         hole_z(beamX_r, 0, 3.3, -chute_drop - plate_t - 1, -chute_drop - 1.0); hole_z(beamX_r, 0, 2.0, -chute_drop - 1, 1);   // beam X emitter
         for (s=[-1,1]) hole_z(nipX_r + piv_c, s*spring_bar_y, hole_m3, post_h - 8, post_h + 1);                    // spring_bar screws
         for (z=chute_screw_z, s=[-1,1]) hole_y(chute_screw_x, z, hole_m3, s > 0 ? tower_y_in - 11 : -tower_y_in, s > 0 ? tower_y_in : -tower_y_in + 11);   // tower screws (from outside)
-        box([chute_r0 + 20, -side_in + 12, -chute_drop - plate_t - 1], [r1 - 6, side_in - 12, -chute_drop + 1]);    // finger opening in the floor
+        box([chute_r0 + 20, -side_in + 12, -chute_drop - plate_t - 1], [launcher ? throw_r + beamL_dx - 6 : r1 - 6, side_in - 12, -chute_drop + 1]);    // finger opening in the floor
+        if (launcher) translate([0, 0, -chute_drop]) launcher_cuts();
     }
 }
 
-// ================================================================== BASE (world frame, two halves; the wheel axis is 100 mm above the base top)
-module base_half(x0, x1) {
+// ================================================================== DEALER: LAUNCHER (chute frame moved down to the floor: card plane z = 0)
+// A top roller (the feed-roller part, Ø27 over its O-rings) on a pivoting arm rests on the floor. Spinning, it pinches
+// each card that slides down and throws it over the ramp; stopped, it is the wall the stub piles against.
+module throw_ramp_2d() {
+    x0 = throw_r + ramp_x0; n = 16;
+    polygon(concat([[x0 - 0.5, -plate_t], [x0 - 0.5, 0]],
+                   [for (i=[0:n]) let(a = ramp_th*i/n) [x0 + ramp_R*sin(a), ramp_R*(1 - cos(a))]],
+                   [[throw_r + ramp_x1, -plate_t]]));
+}
+module launcher_add() {
+    box([throw_r + piv_dx - 6, -launch_hw, -plate_t], [throw_r + 12, launch_hw, 0]);                       // wider floor under the arm and posts
+    for (s=[-1,1]) box([throw_r + piv_dx - 5, s*(arm_y1 + 0.5), 0], [throw_r + piv_dx + 5, s*launch_hw, piv_z + 5]);   // pivot posts
+    for (s=[-1,1]) hull() { translate([throw_r + piv_dx, s*launch_hw, 8]) rotate([s*-90, 0, 0]) cylinder(d=4, h=5);
+                            translate([throw_r + piv_dx - 2, s*launch_hw - 0.01, 0]) cube([4, 0.02, 0.02]); }   // band pegs, gusseted (print unsupported)
+    xz_extrude(-side_in, side_in) throw_ramp_2d();                                                         // ramp
+}
+module launcher_cuts() {
+    hole_z(throw_r + beamL_dx, 0, 3.3, -plate_t - 1, -1.0); hole_z(throw_r + beamL_dx, 0, 2.0, -plate_t - 1, 1);   // beam L emitter
+    for (s=[-1,1]) hole_y(throw_r + piv_dx, piv_z, hole_m3, s*arm_y1, s*(launch_hw + 1));                  // pivot screws (tapped)
+}
+// Throw arm, in place over the launcher floor. Roller axis at zr when the O-rings touch the floor; two stop screws
+// set a 0.1 mm gap so the roller spins free until a card arrives. Pocket and U-slot open downward.
+module throw_arm() {
+    zr = feed_roller_d/2; zt = zr + 19; bx = throw_r;
     difference() {
-        translate([x0, -base_hw, 0]) cube([x1 - x0, 2*base_hw, base_h]);
-        translate([x0 + 3, -base_hw + 3, -1]) cube([x1 - x0 - 6, 2*base_hw - 6, base_h - 2]);     // hollow, open bottom (cover plate)
+        union() {
+            box([bx - 9, mot_y0 - 2.5, zr - 7.5], [bx + 9, arm_y1, zt]);                                   // +Y motor block
+            box([bx - 7, -arm_y1, zr - 7], [bx + 7, bush_y[1], zt]);                                       // -Y bushing block
+            box([bx - 9, -arm_y1, zr + 14.5], [bx + 9, arm_y1, zt]);                                       // bridge over the roller
+            for (s=[-1,1]) hull() { box([bx - 7, s*arm_y0, zr + 4], [bx + 7, s*arm_y1, zt]);
+                                    translate([bx + piv_dx, s*arm_y0, piv_z]) rotate([-90,0,0]) cylinder(r=5.5, h=s*(arm_y1 - arm_y0)); }   // side plates
+            box([bx + beamL_dx - 4, -4, 12], [bx - 9 + 0.01, 4, zt]);                                     // beam L boss (looks down at the pile)
+            for (s=[-1,1]) hull() { translate([bx - 3, s*arm_y1, zt - 6]) rotate([s*-90, 0, 0]) cylinder(d=4, h=5);
+                                    translate([bx - 5, s*arm_y1 - 0.01, zt - 0.02]) cube([4, 0.02, 0.02]); }   // band pegs, gusseted toward the bridge (printed side)
+        }
+        box([bx - n20_w/2 - 0.2, mot_y0, zr - 8.5], [bx + n20_w/2 + 0.2, mot_y0 + n20_len + 0.3, zr + n20_h/2 + 0.2]);   // N20 pocket
+        hole_y(bx, zr, 5, mot_y0 - 3, mot_y0 + 1);
+        box([bx - 16, -roller_len/2 - 1, -1], [bx + 16, roller_len/2 + 1, zr + 14.5]);                     // roller
+        hole_y(bx, zr, 4.4, -arm_y1 - 1, bush_y[1] + 1); box([bx - 2.2, -arm_y1 - 1, zr - 8], [bx + 2.2, bush_y[1] + 1, zr]);   // stub-axle U-slot
+        hole_x((bush_y[0] + bush_y[1])/2, zr - 6, hole_m3, bx - 8, bx + 8);                                // cross screw closes the slot
+        for (s=[-1,1]) hole_y(bx + piv_dx, piv_z, hole_m3_free, s*(arm_y0 - 1), s*(arm_y1 + 1));          // pivot
+        for (s=[-1,1]) hole_z(bx - 12, s*(arm_y0 + arm_y1)/2, hole_m3, 0, zt + 1);                         // stop screws (M3 x 30)
+        hole_z(bx + beamL_dx, 0, 3.3, 14, zt + 1); hole_z(bx + beamL_dx, 0, 2.0, 11, 15);                 // beam L phototransistor
+    }
+}
+
+// ================================================================== DEALER: TURNTABLE (machine frame)
+function invd(a) = (tan(a) - a*PI/180) * 180/PI;          // involute function, degrees
+module spur_gear2d(m, z, pa=20, bl=0.15) {
+    rp = m*z/2; rb = rp*cos(pa); ra = rp + m; rr = rp - 1.25*m;
+    hb = 90/z + invd(pa) - (bl/2)/rp*180/PI;               // half-tooth angle at the base circle (with backlash)
+    r0 = max(rb, rr); n = 6;
+    polygon([for (k=[0:z-1]) let(c = k*360/z) each concat(
+        [[rr*cos(c - hb), rr*sin(c - hb)]],
+        [for (i=[0:n]) let(r = r0 + (ra - r0)*i/n, a = c - (hb - invd(acos(rb/r)))) [r*cos(a), r*sin(a)]],
+        [for (i=[n:-1:0]) let(r = r0 + (ra - r0)*i/n, a = c + (hb - invd(acos(rb/r)))) [r*cos(a), r*sin(a)]],
+        [[rr*cos(c + hb), rr*sin(c + hb)]])]);
+}
+module v_groove(z_face, dir) {   // 90° V groove at race_r on a face at z_face, apex toward dir (+1 up, -1 down)
+    rotate_extrude($fn=180) polygon([[race_r - groove_d - 0.01, z_face - dir*0.01], [race_r + groove_d + 0.01, z_face - dir*0.01], [race_r, z_face + dir*groove_d]]);
+}
+function tt_motor_c() = tt_c + tt_cd*[cos(tt_motor_dir), sin(tt_motor_dir)];
+function tt_hall_c()  = tt_c + hall_r*[cos(hall_dir), sin(hall_dir)];
+// Structural bottom cover of base_front: carries the rotating race, the turntable motor and the hall switch.
+module tt_cover_front() {
+    x0 = -60; x1 = base_x1; mc = tt_motor_c(); hc = tt_hall_c();
+    difference() {
+        union() {
+            translate([x0 + 3.5, -base_hw + 3.5, 0]) cube([x1 - x0 - 7, 2*base_hw - 7, tt_cover_t]);
+            translate([tt_c[0], tt_c[1], -race_h]) difference() { cylinder(r=race_r1, h=race_h + 0.01, $fn=180); translate([0,0,-1]) cylinder(r=race_r0, h=race_h + 2, $fn=180); }
+            translate([hc[0], hc[1], -5]) cylinder(d=10, h=5.01);                                             // hall boss
+        }
+        translate([tt_c[0], tt_c[1], 0]) v_groove(-race_h, 1);
+        for (x=[x0 + 8, x1 - 8], y=[-base_hw + 8, base_hw - 8]) hole_z(x, y, hole_m3_free, -1, tt_cover_t + 1);   // into the base bosses
+        translate([mc[0], mc[1], -1]) cylinder(d=23, h=tt_cover_t + 2);                                     // motor boss + pinion
+        for (dx=[-1,1], dy=[-1,1]) hull() for (t=[-1,1]) translate([mc[0] + dx*nema_bolt/2 + t*cos(tt_motor_dir), mc[1] + dy*nema_bolt/2 + t*sin(tt_motor_dir), -1]) cylinder(d=3.4, h=tt_cover_t + 2);   // slotted: set the backlash
+        translate([hc[0] - 2.15, hc[1] - 1.65, -5.5]) cube([4.3, 3.3, 2.3]);                                  // hall switch, branded face down
+        translate([hc[0], hc[1], -3.3]) cylinder(d=3.5, h=tt_cover_t + 4);                                   // its leads
+    }
+}
+// Static foot: sits on the table. Bottom race, static gear, magnet post, and a groove for the motor shaft's tip.
+module tt_foot() {
+    zb = foot_top - foot_t; hc = hall_r*[cos(hall_dir), sin(hall_dir)];
+    translate([tt_c[0], tt_c[1], 0]) difference() {
+        union() {
+            hull() for (x=[-1,1], y=[-1,1]) translate([x*(foot_size/2 - 10), y*(foot_size/2 - 10), zb]) cylinder(r=10, h=foot_t);
+            translate([0,0,foot_top - 0.01]) difference() { cylinder(r=race_r1, h=race_bot_z - foot_top + 0.01, $fn=180); translate([0,0,-1]) cylinder(r=race_r0, h=20); }
+            translate([0,0,foot_top - 0.01]) linear_extrude(-1 - foot_top + 0.01) spur_gear2d(gear_m, gear_z);
+            translate([hc[0], hc[1], foot_top - 0.01]) cylinder(d=magnet_d + 4, h=magnet_top - foot_top + 0.01);
+        }
+        v_groove(race_bot_z, -1);
+        difference() { translate([0,0,foot_top - 5.6]) cylinder(r=tt_cd + 4.5, h=7, $fn=120); translate([0,0,foot_top - 7]) cylinder(r=tt_cd - 4.5, h=9, $fn=120); }   // groove for the motor shaft's tip (z -19)
+        translate([hc[0], hc[1], magnet_top - magnet_h]) cylinder(d=magnet_d, h=magnet_h + 1);              // magnet (glued)
+        for (x=[-1,1], y=[-1,1]) translate([x*(foot_size/2 - 14), y*(foot_size/2 - 14), zb - 1]) cylinder(d=12.5, h=2);   // pad recesses
+    }
+}
+module tt_pinion() {   // on the motor shaft; teeth z -8..-1 under the cover, hub inside the cover's motor hole
+    difference() {
+        union() { translate([0,0,-8]) linear_extrude(7) spur_gear2d(gear_m, pinion_z); translate([0,0,-1.01]) cylinder(d=14, h=4.5); }
+        translate([0,0,-9]) intersection() { cylinder(d=5.2, h=14); translate([-3, -3, 0]) cube([6, 3 + 2.0, 14]); }   // D bore (flat 4.5)
+        translate([0, 0, 1.25]) rotate([-90,0,0]) cylinder(d=hole_m3, h=8);                                 // M3 grub onto the flat
+    }
+}
+module tt_parts(e=0) {   // turntable, assembled (dealer view)
+    mc = tt_motor_c(); hc = tt_hall_c();
+    color("lightsteelblue") translate([0,0,-e*0.4]) tt_cover_front();
+    color("tan") translate([0,0,-e*1.6]) tt_foot();
+    color("silver") for (i=[0:69]) translate([tt_c[0] + race_r*cos(i*360/70), tt_c[1] + race_r*sin(i*360/70), -race_h - ball_off - e*1.0]) sphere(d=ball_d, $fn=12);
+    color("tomato") translate([mc[0], mc[1], -e*0.4]) rotate([0,0,tt_motor_dir + 180/pinion_z]) tt_pinion();   // half a tooth: a gap faces the gear's tooth
+    color("black") translate([mc[0] - nema_w/2, mc[1] - nema_w/2, tt_cover_t + e*0.4]) cube([nema_w, nema_w, tt_motor_len]);
+    color("dimgray") translate([hc[0] - 2, hc[1] - 1.5, -5 - e*0.4]) cube([4, 3, 1.5]);
+}
+
+// ================================================================== BASE (world frame, two halves; the wheel axis is 100 mm above the base top)
+module base_half(x0, x1, cover_t=2.5) {
+    difference() {
+        union() {
+            difference() {
+                translate([x0, -base_hw, 0]) cube([x1 - x0, 2*base_hw, base_h]);
+                translate([x0 + 3, -base_hw + 3, -1]) cube([x1 - x0 - 6, 2*base_hw - 6, base_h - 2]);     // hollow, open bottom (cover plate)
+            }
+            for (x=[x0 + 8, x1 - 8], y=[-base_hw + 8, base_hw - 8]) translate([x, y, cover_t]) cylinder(d=9, h=base_h - cover_t - 1);   // cover-screw bosses (the cover rests on them)
+        }
         for (x=[x0 + 8, x1 - 8], y=[-base_hw + 8, base_hw - 8]) hole_z(x, y, hole_m3, -1, base_h + 1);   // cover screws
         for (x=[-92, -62, -30, 10, 42, 82], y=[-(tower_y_in + tower_t/2), tower_y_in + tower_t/2]) if (x > x0 && x < x1) hole_z(x, y, hole_m3, base_h - 10, base_h + 1);   // tower feet
     }
 }
-module base_front() { difference() { union() { base_half(-60, base_x1);
+module base_front() { difference() { union() { base_half(-60, base_x1, dealer ? tt_cover_t : 2.5);
         for (dx=[-1, 1], dy=[-1, 1]) translate([noise_c[0] + dx*noise_hole_sp[0]/2, noise_c[1] + dy*noise_hole_sp[1]/2, base_h - 3 - noise_standoff_h])
             cylinder(d=noise_standoff_d, h=noise_standoff_h + 0.5); }                                       // noise board standoffs
     for (dx=[-1, 1], dy=[-1, 1]) hole_z(noise_c[0] + dx*noise_hole_sp[0]/2, noise_c[1] + dy*noise_hole_sp[1]/2, hole_m2,
@@ -382,13 +504,19 @@ module feeder_module(e=0) {
 }
 module exit_module(e=0) {
     at_fin(exit_fin_ang, -1) {
-        color("lightsteelblue") translate([e*0.8, 0, -e*0.6]) chute();
+        color("lightsteelblue") translate([e*0.8, 0, -e*0.6]) chute(dealer);
+        if (dealer) translate([0, 0, -chute_drop]) {
+            color("mediumseagreen") translate([0, 0, e*1.2]) throw_arm();
+            translate([throw_r, -roller_len/2, feed_roller_d/2 + e*1.2]) rotate([-90,0,0]) { color("lightgray") roller_feed(); for (y=oring_y) translate([0,0,y + roller_len/2]) oring_ring(oring_root_d, oring_cs); }
+            translate([throw_r, mot_y0, feed_roller_d/2 + e*1.2]) n20_y();
+        }
         translate([nipX_r, -roller_len/2, nip_z - e*1.2]) rotate([-90,0,0]) { color("lightgray") roller_nip(); for (y=oring_y) translate([0,0,y + roller_len/2]) oring_ring(nip_oring_root, nip_oring_cs); }
         translate([nipX_r, mot_y0, nip_z - e*0.8]) n20_y();
         color("mediumseagreen") translate([0,0,e*1.0]) idler_arm(nipX_r);
         color("lightsteelblue") translate([0,0,e*1.4]) spring_bar(nipX_r);
         for (y=idler_y) color("lightgray") translate([nipX_r, y - idler_w/2, 6.85 + e*1.0]) rotate([-90,0,0]) idler_wheel();
-        color("ivory") translate([chute_r0 + chute_len - card_w, -card_l/2, -chute_drop]) cube([card_w, card_l, 20*0.3]);   // partial output pile against the end wall
+        if (!dealer) color("ivory") translate([chute_r0 + chute_len - card_w, -card_l/2, -chute_drop]) cube([card_w, card_l, 20*0.3]);   // partial output pile against the end wall
+        else color("ivory") translate([0, 0, -chute_drop]) { xz_extrude(-card_l/2, card_l/2) polygon([[throw_r - 40, 0.05], [throw_r - 2.5, 0.05], [throw_r - 2.5, 0.35], [throw_r - 40, 0.35]]); }   // a card arriving at the roller
     }
 }
 module wheel_module(e=0) {
@@ -410,6 +538,7 @@ module wheel_module(e=0) {
 module assembly(e=0) {
     translate([0, 0, base_h - tower_z_bot]) { wheel_module(e); feeder_module(e); exit_module(e); }   // tower feet on the base top; axis 145 mm above the table
     color("gainsboro", 0.5) translate([0,0,-e*1.5]) { base_front(); base_rear(); }
+    if (dealer) translate([0,0,-e*1.5]) tt_parts(e);
 }
 
 // ================================================================== PART SELECTOR (print orientation, on Z = 0)
@@ -434,6 +563,17 @@ else if (part == "idler_wheel") idler_wheel();
 else if (part == "spring_bar") translate([0,0,-post_h]) spring_bar(nipE_r);
 else if (part == "lid") translate([0,0,hop_h + 8 + 4]) rotate([180,0,0]) lid();             // plate top down, boss up
 else if (part == "chute") translate([0,0,chute_drop + plate_t]) chute();
+else if (part == "chute_dealer") translate([0,0,chute_drop + plate_t]) chute(true);                  // floor down
+else if (part == "throw_arm") translate([0,0,feed_roller_d/2 + 19]) rotate([180,0,0]) throw_arm();   // bridge down
+else if (part == "tt_cover_front") translate([0,0,tt_cover_t]) rotate([180,0,0]) tt_cover_front();   // top face down, race up
+else if (part == "tt_foot") translate([0,0,-(foot_top - foot_t)]) tt_foot();
+else if (part == "tt_pinion") translate([0,0,8]) tt_pinion();
+else if (part == "turntable") tt_parts(explode);
+else if (part == "turntable_parts") {   // documentation view: the foot (left) and the underside of the turning cover (right)
+    color("tan") translate([-tt_c[0] - 100, -tt_c[1], 0]) tt_foot();
+    for (i=[0:69]) color("silver") translate([-100 + race_r*cos(i*360/70), race_r*sin(i*360/70), race_bot_z + ball_off]) sphere(d=ball_d, $fn=12);
+    translate([110, 0, -2]) rotate([180, 0, 0]) translate([-tt_c[0], -tt_c[1], 0]) { color("lightsteelblue") tt_cover_front();
+        color("tomato") translate([tt_motor_c()[0], tt_motor_c()[1], 0]) rotate([0,0,180/pinion_z]) tt_pinion(); } }
 else if (part == "base_front") translate([0,0,base_h]) rotate([180,0,0]) base_front();
 else if (part == "base_rear") translate([0,0,base_h]) rotate([180,0,0]) base_rear();
 else if (part == "base_cover_front") base_cover(-60, base_x1);

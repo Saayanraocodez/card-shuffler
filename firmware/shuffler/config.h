@@ -24,7 +24,16 @@
 #define PIN_VBAT       39      // ADC1  battery divider
 #define PIN_INDEX      19      // index phototransistor, digital, 10 k pull-down (LOW when the disc tab blocks the beam)
 #define PIN_BUTTON     21      // momentary to GND
+#ifndef DEALER
+#define DEALER         1       // 1: turntable + launcher + Wi-Fi page (docs/11-dealer.md); 0: plain shuffler
+#endif
+#if DEALER
+#define PIN_TT_STEP    22      // turntable TMC2208 STEP. DIR and EN are wired in parallel with the wheel driver's (GPIO26/27)
+// The turntable needs no other pins: its hall switch (open collector) shares GPIO19 with the wheel index, the throw
+// motor's DRV8833 channel shares GPIO4/5 with the entry nip, and beam L's phototransistor is in series with beam B's.
+#else
 #define PIN_DECK       22      // optional TCRT5000 DO (unused by default)
+#endif
 #define PIN_AVAL       33      // ADC1  avalanche noise board output (docs/04-electronics.md §4.9)
 
 // ---------------- wheel geometry (see cad/params.scad) ----------------
@@ -89,6 +98,22 @@
 #define SCAN_AT_START      1       // rotate once and verify the wheel is empty before loading
 #define VERIFY_AFTER_INSERT 1      // read beam E after each insertion; search ±1 slot if not found
 #define ENTRY_TRIM_DEFAULT -0.3f  // deg: fin sits 0.4 mm below the card plane at its tip, so the card rides onto the lead-in
+
+// ---------------- dealer (DEALER 1) ----------------
+#define TT_STEPS_PER_REV   12800.0f  // 200 × 1/16 µstep × 4:1 gear (56/14)
+#define TT_DIR_INVERT      0         // set 1 if `tt jog 10` turns the machine anticlockwise seen from above
+#define TT_VMAX_DPS        180.0f
+#define TT_VMIN_DPS        10.0f
+#define TT_ACC_DPS2        460.0f    // ≈ 8 rad/s²: ≈ 0.6 s per 45° seat move with ≈ 2.5× torque margin [EST]
+#define TT_V_HOME_DPS      60.0f
+#define TT_INDEX_KEEPOUT   10.0f     // deg: the turntable never parks this close to its magnet (the index input is shared)
+#define MAX_SEATS          10
+#define THROW_SPINUP_MS    150       // throw roller up to speed before the card is released
+#define T_L_BLOCK_MS       900       // after beam X clears: card must reach the launcher (beam L) within this
+#define T_L_CLEAR_MS       400       // and be gone (thrown) within this
+#define THROW_PWM_DEFAULT  170
+#define WIFI_ENABLE        1         // access point + phone page at http://192.168.4.1
+#define WIFI_AP_PASS_DEFAULT "shuffle52"   // change it on the Settings page (8–23 characters)
 
 // ---------------- calibration record (NVS) ----------------
 struct Calibration {

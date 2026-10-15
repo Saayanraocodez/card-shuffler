@@ -11,8 +11,10 @@ shuffler/
   rng.* sha256.* chacha20.*   entropy → SHA-256 → ChaCha20 → rejection sampling (portable)
   shuffle_core.*   empty-slot assignment + output prediction (pure, host-tested)
   storage.*        calibration in NVS
+  dealer.*         DEALER build: turntable, throws, hand stages (hole cards, flop/turn/river), settings in NVS
+  webui.*          DEALER build: Wi-Fi access point and the phone page (http://192.168.4.1)
   cli.cpp          serial console (115200): `help`
-test_host/         make run (bit-exact test vs simulation/rng_reference.py); ./syntax_check.sh (Arduino mock)
+test_host/         make run (bit-exact test vs simulation/rng_reference.py); ./syntax_check.sh (Arduino, WiFi, WebServer mocks)
 platformio.ini     pio run -e esp32dev
 ```
 

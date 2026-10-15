@@ -8,9 +8,14 @@
 #include "sha256.h"
 #include "shuffle_core.h"
 #include "storage.h"
+#include "dealer.h"
+#include "webui.h"
 
 extern Calibration cal;
 void shuffle_print_last();
+#if DEALER
+void app_command(uint8_t cmd, int seat, float value);
+#endif
 static char line[96]; static int len = 0;
 static bool s_fixed_pending = false; static uint32_t s_fixed_seed = 0;
 bool cli_fixed_seed_pending(uint32_t* seed) { bool p = s_fixed_pending; s_fixed_pending = false; *seed = s_fixed_seed; return p; }
@@ -34,7 +39,14 @@ static void help() {
         "  test seed <n>    print n keys from fresh hardware seeds\n"
         "  test aval <n>    dump n raw avalanche-board ADC samples (max 4096) and the health result\n"
         "  test fixed <seed> next button press: fixed-seed shuffle, plan printed first\n"
-        "  test ref         reference vector (must match rng_reference.py --selftest)");
+        "  test ref         reference vector (must match rng_reference.py --selftest)"
+#if DEALER
+        "\n  deal | street | finish        shuffle and deal / next street / rest of the deck to the chute\n"
+        "  tt home | tt goto <deg> | tt jog <deg> | tt     turntable (clockwise from above = +)\n"
+        "  seat <k> aim|here|test         point at seat k (1..), store the current angle for it, throw one card there\n"
+        "  dealer here | dealcfg          store the dealer's angle / print the dealer settings"
+#endif
+        );
 }
 static void cmd_beams() { uint32_t t0 = millis(); while (millis() - t0 < 5000) { beams_poll();
     Serial.printf("B=%4d E=%4d S=%4d X=%4d  blocked: %c%c%c%c  index=%s\n", beam_signal(BEAM_B), beam_signal(BEAM_E), beam_signal(BEAM_S), beam_signal(BEAM_X),
@@ -101,6 +113,31 @@ static void exec(char* s) {
         else if (!strcmp(a[1], "vbat") && na > 2) { float meas = atof(a[2]); float est = battery_volts() / cal.vbat_gain; cal.vbat_gain = meas / est; cal_save(cal); Serial.printf("vbat_gain=%.4f\n", cal.vbat_gain); }
         else help();
     }
+#if DEALER
+    else if (!strcmp(a[0], "deal"))   app_command(WC_DEAL, 0, 0);
+    else if (!strcmp(a[0], "street")) app_command(WC_STREET, 0, 0);
+    else if (!strcmp(a[0], "finish")) app_command(WC_FINISH, 0, 0);
+    else if (!strcmp(a[0], "tt")) {
+        if (na == 1) Serial.printf("turntable %.2f deg, %s\n", tt_angle(), tt_homed() ? "homed" : "not homed");
+        else if (!strcmp(a[1], "home")) app_command(WC_TT_HOME, 0, 0);
+        else if (!strcmp(a[1], "jog") && na > 2) app_command(WC_JOG, 0, atof(a[2]));
+        else if (!strcmp(a[1], "goto") && na > 2) { Serial.println(tt_goto(atof(a[2])) ? "ok" : "turntable home not found"); wheel_idle(); }
+        else help();
+    }
+    else if (!strcmp(a[0], "seat") && na > 2) {
+        int k = atoi(a[1]) - 1;
+        if (!strcmp(a[2], "aim")) app_command(WC_AIM_SEAT, k, 0);
+        else if (!strcmp(a[2], "here")) app_command(WC_SET_SEAT, k, 0);
+        else if (!strcmp(a[2], "test")) app_command(WC_TEST, k, 0);
+        else help();
+    }
+    else if (!strcmp(a[0], "dealer") && na > 1 && !strcmp(a[1], "here")) app_command(WC_SET_DEALER, 0, 0);
+    else if (!strcmp(a[0], "dealcfg")) {
+        Serial.printf("seats=%u players=%d cards_each=%u button=%u auto=%u board_mode=%u dealer=%.1f deg hand=%s left=%d\n", dcfg.n_seats, deal_players(dcfg),
+                      dcfg.cards_each, dcfg.button + 1, dcfg.auto_button, dcfg.board_mode, dcfg.dealer_deg, hand_stage_name(hand_stage()), hand_cards_left());
+        for (int k = 0; k < dcfg.n_seats; k++) Serial.printf("  seat %d %s %.1f deg throw %u\n", k + 1, (dcfg.seat_on >> k) & 1 ? "player" : "empty ", dcfg.seat_deg[k], dcfg.seat_pwm[k]);
+    }
+#endif
     else if (!strcmp(a[0], "test") && na > 1) {
         if (!strcmp(a[1], "rng")) cmd_test_rng(na > 2 ? atoi(a[2]) : 10);
         else if (!strcmp(a[1], "raw")) cmd_test_raw(na > 2 ? atoi(a[2]) : 256);

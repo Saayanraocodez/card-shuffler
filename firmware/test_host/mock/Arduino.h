@@ -7,6 +7,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdarg.h>
+#include <string>
+#define PROGMEM
+#define PGM_P const char*
 #define HIGH 1
 #define LOW 0
 #define INPUT 0
@@ -42,3 +46,10 @@ struct SerialClass { void begin(long) {} int available() { return 0; } int read(
     void print(const char*) {} void print(int) {} void print(char) {} void println(const char* = "") {} void println(int) {}
     int printf(const char*, ...) { return 0; } };
 extern SerialClass Serial;
+class String { std::string s; public:
+    String(const char* c = "") : s(c) {}
+    const char* c_str() const { return s.c_str(); } unsigned length() const { return (unsigned)s.size(); }
+    long toInt() const { return atol(s.c_str()); } float toFloat() const { return (float)atof(s.c_str()); }
+    bool operator==(const char* o) const { return s == o; } };
+struct EspClass { uint64_t getEfuseMac() { return 0; } };
+extern EspClass ESP;
